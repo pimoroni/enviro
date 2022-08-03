@@ -1,0 +1,122 @@
+{{render_template("enviro/html/header.html")}}
+
+{{render_template("enviro/html/header-mini.html", board=board)}}
+
+<section>
+  <form id="main" action="/provision-step-4-destination" method="post">
+    <section id="select_destination">
+      <h2>Where are you uploading your data to?</h2>
+      <p>Let's get real, data is nothing without analysis. Let's get the good stuff off this board and somewhere that we can make use of it.</p>
+      <ul id="destinations" class="picker">
+        <li data-destination=""> 
+          Nowhere
+          <p class="note">For now I just want to log this data locally and grab it over USB now and again.</p>
+        </li>
+        <li data-destination="http" > 
+          A custom HTTP endpoint
+          <p class="note">We'll make a request to your supplied URL with all of the data included.</p>
+        </li>
+        <li data-destination="influx_db">
+          InfluxDB &ndash; coming soon!
+          <p class="note">The Time Series Data Platform where developers build IoT, analytics, and cloud applications.</p>
+        </li>
+        <li data-destination="mqtt">
+          An MQTT broker
+          <p class="note">The most commonly used messaging protocol for the Internet of Things (IoT).</p>
+        </li>
+        <li data-destination="adafruit_io">
+          Adafruit IO
+          <p class="note">A platform designed by our friends at Adafruit to store and display your data.</p>
+        </li>
+      </ul>        
+    </section>
+
+    <input type="hidden" id="destination" name="destination" value="{{destination}}" />
+
+    <script>
+      function selectDestination(destination) {
+        $("#destinations li").removeClass("active")
+        $("#destinations li[data-destination='" + destination + "']").addClass("active")
+
+        $("#destination_settings >div").hide()
+        $("#destination_" + destination).show()
+
+        $("#upload_settings").toggle(destination)
+  
+        $("#destination").val(destination)
+      }
+
+      $("#destinations li").on("click",
+        function(e) {
+          let destination = $(this).data("destination")
+          if(destination != "influx_db") {
+            selectDestination(destination)
+          }
+        }
+      )
+
+      $(function() {
+        selectDestination("{{destination}}")
+      })
+    </script>
+
+    <div id="destination_settings">
+      <div id="destination_mqtt">
+        <h1>MQTT broker details</h1>
+        <h2>Enter the address of your broker.</h2>
+        <aside>This will either be an IP address or a URL.</aside>
+        <fieldset>
+          <input type="text" name="mqtt_broker_address" value="{{mqtt_broker_address}}" placeholder="e.g. 10.0.2.3 or mqtt.ourhouse.com" autocapitalize="off" autocomplete="off" />
+        </fieldset>
+        <br>
+        <h2>Enter your username and password.</h2>
+        <aside>The username and password needed to publish to this topic.</aside>
+        <fieldset>
+          <input type="text" name="mqtt_broker_username" value="{{mqtt_broker_username}}" placeholder="Username (e.g. data_junkie)" autocapitalize="off" autocomplete="off" />
+          <input type="text" name="mqtt_broker_password" value="{{mqtt_broker_password}}" placeholder="Password (e.g. ih3artd4ta)" autocapitalize="off" autocomplete="off" />
+        </fieldset>
+      </div>
+
+      <div id="destination_adafruit_io">
+        <h2>Enter your Adafruit IO username.</h2>
+        <aside>You will have created this when setting up your Adafruit IO account.</aside>
+        <fieldset>
+          <input type="text" name="adafruit_io_username" value="{{adafruit_io_username}}" placeholder="e.g. limor_rocks" />
+        </fieldset>
+        <br>
+        <h2>Enter your Adafruit IO key.</h2>
+        <aside>You can find this by logging into your Adafruit IO account.</aside>
+        <fieldset>
+          <input type="text" name="adafruit_io_key" value="{{adafruit_io_key}}" placeholder="e.g. 2f123d34567ac23bc23c234add54c8c8af3403a2" />
+        </fieldset>
+      </div>
+
+      <div id="destination_http">
+        <h1>Custom HTTP endpoint details</h1>
+        <h2>Enter your custom HTTP endpoint URL.</h2>
+        <aside>This may be an address on your local network or a service hosted in the cloud.</aside>
+        <fieldset>
+          <input type="text"  name="custom_http_url" value="{{custom_http_url}}" placeholder="e.g. http://data.mydomain.com/feeds/enviro" autocapitalize="off" autocomplete="off" />
+        </fieldset>
+        <br>
+        <h2>HTTP authentication credentials (optional).</h2>
+        <aside>Username and password if your endpoint support authentication.</aside>
+        <fieldset>
+          <input type="text" name="custom_http_username" value="{{custom_http_username}}" placeholder="Username (e.g. data_junkie)" autocapitalize="off" autocomplete="off" />        
+          <input type="text" name="custom_http_password" value="{{custom_http_password}}" placeholder="Password (e.g. ih3artd4ta)" autocapitalize="off" autocomplete="off" />
+        </fieldset>
+      </div>
+    </div>
+  </form>
+
+  <nav>
+    <button class="back" onclick="document.location = '/provision-step-3-logging'"><span>➔</span></button>
+    <button type="submit" form="main">We're done! ➔</button>
+  </nav>
+
+</section>
+
+
+
+
+{{render_template("enviro/html/footer.html")}}

@@ -1,0 +1,71 @@
+{{render_template("enviro/html/header.html")}}
+
+{{render_template("enviro/html/header-mini.html", board=board)}}
+
+<section id="wifi_details">
+  <form id="main" action="/provision-step-2-wifi" method="post">
+    <h2>OK, next up we'll need some WiFi details.</h2>
+    <aside>In order to set the time and upload your data we will need access to a wireless internet connection.</aside>
+
+    <br>
+    
+    <h2>Select your WiFi network.</h2>
+    <aside>We've had a poke around and these are the networks we can see. Not seeing your network? <a href="javascript: loadNetworks();">Try scanning again</a>.</aside>
+    <div id="loading_networks_message">
+      <svg viewBox="0 0 45 45" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd" transform="translate(1 1)" stroke-width="1"><circle cx="22" cy="22" r="6" stroke-opacity="0"><animate attributeName="r" begin="1.5s" dur="3s" values="6;22" calcMode="linear" repeatCount="indefinite" /><animate attributeName="stroke-opacity" begin="1.5s" dur="3s" values="1;0" calcMode="linear" repeatCount="indefinite" /><animate attributeName="stroke-width" begin="1.5s" dur="3s" values="1;0" calcMode="linear" repeatCount="indefinite" /></circle><circle cx="22" cy="22" r="6" stroke-opacity="0"><animate attributeName="r" begin="3s" dur="3s" values="6;22" calcMode="linear" repeatCount="indefinite" /><animate attributeName="stroke-opacity" begin="3s" dur="3s" values="1;0" calcMode="linear" repeatCount="indefinite" /><animate attributeName="stroke-width" begin="3s" dur="3s" values="1;0" calcMode="linear" repeatCount="indefinite" /></circle><circle cx="22" cy="22" r="8"><animate attributeName="r" begin="0s" dur="1.5s" values="6;1;2;3;4;5;6" calcMode="linear" repeatCount="indefinite" /></circle></g></svg>
+      <div>Scanning for networks.</div>
+    </div>
+    
+    <ul id="networks" class="picker">
+    </ul>        
+    <input id="wifi_ssid" name="wifi_ssid" value="{{wifi_ssid}}" type="hidden" />
+
+    <br>
+
+    <h2>Enter your WiFi password so that we can <s>download pictures of cats</s> upload your data.</h2>
+    <aside>If your device ever has a problem connecting to WiFi during startup then the alarm LED will blink red to let you know that something's wrong.</aside>
+    <fieldset>
+      <input id="wifi_password" name="wifi_password" type="text" value="{{wifi_password}}" placeholder="e.g. Cats4lyfe&lt;3!" autocapitalize="off" autocomplete="off" />
+    </fieldset>
+  </form>
+
+  <nav>
+    <button class="back" onclick="document.location = '/provision-step-1-nickname'"><span>➔</span></button>
+    <button type="submit" form="main">Logging ➔</button>
+  </nav>
+
+</section>
+
+<script>
+  var selectedNetwork = "{{wifi_ssid}}"
+
+  function loadNetworks() {
+    $("#loading_networks_message").show()
+    $("#networks").hide()
+    $.getJSON("/networks.json", function(response){
+      $("#networks").empty()
+      for(let network of response) {
+        let listItem = $("<li>" + network + "</li>")
+        if(network == selectedNetwork) {
+          listItem.addClass("active")
+        }    
+        $("#networks").append(listItem)
+      }
+      $("#loading_networks_message").hide()
+      $("#networks").show()
+
+      $("#networks >li").on("click", function(e) {
+          $("#networks >li").removeClass("active")
+          $(this).addClass("active")
+          $("#wifi_ssid").val($(this).text())
+        }
+      )
+    })
+  }
+
+  $(function() {
+    loadNetworks()
+  })
+</script>
+
+{{render_template("enviro/html/footer.html")}}

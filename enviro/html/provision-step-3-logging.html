@@ -1,0 +1,131 @@
+{{render_template("enviro/html/header.html")}}
+
+{{render_template("enviro/html/header-mini.html", board=board)}}
+
+<section>
+  <form id="main" action="/provision-step-3-logging" method="post">
+    <h2>How often do you want to take new readings?</h2>
+    <p>
+      The battery life of your board is affected by how often it has to wake up to take new readings. 
+    </p>
+    
+    <ul id="reading_frequencies" class="picker">
+      <li data-reading-frequency="5"> 
+        Every five minutes
+        <span class="note">(shortest battery life)</span>
+      </li>
+      <li data-reading-frequency="10" > 
+        Every ten minutes
+      </li>
+      <li data-reading-frequency="15">
+        Every fifteen minutes
+        <span class="note">(recommended)</span>
+      </li>
+      <li data-reading-frequency="30">
+        Every half hour
+      </li>
+      <li data-reading-frequency="60">
+        Every hour
+      </li>
+      <li data-reading-frequency="180">
+        Every three hours
+        <span class="note">(best for long battery life)</span>
+      </li>
+    </ul>        
+  
+    <input type="hidden" id="reading_frequency" name="reading_frequency" value="{{reading_frequency}}" />
+
+    <script>
+      function selectReadingFrequency(reading_frequency) {
+        $("#reading_frequencies >li").removeClass("active")
+        $("#reading_frequencies >li[data-reading-frequency='" + reading_frequency + "']").addClass("active")
+
+        $("#reading_frequency").val(reading_frequency)
+      }
+
+      $("#reading_frequencies >li").on("click",
+        function(e) {
+          selectReadingFrequency($(this).data("reading-frequency"))
+        }
+      )
+
+      $(function() {
+        selectReadingFrequency("{{reading_frequency}}")
+      })
+    </script>
+
+    <aside class="note">
+      We'd recommend taking new readings every fifteen minutes which will allow two alkaline AA batteries 
+      to power your board for around six months.
+    </aside>    
+
+    <br>
+
+    <div id="upload_settings">
+      <h2>How often do you want to upload readings?</h2>
+      <p>
+        The battery life of your board is affected by how often it has to connect to the internet and upload data.
+      </p>
+      <p>
+        When Enviro wakes up to take a reading it caches a copy of it locally. Once that cache contains enough
+        readings we connect to our data logging service and upload the data.
+      </p>
+
+      <ul id="upload_frequencies" class="picker">
+        <li data-upload-frequency=""> 
+          Never
+          <span class="note">(just log the data locally)</span>
+        </li>
+        <li data-upload-frequency="1" > 
+          Every reading
+          <span class="note">(shortest battery life)</span>
+        </li>
+        <li data-upload-frequency="5">
+          Every five readings
+        </li>
+        <li data-upload-frequency="10">
+          Every ten readings <span class="note">(recommended)</span>
+        </li>
+        <li data-upload-frequency="25">
+          Every twenty-five readings
+        </li>
+        <li data-upload-frequency="50">
+          Every fifty readings
+          <span class="note">(best for long battery life)</span>
+        </li>
+      </ul>        
+      <input type="hidden" id="upload_frequency" name="upload_frequency" value="{{upload_frequency}}" />
+
+      <script>
+        function selectUploadFrequency(upload_frequency) {
+          $("#upload_frequencies >li").removeClass("active")
+          $("#upload_frequencies >li[data-upload-frequency='" + upload_frequency + "']").addClass("active")
+  
+          $("#upload_frequency").val(upload_frequency)
+        }
+  
+        $("#upload_frequencies >li").on("click",
+          function(e) {
+            selectUploadFrequency($(this).data("upload-frequency"))
+          }
+        )
+  
+        $(function() {
+          selectUploadFrequency("{{upload_frequency}}")
+        })
+      </script>
+
+      <aside class="note">
+        We'd recommend not uploading readings more often than once an hour. WiFi communication is a battery hungry process and should be done as little as possible to ensure long run times.
+      </aside>
+    </div>
+  </form>
+
+  <nav>
+    <button class="back" onclick="document.location = '/provision-step-2-wifi'"><span>➔</span></button>
+    <button type="submit" form="main">Uploads ➔</button>
+  </nav>
+
+</section>
+
+{{render_template("enviro/html/footer.html")}}

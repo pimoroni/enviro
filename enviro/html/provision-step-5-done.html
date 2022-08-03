@@ -1,0 +1,47 @@
+{{render_template("enviro/html/header.html")}}
+
+{{render_template("enviro/html/header-mini.html", board=board)}}
+
+<section class="slide">
+  <div id="done">
+    <div>
+      <h2>Awesome &ndash; we're done here!</h2>
+      <p>
+        Your board is configured and ready to rock. All that's left to do is reset your board so that it can start gathering data.
+      </p>
+      <p>
+        Once reset your board will enter data gathering mode.
+      </p>
+      <form action="/provision-step-5-done" method="post">
+        <button type="submit">Reset the board</button>
+      </form>
+      <br>
+      <h2>If you need to setup your board again.</h2>
+      <p>
+        If you want to use this setup tool again then you can get back into it
+        by following these steps:        
+        <ul>
+          <li>Hold down the <code>POKE</code> button &ndash; the one on the front with the <span style="font-size: 2.4rem; position: relative; top: 0.4rem;">&#x261E;</span> icon.</li>
+          <li>Press and release the <code>RESET</code> button (on the back).</li>
+          <li>Keep <code>POKE</code> held down for three more seconds.</li>
+          <li>The activity <span style="font-size: 2.0rem; position: relative; top: 0.2rem;">&#9872;</span>  LED will start to flash.</li>
+          <li>The board will go into access point mode and appear as a WiFi network to connect to.</li>
+          <li>Connect to the board using your phone, laptop, stone circle, or tablet.</li>
+        </ul>
+      </p>
+      <br>
+      <h2>Advanced mode: manually editing your configuration.</h2>
+      <p>
+        All the questions we asked during setup were a convenient way to generate your boards' 
+        configuration file.
+      </p>
+      <p>
+        In future if you want to quickly tweak a setting without going through process again 
+        you can simply edit <code>config.py</code> using a tool like <strong>Thonny</strong> 
+        and then reset your board to apply the change.
+      </p>
+    </div>
+  </div>
+</section>
+
+{{render_template("enviro/html/footer.html")}}

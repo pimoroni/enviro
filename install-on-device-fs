@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+pattern="/dev/tty.usbmodem1*"
+files=($pattern)
+
+echo "Copying to ${files[0]}"
+
+mpremote connect ${files[0]} mkdir enviro
+mpremote connect ${files[0]} mkdir lib
+mpremote connect ${files[0]} mkdir lib/umqtt
+mpremote connect ${files[0]} mkdir enviro/boards
+mpremote connect ${files[0]} mkdir enviro/destinations
+mpremote connect ${files[0]} mkdir enviro/html
+mpremote connect ${files[0]} mkdir enviro/html/images
+mpremote connect ${files[0]} mkdir phew
+mpremote connect ${files[0]} mkdir phew/phew
+
+mpremote connect ${files[0]} cp main.py :
+
+mpremote connect ${files[0]} cp enviro/*.py :enviro/
+
+mpremote connect ${files[0]} cp lib/umqtt/*.py :lib/umqtt/
+mpremote connect ${files[0]} cp enviro/boards/*.py :enviro/boards/
+mpremote connect ${files[0]} cp enviro/destinations/*.py :enviro/destinations/
+
+mpremote connect ${files[0]} cp enviro/html/*.html :enviro/html/
+mpremote connect ${files[0]} cp enviro/html/*.js :enviro/html/
+mpremote connect ${files[0]} cp enviro/html/*.css :enviro/html/
+
+mpremote connect ${files[0]} cp enviro/html/images/* :enviro/html/images/
+
+mpremote connect ${files[0]} cp phew/__init__.py :phew/
+mpremote connect ${files[0]} cp phew/phew/*.py :phew/phew/

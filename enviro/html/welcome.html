@@ -1,0 +1,41 @@
+{{render_template("enviro/html/header.html")}}
+
+<section class="slide">
+  <div id="intro">
+    <div>
+      <img class="logo" src="images/logo-{{board}}.svg" onclick="location.reload()" />
+
+      <h1>
+        {{"Get cosy with<br>Enviro Indoor. &#127969;" if board == "indoor" else ""}}
+        {{"Cool beans, it's<br>Enviro Grow. &#129716;" if board == "grow" else ""}}
+        {{"Feeling fresh with<br>Enviro Weather. &#127782;" if board == "weather" else ""}}
+        {{"Honk honk! Here comes<br>Enviro Urban. &#128664;" if board == "urban" else ""}}
+        {{"Oh snap! Pose for<br>Enviro Camera. &#128247;" if board == "camera" else ""}}
+      </h1>
+    </div>
+
+    <div class="photo">
+      <img src="images/photo-{{board}}.jpg" />  
+    </div>
+
+    <div>
+      <p>
+        {{"A wireless environmental monitoring board to keep track of conditions in your home, office or other habitat." if board == "indoor" else ""}}
+        {{"A wireless monitoring system to help take good care of your plants. Monitor moisture levels and make an auto-watering system!" if board == "grow" else ""}}
+        {{"A wireless climate monitoring system designed to make hooking up weather sensors a breeze (or a squall, or a gale)." if board == "weather" else ""}}
+        {{"A wireless outdoor air quality monitoring board with environmental and particulate sensors and a microphone." if board == "urban" else ""}}
+        {{"An all-in-one programmable 2 megapixel camera board, great for wirelessly monitoring wildlife." if board == "camera" else ""}}
+      </p>
+
+      <p>
+        We need to take some details from you to configure the board and get it ready to rock.
+      </p>
+    </div>
+  </div>
+  
+  <form action="/provision-step-1-nickname" method="get">
+    <button type="submit">Ready? Let's go! &#10132;</button>
+  </form>
+</section>
+
+{{render_template("enviro/html/footer.html")}}

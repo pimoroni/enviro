@@ -1,0 +1,41 @@
+{{render_template("enviro/html/header.html")}}
+
+{{render_template("enviro/html/header-mini.html", board=board)}}
+
+<section id="set_name" class="slide">
+  <form id="main" action="/provision-step-1-nickname" method="post">
+    <h2>First things first. Let's give your device a name.</h2>
+    <aside>
+      If you have many Enviro devices then it will be a lot easier to manage 
+      them if they have sensible names. Perhaps name this device <code>kitchen_air_quality</code>, 
+      <code>windowsill-herbs</code>, or <code>geoff</code> to make it easier to identify in future.
+    </aside>
+
+    <fieldset>
+      <input id="nickname" name="nickname" type="text" placeholder="e.g. gecko-tank-7" value="{{nickname}}" autocapitalize="off" autocomplete="off" />
+    </fieldset>
+
+    <aside class="note">
+      Your device nickname can only contain lowercase letters (a-z), numbers (0-9), and hyphen (-).
+    </aside>    
+  </form>
+
+  <nav>
+    <button class="back" onclick="document.location = '/provision-welcome'"><span>➔</span></button>
+    <button type="submit" form="main">WiFi setup ➔</button>
+  </nav>
+</section>
+
+<script>
+  $("#nickname").on("input", function(e) {
+    let caretPos = this.selectionStart
+    let nickname = $(this).val().toLowerCase()
+    let filtered = nickname.replace(/[^a-z0-9-]/, "")
+    if(filtered != nickname) {
+      caretPos -= 1
+    }
+    $(this).val(filtered)
+    this.selectionStart = this.selectionEnd = caretPos 
+  })
+</script>
+{{render_template("enviro/html/footer.html")}}
