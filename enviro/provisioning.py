@@ -2,6 +2,7 @@ import network, os, json, time, machine
 
 import enviro.helpers as helpers
 import enviro.board as board
+import enviro
 from phew import logging, server, redirect, serve_file, render_template
 
 DOMAIN = "pico.wireless"
@@ -37,7 +38,7 @@ def wrong_host_redirect(request):
 @server.route("/provision-welcome", methods=["GET"])
 def provision_welcome(request):
   config = helpers.get_config()
-  response = render_template("enviro/html/welcome.html", **config)
+  response = render_template("enviro/html/welcome.html", **config, board=board.model())
   return response
 
 
@@ -48,7 +49,7 @@ def provision_step_1_nickname(request):
     return redirect("http://" + DOMAIN + "/provision-step-2-wifi")
   else:
     config = helpers.get_config()
-    return render_template("enviro/html/provision-step-1-nickname.html", **config)
+    return render_template("enviro/html/provision-step-1-nickname.html", **config, board=board.model())
 
 
 @server.route("/provision-step-2-wifi", methods=["GET", "POST"])
@@ -58,7 +59,7 @@ def provision_step_2_wifi(request):
     return redirect("http://" + DOMAIN + "/provision-step-3-logging")
   else:
     config = helpers.get_config()
-    return render_template("enviro/html/provision-step-2-wifi.html", **config)
+    return render_template("enviro/html/provision-step-2-wifi.html", **config, board=board.model())
   
 
 @server.route("/provision-step-3-logging", methods=["GET", "POST"])
@@ -68,7 +69,7 @@ def provision_step_3_logging(request):
     return redirect("http://" + DOMAIN + "/provision-step-4-destination")
   else:
     config = helpers.get_config()
-    return render_template("enviro/html/provision-step-3-logging.html", **config)
+    return render_template("enviro/html/provision-step-3-logging.html", **config, board=board.model())
     
 
 @server.route("/provision-step-4-destination", methods=["GET", "POST"])
@@ -91,7 +92,7 @@ def provision_step_4_destination(request):
     return redirect("http://" + DOMAIN + "/provision-step-5-done")
   else:
     config = helpers.get_config()
-    return render_template("enviro/html/provision-step-4-destination.html", **config)
+    return render_template("enviro/html/provision-step-4-destination.html", **config, board=board.model())
     
 
 @server.route("/provision-step-5-done", methods=["GET", "POST"])
@@ -100,11 +101,11 @@ def provision_step_5_done(request):
   # should reset the board
   if request.method == "POST":
     helpers.set_config("provisioned", True)
-    board.reset()
+    enviro.sleep(helpers.get_config("reading_frequency"))
     return
 
   config = helpers.get_config()
-  return render_template("enviro/html/provision-step-5-done.html", **config)
+  return render_template("enviro/html/provision-step-5-done.html", **config, board=board.model())
     
 
 @server.route("/networks.json")
@@ -134,7 +135,6 @@ logging.info("> waiting for a client to connect")
 board.pulse_activity_led(5)
 while len(ap.status("stations")) == 0:
   time.sleep(0.01)
-board.stop_activity_led()
 logging.info("  - client connected!", ap.status("stations")[0])
 
 logging.info("> running provisioning application...")

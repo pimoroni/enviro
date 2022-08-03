@@ -171,6 +171,8 @@ def get_values_from_file(filename, key = None, default = None):
 
 # config getter and setter
 def get_config(key = None, default = None):
+  if not file_exists("config.py"): # doesn't exist? copy from the template
+    copy_file("enviro/config_template.py", "config.py")
   return get_values_from_file("config.py", key, default)
 
 def set_config(key, value):  

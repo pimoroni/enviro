@@ -41,7 +41,7 @@ input[type="checkbox"] {cursor: pointer; appearance: none;}
 input[type="checkbox"]::before {content: ""; color: var(--white); line-height: 0.9rem; font-size: 1.6rem; border: solid 1px var(--grey); width: 1rem; height: 1rem; margin: 0rem 0.1rem 0rem 0rem; vertical-align: middle; display: inline-block; position: relative; top: -0.1rem;}
 input[type="checkbox"]:checked::before {content: "×"; background-color: var(--black); border: solid 1px var(--black);}
 ul {margin: 1rem 0;}
-button {border: 0; display: block; background-color: var(--blue); color: white; font-weight: bold; font-size: 1.6rem; padding: 1rem 2rem; border-radius: var(--input-radius); border-bottom: solid 4px rgba(0, 0, 0, .2);}
+button {border: 0; display: block; background-color: var(--blue); color: white; font-weight: bold; font-size: 1.6rem; padding: 1rem 2rem; border-radius: var(--input-radius); border-bottom: solid 4px rgba(0, 0, 0, .2); cursor: pointer;}
 form >button[type=submit] {margin: 2rem 0 1rem auto;}
 
 body {font-family: var(--theme-font); color: var(--black); font-size: 1.4rem;}

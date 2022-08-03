@@ -113,8 +113,10 @@ def model():
   elif 35 in i2c_devices: # 35 = ltr-599 on grow & weather
     # the wind vane pin is pulled high with a 10k resistor on the weather
     # board - we can detect this and disambiguate using it
-    wind_vane_pin = Pin(26, Pin.IN, Pin.PULL_DOWN)
-    result = "weather" if wind_vane_pin.value() == True else "grow"
+    pump1_pin = Pin(10, Pin.IN, Pin.PULL_UP)
+    result = "grow" if pump1_pin.value() == False else "weather"
+    # disable the pull up (otherwise this keeps the weather board awake)
+    pump1_pin.init(pull=None)
   else:
     # otherwise it's urban, we'll need to add camera in the future too...
     result = "urban"

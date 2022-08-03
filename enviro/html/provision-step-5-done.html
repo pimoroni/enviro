@@ -12,9 +12,10 @@
       <p>
         Once reset your board will enter data gathering mode.
       </p>
-      <form action="/provision-step-5-done" method="post">
-        <button type="submit">Reset the board</button>
+      <form id="main" action="/provision-step-5-done" method="post">
+        <input type="hidden" name="provisioned" value="True" />
       </form>
+      <button type="submit" form="main">Reset the board</button>
       <br>
       <h2>If you need to setup your board again.</h2>
       <p>
