@@ -37,10 +37,9 @@ If you haven't previously configured this board then it will detect that it has 
 
 Once in provisioning mode your Enviro will appear as a new wireless network that you can connect to.
 
-<figure style="max-width: 20rem;">
-  <img src="images/access-point-network.png">
-  <figcaption>Enviro showing up as an access point during provisioning mode</figcaption>
-</figure>
+<img src="images/access-point-network.png">
+
+*Enviro showing up as an access point during provisioning mode*
 
 Use your phone, tablet, or computer to connect to this network and after a few seconds the setup process will start.
 

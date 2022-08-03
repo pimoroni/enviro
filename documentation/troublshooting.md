@@ -12,3 +12,12 @@ It's possible we just made an error entering our details, if you put the Enviro 
 ## Step 3. Inspect the logs
 
 ## Step 4. Upgrade your firmware
+
+
+
+
+## Adafruit IO
+
+### Free account limits
+
+If you are seeing messages about an 'Unprocessable Entity' in your log files this means you have hit the limit of feeds allowed (currently 10) for a free account. 
