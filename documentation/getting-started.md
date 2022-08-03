@@ -48,6 +48,6 @@ Once in provisioning mode your Enviro will appear as a new wireless network that
 
 Use your phone, tablet, or computer to connect to this network and after a few seconds the setup process will pop up ready for you to start.
 
-<img width="250" alt="Provisioning step 1" src="https://user-images.githubusercontent.com/297930/182667472-e999d1e4-9ea0-4238-ac22-54c46e598f65.png">
+<img width="500" alt="Provisioning step 1" src="https://user-images.githubusercontent.com/297930/182667472-e999d1e4-9ea0-4238-ac22-54c46e598f65.png">
 
 
