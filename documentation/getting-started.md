@@ -32,9 +32,7 @@ Follow these instructions to get your Enviro board configured and running:
 
 Plug in your battery or USB cable and press the **POKE** button on the front of the board to wake it up - after a second or so the **ACTIVITY** LED will start to pulse slowly.
 
-<video autoplay loop muted>
-    <source src="images/provisioning-blink.mp4" type="video/mp4">
-</video>
+https://github.com/pimoroni/enviro/blob/main/documentation/images/provisioning-blink.mp4
 
 If you haven't previously configured this board then it will automatically go into provisioning (setup) mode. The **ACTIVITY** LED will pulse rapidly.
 
