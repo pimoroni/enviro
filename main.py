@@ -24,7 +24,6 @@ from enviro import logging
 import time, os, urequests
 
 
-
 # initialise 
 enviro.startup()
 

@@ -9,7 +9,6 @@ DOMAIN = "pico.wireless"
 
 # detect which board type we are provisioning
 logging.info("> auto detecting board type")
-helpers.set_config("board", board.model())
 logging.info("  -", board.model())
 
 
@@ -100,6 +99,7 @@ def provision_step_5_done(request):
   # a post request to the done handler means we're finished and
   # should reset the board
   if request.method == "POST":
+    helpers.set_config("provisioned", True)
     board.reset()
     return
 

@@ -48,6 +48,8 @@ def needs_provisioning():
   # if config fails to import (missing or corrupt) then we need to provision
   try:
     import config
+    if not config.provisioned:
+      return True
     return False
   except ImportError as e:
     logging.error("> error in config.py", e)

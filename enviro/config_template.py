@@ -3,8 +3,7 @@
 # you may edit this file by hand but if you enter provisioning mode
 # then the file will be automatically overwritten with new details
 
-# enter the board type "indoor", "grow", "urban", "camera", or "weather"
-board = None
+provisioned = False
 
 # enter a nickname for this board
 nickname = None
