@@ -1,45 +1,54 @@
 # Getting started with Enviro
 
+- [Getting started with Enviro](#getting-started-with-enviro)
+  - [An overview of what's on the board](#an-overview-of-whats-on-the-board)
+  - [Step 1: Power up](#step-1-power-up)
+  - [Step 1: Connect to your Enviro](#step-1-connect-to-your-enviro)
 
 ## An overview of what's on the board
 
-TODO: diagram of board features
+Many features can be found on all versions of Enviro - these provide the base functionality of deep sleep, user interaction, powering the board, and attaching accessories.
 
-On the front:
+![Features on the Enviro boards](images/board-features.png)
 
-- ① **POKE** button: wakes the board from sleep to take an ad hoc reading
-- ② **ACTIVITY** white LED: pulses gently when the board is awake (quickly when in provisioning mode)
-- ③ **WARNING** red LED: blinks if an error occurs (e.g. the wireless connection is down)
-- ④ Qw/ST connector: a convenient way to add extra sensors
-- ⑤ Sensors: the collection of sensors that the board gathers data from (vary depending on board type)
+It's a good idea to familiarise yourself with where the buttons and indicators are before you start setting up your board.
 
-On the rear:
+- <big>①</big> **POKE** button: wakes the board from sleep to take an ad hoc reading
+- <big>②</big> **ACTIVITY** LED (white): pulses gently when the board is awake (quickly when in provisioning mode)
+- <big>③</big> **WARNING** LED (red): blinks if an error occurs (e.g. the wireless connection is down)
+- <big>④</big> Qw/ST connector: a convenient way to add extra sensors
+- <big>⑤</big> Sensors: the collection of sensors that the board gathers data from (vary depending on board type)
+- <big>⑥</big> **RESET** button (rea): resets the board (hold **POKE** while resetting to force back into provisioning mode)
+- <big>⑦</big> Battery connector: JST type connector compatible with many battery holders and cells
+- <big>⑧</big> USB connector: microB USB connector for accessing logs and reading files
 
-- ⑥ **RESET** button (rea): resets the board (hold **POKE** while resetting to force back into provisioning mode)
-- ⑦ Battery connector: JST type connector compatible with many battery holders and cells
-- ⑧ USB connector: microB USB connector for accessing logs and reading files
-
-## Setting up
+*Note: The sensors (item 5 in the list above) are different for each type of board - sometimes wildly so!*
 
 When you recieve your Enviro board it will come preloaded with our software but will not be configured yet. You need to go through the provisioning process to tell it how to connect to your wireless network, when to take readings, and optionally where to upload them.
 
 Follow these instructions to get your Enviro board configured and running:
 
-### Step 1: Power up
+## Step 1: Power up
 
-Plug in your battery or USB cable and press the **POKE** button on the front of the board. The **ACTIVITY** LED will pulse slowly.
+Plug in your battery or USB cable and press the **POKE** button on the front of the board to wake it up - after a second or so the **ACTIVITY** LED will start to pulse slowly.
 
-If you haven't previously configured this board then it will detect that it has not yet been configured and automatically go into provisioning (setup) mode. The **ACTIVITY** LED will  pulse rapidly.
+<video autoplay loop muted>
+    <source src="images/provisioning-blink.mp4" type="video/mp4">
+</video>
 
-*Note: You can use 3xAA or 3xAAA (either alkaline or HiMH) or a single cell LiPo battery to power Enviro.*
+If you haven't previously configured this board then it will automatically go into provisioning (setup) mode. The **ACTIVITY** LED will pulse rapidly.
 
-### Step 1: Connect to your Enviro
+*Note: You can use 3xAA or 3xAAA (either alkaline or NiMH), a single cell LiPo battery, or a USB cable to power Enviro boards.*
+
+## Step 1: Connect to your Enviro
 
 Once in provisioning mode your Enviro will appear as a new wireless network that you can connect to.
 
-<img src="images/access-point-network.png">
+![The enviro provisioning network](images/access-point-network.png)
 
 *Enviro showing up as an access point during provisioning mode*
 
-Use your phone, tablet, or computer to connect to this network and after a few seconds the setup process will start.
+Use your phone, tablet, or computer to connect to this network and after a few seconds the setup process will pop up ready for you to start.
+
+
 
