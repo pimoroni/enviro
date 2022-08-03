@@ -32,11 +32,11 @@ Follow these instructions to get your Enviro board configured and running:
 
 Plug in your battery or USB cable and press the **POKE** button on the front of the board to wake it up - after a second or so the **ACTIVITY** LED will start to pulse slowly.
 
+You can use 3xAA or 3xAAA (either alkaline or NiMH), a single cell LiPo battery, or a USB cable to power Enviro boards.
+
+If you haven't previously configured this board then it will automatically go into provisioning (setup) mode. The **ACTIVITY** LED will pulse rapidly:
+
 https://user-images.githubusercontent.com/297930/182666569-947d6b1e-1fe6-4cff-a3aa-eb71b397e5ed.mp4
-
-If you haven't previously configured this board then it will automatically go into provisioning (setup) mode. The **ACTIVITY** LED will pulse rapidly.
-
-*Note: You can use 3xAA or 3xAAA (either alkaline or NiMH), a single cell LiPo battery, or a USB cable to power Enviro boards.*
 
 ## Step 1: Connect to your Enviro
 
@@ -48,5 +48,6 @@ Once in provisioning mode your Enviro will appear as a new wireless network that
 
 Use your phone, tablet, or computer to connect to this network and after a few seconds the setup process will pop up ready for you to start.
 
+<img width="250" alt="Provisioning step 1" src="https://user-images.githubusercontent.com/297930/182667472-e999d1e4-9ea0-4238-ac22-54c46e598f65.png">
 
 
