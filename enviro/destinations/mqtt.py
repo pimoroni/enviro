@@ -1,7 +1,7 @@
 from enviro.helpers import get_config, connect_to_wifi
 from enviro import logging
 import ujson, os
-from lib.umqtt.simple import MQTTClient
+from enviro.mqttsimple import MQTTClient
 
 def upload_readings():
   if not connect_to_wifi():

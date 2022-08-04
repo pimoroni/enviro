@@ -6,8 +6,6 @@ files=($pattern)
 echo "Copying to ${files[0]}"
 
 mpremote connect ${files[0]} mkdir enviro
-mpremote connect ${files[0]} mkdir lib
-mpremote connect ${files[0]} mkdir lib/umqtt
 mpremote connect ${files[0]} mkdir enviro/boards
 mpremote connect ${files[0]} mkdir enviro/destinations
 mpremote connect ${files[0]} mkdir enviro/html
@@ -19,7 +17,6 @@ mpremote connect ${files[0]} cp main.py :
 
 mpremote connect ${files[0]} cp enviro/*.py :enviro/
 
-mpremote connect ${files[0]} cp lib/umqtt/*.py :lib/umqtt/
 mpremote connect ${files[0]} cp enviro/boards/*.py :enviro/boards/
 mpremote connect ${files[0]} cp enviro/destinations/*.py :enviro/destinations/
 

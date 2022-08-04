@@ -1,5 +1,5 @@
 # set up and enable vsys hold as soon as possible so we don't go to sleep
-import time, machine, sys, os, ujson
+import time, machine, sys, os, ujson#, btree
 
 from machine import Pin
 from enviro.constants import *
@@ -12,6 +12,10 @@ from phew import logging as logging
 # and time methods return the correct value
 t = board.rtc.datetime()
 machine.RTC().datetime((t[0], t[1], t[2], t[6], t[3], t[4], t[5], 0))
+
+
+# will become our btree once the file is opened
+_upload_cache = None
 
 
 # jazz up that console! toot toot!
@@ -92,6 +96,9 @@ def sync_clock_from_ntp():
 
 # save the provided readings into a cache file for future uploading
 def cache_upload(readings):
+  # _upload_cache[helpers.datetime_string().encode("utf-8")] = json.dumps(readings).encode("utf-8")
+  # _upload_cache.flush()
+  # print(len(_upload_cache))
   uploads_filename = f"uploads/{helpers.datetime_string()}.json"
   with open(uploads_filename, "w") as f:
     f.write(ujson.dumps(readings))
@@ -148,13 +155,14 @@ if destination == "adafruit_io":
   from enviro.destinations.adafruit_io import upload_readings
 
 def startup():
-  # ensure we have a directory to store log files
-  helpers.mkdir_safe("logs")
-  logging.log_file(f"logs/{helpers.datetime_string()}.txt")
+  # truncate log to keep it to at most three blocks on disk)
+  logging.truncate(8192)
 
   # write startup banner into log file
+  logging.info("")
   logging.info("hey enviro, let's go!")
   logging.info(" - --=-=-===-=-=-- - ")
+  logging.info("")
   logging.debug("> performing startup")
 
   # keep the power rail alive by holding VSYS_EN high
@@ -168,14 +176,23 @@ def startup():
   logging.debug("  - turn on activity led")
   board.pulse_activity_led(0.5)
 
+  # initialise the upload cache database
+  #try:  
+    # this is a bit clunky but we want to open the file in read/write mode
+    # however that won't create the file if it doesn't exist, so we first
+    # attempt to open it for read/write
+  #  f = open("upload-cache.db", "r+b")
+  #except OSError:
+    # and if that fails we open it write (which would truncate an existing
+    # file if it was there)
+  #  f = open("upload-cache.db", "w+b")
+  #_upload_cache = btree.open(f)
+
   # ensure we have a directory to store reading files
   helpers.mkdir_safe("readings")
 
   # ensure we have a directory to store reading files
   helpers.mkdir_safe("uploads")
-
-  # limit log file count
-  helpers.purge_logs()
 
 
 def sleep(minutes = -1):
