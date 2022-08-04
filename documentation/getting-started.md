@@ -7,11 +7,11 @@
     - [Provisioning](#provisioning)
     - [Choosing a nickname](#choosing-a-nickname)
     - [Wireless network details](#wireless-network-details)
-      - [Reading frequency](#reading-frequency)
-      - [Upload frequency](#upload-frequency)
-      - [Adafruit IO](#adafruit-io)
-      - [MQTT](#mqtt)
-      - [Custom HTTP endpoint](#custom-http-endpoint)
+    - [Reading frequency](#reading-frequency)
+    - [Upload frequency](#upload-frequency)
+    - [Adafruit IO](#adafruit-io)
+    - [MQTT](#mqtt)
+    - [Custom HTTP endpoint](#custom-http-endpoint)
 
 ## An overview of what's on the board
 
@@ -74,7 +74,7 @@ If, in the future, your board cannot see the wireless network when it needs to s
 
 Click **Logging ➔** to continue.
 
-#### Reading frequency
+### Reading frequency
 
 When it comes to choosing how often to take readings it can be tempting to think "more data is better!" but that will, of course, impact on the length of time your batteries last.
 
@@ -86,7 +86,7 @@ For most Enviro boards we recommend taking readings every fifteen minutes. This 
 
 > The exception to the rule is Enviro Urban. Because it has to run a small fan to draw air across the particulate sensor it is a lot more power hungry than the other modules. We'd recommend only taking readings every hour or every three hours.
 
-#### Upload frequency
+### Upload frequency
 
 Your Enviro board will store the readings it takes locally and then upload a bunch of them all at once - this is much more power efficient than uploading every reading when it is taken.
 
@@ -104,7 +104,7 @@ Once Enviro is taking readings you'll want it to upload them to somewhere that y
 - [**MQTT**](#mqtt): The most commonly used messaging protocol for the Internet of Things (IoT).
 - [**Custom HTTP endpoint**](#custom-http-endpoint): We'll make a request to your supplied URL with all of the data included.
 
-#### Adafruit IO
+### Adafruit IO
 
 Provides a simple dashboard for viewing your sensor data. Adafruit offer a completely free tier which allows up to 10 feeds (for unlimited feeds it is $10/month or $99/year).
 
@@ -114,11 +114,11 @@ Create and Adafruit IO account and take a copy of your user and access key.
 
 In your account create a new group called "enviro". Each sensor reading on your Enviro will automatically appear as a different feed named "[nickname]-[reading name]" (e.g. "weather-station-temperature", or "kitchen-humidity").
 
-#### MQTT
+### MQTT
 
 TODO: Do we reccommend setting up your own MQTT broker here or some third party?
 
-#### Custom HTTP endpoint
+### Custom HTTP endpoint
 
 If you're super tech-savvy then you can use this option to process the data from Enviro yourself.
 
