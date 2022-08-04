@@ -24,7 +24,7 @@ def upload_readings():
         payload = {
           "nickname": nickname,
           "timestamp": timestamp,
-          "data": ujson.load(f)
+          "readings": ujson.load(f)
         }
         result = urequests.post(url, auth=auth, json=payload)
         if result.status_code != 200:
