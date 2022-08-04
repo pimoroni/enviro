@@ -51,7 +51,7 @@ if not enviro.clock_set():
   if not enviro.sync_clock_from_ntp():    
     # if we failed to synchronise the clock then turn on the warning
     # led and go back to sleep for another cycle
-    logging.warn(">  failed to sync clock")
+    logging.error("! failed to synchronise clock")
     warn_led(WARN_LED_BLINK)
     enviro.sleep(config.reading_frequency)
 
@@ -60,7 +60,7 @@ if enviro.low_disk_space():
   # there is less than 10% of the filesystem available, this probably
   # means that cached results are not getting uploaded and cleared so
   # warn the user and go back to sleep
-  logging.warn(">  low disk space")
+  logging.error("! low disk space")
   warn_led(WARN_LED_BLINK)
   enviro.sleep(config.reading_frequency)
 
