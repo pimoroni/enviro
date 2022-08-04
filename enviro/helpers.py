@@ -42,6 +42,12 @@ def enter_access_point_mode(ssid, password = None):
 
   return ap
 
+def file_size(filename):
+  try:
+    return os.stat(filename)[6]
+  except OSError:
+    return None
+
 def file_exists(filename):
   try:
     return (os.stat(filename)[0] & 0x4000) == 0
@@ -52,7 +58,7 @@ def connect_to_wifi():
   wifi_ssid = get_config("wifi_ssid")
   wifi_password = get_config("wifi_password")
 
-  logging.info("> connecting to wifi network:", wifi_ssid)
+  logging.info(f"> connecting to wifi network '{wifi_ssid}'")
 
   wlan = network.WLAN(network.STA_IF)
   wlan.active(True)
@@ -67,7 +73,7 @@ def connect_to_wifi():
   seconds_to_connect = int((time.ticks_ms() - start) / 1000)
   
   if wlan.status() != 3:
-    logging.error("  - failed to connect")
+    logging.error(f"! failed to connect to wireless network {wifi_ssid}")
     return False
 
   # a slow connection time will drain the battery faster and may
@@ -257,18 +263,3 @@ async def serve_template(response, template, **kwargs):
   for line in parse_template(response, template, **kwargs):
     await response.send(line)
 
-
-def purge_logs():
-  log_count = get_config("log_count", 10)
-  logging.debug(f"> purging log files (max {log_count})")
-  # get the creation time and filename of all log files
-  log_files = {}
-  for log in os.ilistdir("logs"):
-    created = os.stat(f"logs/{log[0]}")[9]
-    log_files[created] = log[0]
-  # sort the creation times in descending order
-  keys = sorted(log_files.keys(), reverse=True)
-  # delete all log files after the max log count
-  for key in keys[log_count:]:
-    logging.debug(f"  - logs/{log_files[key]}")
-    os.remove(f"logs/{log_files[key]}")
