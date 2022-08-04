@@ -9,9 +9,11 @@
     - [Wireless network details](#wireless-network-details)
     - [Reading frequency](#reading-frequency)
     - [Upload frequency](#upload-frequency)
-    - [Adafruit IO](#adafruit-io)
-    - [MQTT](#mqtt)
-    - [Custom HTTP endpoint](#custom-http-endpoint)
+    - [Upload destination](#upload-destination)
+      - [Adafruit IO](#adafruit-io)
+      - [MQTT](#mqtt)
+      - [Custom HTTP endpoint](#custom-http-endpoint)
+    - [That's all folks!](#thats-all-folks)
 
 ## An overview of what's on the board
 
@@ -98,13 +100,15 @@ We recommend only uploading every five readings.
 
 Click **Uploads ➔** to continue.
 
+### Upload destination
+
 Once Enviro is taking readings you'll want it to upload them to somewhere that you can view and analyse them. We support a number of destinations for your data:
 
 - [**Adafruit IO**](#adafruit-io): A platform designed by our friends at Adafruit to store and display your data.
 - [**MQTT**](#mqtt): The most commonly used messaging protocol for the Internet of Things (IoT).
 - [**Custom HTTP endpoint**](#custom-http-endpoint): We'll make a request to your supplied URL with all of the data included.
 
-### Adafruit IO
+#### Adafruit IO
 
 Provides a simple dashboard for viewing your sensor data. Adafruit offer a completely free tier which allows up to 10 feeds (for unlimited feeds it is $10/month or $99/year).
 
@@ -114,11 +118,11 @@ Create and Adafruit IO account and take a copy of your user and access key.
 
 In your account create a new group called "enviro". Each sensor reading on your Enviro will automatically appear as a different feed named "[nickname]-[reading name]" (e.g. "weather-station-temperature", or "kitchen-humidity").
 
-### MQTT
+#### MQTT
 
 TODO: Do we reccommend setting up your own MQTT broker here or some third party?
 
-### Custom HTTP endpoint
+#### Custom HTTP endpoint
 
 If you're super tech-savvy then you can use this option to process the data from Enviro yourself.
 
@@ -145,6 +149,8 @@ If your endpoint responds with a `200` status code then Enviro will delete it's 
 See the [Developer Guide](developer-guide.md) for more details.
 
 Click **We're done! ➔** to continue.
+
+### That's all folks!
 
 That's it, we're ready to gather some readings! Place your Enviro in the location where you want it to do its work, hook up power, and perhaps give **POKE** a quick poke so that it can take its first reading - you should see the **ACTIVITY** LED light up briefly while it works.
 
