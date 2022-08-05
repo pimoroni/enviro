@@ -1,23 +1,22 @@
-# Getting started with Enviro
+# Getting started with Enviro <!-- omit in toc -->
 
-- [Getting started with Enviro](#getting-started-with-enviro)
-  - [An overview of what's on the board](#an-overview-of-whats-on-the-board)
-  - [Provisioning your board](#provisioning-your-board)
-    - [Powering up for the first time](#powering-up-for-the-first-time)
-    - [Provisioning](#provisioning)
-    - [Choosing a nickname](#choosing-a-nickname)
-    - [Wireless network details](#wireless-network-details)
-    - [Reading frequency](#reading-frequency)
-    - [Upload frequency](#upload-frequency)
-    - [Upload destination](#upload-destination)
-      - [Adafruit IO](#adafruit-io)
-      - [MQTT](#mqtt)
-      - [Custom HTTP endpoint](#custom-http-endpoint)
-    - [That's all folks!](#thats-all-folks)
+- [Board Overview](#board-overview)
+- [Provisioning your board](#provisioning-your-board)
+  - [Powering up for the first time](#powering-up-for-the-first-time)
+  - [Provisioning](#provisioning)
+  - [Choosing a nickname](#choosing-a-nickname)
+  - [Wireless network details](#wireless-network-details)
+  - [Reading frequency](#reading-frequency)
+  - [Upload frequency](#upload-frequency)
+  - [Upload destination](#upload-destination)
+    - [Adafruit IO](#adafruit-io)
+    - [MQTT](#mqtt)
+    - [Custom HTTP endpoint](#custom-http-endpoint)
+  - [That's all folks!](#thats-all-folks)
 
-## An overview of what's on the board
+## Board Overview
 
-Many features can be found on all versions of Enviro - these provide the base functionality of deep sleep, user interaction, powering the board, and attaching accessories.
+Many features are common to all versions of Enviro - these provide the base functionality of deep sleep, user interaction, powering the board, and attaching accessories.
 
 It's a good idea to familiarise yourself with where the buttons and indicators are before you start setting up your board:
 
@@ -66,7 +65,7 @@ Click **Wireless setup ➔** to continue.
 
 Enviro needs a network connection to upload your readings and synchronise its onboard clock.
 
-A list of nearby wirless networks will be shown.
+A list of nearby wireless networks will be shown.
 
 > Your network not showing? Click **Try scanning again** to refresh the list or move closer to your network router.
 
@@ -80,7 +79,7 @@ Click **Logging ➔** to continue.
 
 When it comes to choosing how often to take readings it can be tempting to think "more data is better!" but that will, of course, impact on the length of time your batteries last.
 
-Inbetween taking and uploading readings Enviro spends most of its time in a deep sleep which consumes very little power - it can stay in this state for years on just a couple of AA batteries!
+In between taking and uploading readings Enviro spends most of its time in a deep sleep which consumes very little power - it can stay in this state for years on just a couple of AA batteries!
 
 Each time Enviro has to wake up to take a reading it will consume some of the available battery power. By selecting a longer time between readings you will substantially increase the length of time the batteries will last.
 
@@ -102,7 +101,7 @@ Click **Uploads ➔** to continue.
 
 ### Upload destination
 
-Once Enviro is taking readings you'll want it to upload them to somewhere that you can view and analyse them. We support a number of destinations for your data:
+Once Enviro is taking readings you'll probably want it to upload them to somewhere that you can view and analyse them. We support a number of destinations for your data:
 
 - [**Adafruit IO**](#adafruit-io): A platform designed by our friends at Adafruit to store and display your data.
 - [**MQTT**](#mqtt): The most commonly used messaging protocol for the Internet of Things (IoT).
@@ -110,21 +109,25 @@ Once Enviro is taking readings you'll want it to upload them to somewhere that y
 
 #### Adafruit IO
 
-Provides a simple dashboard for viewing your sensor data. Adafruit offer a completely free tier which allows up to 10 feeds (for unlimited feeds it is $10/month or $99/year).
+Adafruit IO is a super simple way of getting started storing your data in the cloud, which lets you get up and going in minutes. It's really easy to set up a simple dashboard for viewing your sensor data. Adafruit offer a completely free tier which allows up to 10 feeds (for unlimited feeds it is $10/month or $99/year).
 
-Create and Adafruit IO account and take a copy of your user and access key.
+- [Adafruit IO](https://io.adafruit.com/)
 
-> The access key is very long and you don't want to have to write it in by hand! We recommend you take a copy before you start the provisioning process so that you can cut and paste it into the field.
+Create an Adafruit IO account and take a copy of your user and access key (once logged in, you can find these by clicking on the key icon in the top menu bar).
+
+> The access key is very long and you don't want to have to write it in by hand! We recommend you take a copy before you start the provisioning process so that you can copy and paste it into the field.
 
 In your account create a new group called "enviro". Each sensor reading on your Enviro will automatically appear as a different feed named "[nickname]-[reading name]" (e.g. "weather-station-temperature", or "kitchen-humidity").
 
+To set up a dashboard, with lovely graphs on it click on 'Dashboards' in the top menu bar and select 'Create new dashboard'. You can then click on the cog icon in the top right to create new blocks - we like line charts, but there's other options to choose from too! There's also an option to make your dashboard public if you want to share it with others.
+
 #### MQTT
 
-TODO: Do we reccommend setting up your own MQTT broker here or some third party?
+Want to post your data into a database or home automation system? MQTT is a common way of doing that - to set it up you'll need an IP address or hostname for your MQTT broker, and a username and password.
 
 #### Custom HTTP endpoint
 
-If you're super tech-savvy then you can use this option to process the data from Enviro yourself.
+If you're tech-savvy then you can use this option to process the data from Enviro yourself.
 
 Simply provide a URL (with optional username and password) and your board will `POST` the readings to that endpoint.
 
