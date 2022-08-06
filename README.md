@@ -3,7 +3,7 @@
 Our Enviro range of boards offer a wide array of environmental sensing and data logging functionality. They are designed to be setup in location for months at a time and take regular measurements.
 
 - [Getting started guide](documentation/getting-started.md)
-- [Troubleshooting your Enviro board](documentation/troubleshooting.md)
+- [Troubleshooting your Enviro board](documentation/trouble-shooting.md)
 - [Upgrading firmware](documentation/upgrading-firmware.md)
 
 ## About Enviro
