@@ -31,11 +31,11 @@ It's a good idea to familiarise yourself with where the buttons and indicators a
 7. Battery connector: compatible with many battery holders and cells
 8. USB connector: for accessing readings files and logs from your computer
 
---- 
+---
 
 ## Provisioning your board
 
-When you recieve your Enviro board it will come preloaded with our software but will not be configured yet. You need to go through the provisioning process to tell it how to connect to your wireless network, when to take readings, and optionally where to upload them.
+When you receive your Enviro board it will come preloaded with our software but will not be configured yet. You need to go through the provisioning process to tell it how to connect to your wireless network, when to take readings, and optionally where to upload them.
 
 Follow these instructions to get your Enviro board configured and running:
 
@@ -69,7 +69,7 @@ A list of nearby wireless networks will be shown.
 
 > Your network not showing? Click **Try scanning again** to refresh the list or move closer to your network router.
 
-Select your network and enter your wireless password. 
+Select your network and enter your wireless password.
 
 If, in the future, your board cannot see the wireless network when it needs to set its clock or upload data then it will blink the **WARN** LED to indicate that there is a problem.
 
