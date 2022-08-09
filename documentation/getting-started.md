@@ -1,6 +1,6 @@
 # Getting started with Enviro <!-- omit in toc -->
 
-- [Board Overview](#board-overview)
+- [Board overview](#board-overview)
 - [Provisioning your board](#provisioning-your-board)
   - [Powering up for the first time](#powering-up-for-the-first-time)
   - [Provisioning](#provisioning)
@@ -14,7 +14,7 @@
     - [Custom HTTP endpoint](#custom-http-endpoint)
   - [That's all folks!](#thats-all-folks)
 
-## Board Overview
+## Board overview
 
 Many features are common to all versions of Enviro - these provide the base functionality of deep sleep, user interaction, powering the board, and attaching accessories.
 
@@ -127,11 +127,13 @@ Want to post your data into a database or home automation system? MQTT is a comm
 
 The default topic that your broker needs to listen to is `enviro/board-nickname`
 
-The default MQTT message will be a JSON dictionary that includes the timestamp of the reading, and the reading values.
+The default MQTT message will be a JSON dictionary that includes the timestamp of the reading, the device nickname and the reading values. Here's an example of what a received message looks like:
+
+![A received MQTT message](images/mqtt_message.png)
 
 #### Custom HTTP endpoint
 
-If you're tech-savvy then you can use this option to process the data from Enviro yourself.
+If you're tech-savvy then you can use this option to process the data from Enviro yourself (you can also use this functionality to integrate with [IFTTT](https://ifttt.com/) webhooks and similar). 
 
 Simply provide a URL (with optional username and password) and your board will `POST` the readings to that endpoint.
 
