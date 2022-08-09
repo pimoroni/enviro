@@ -123,7 +123,11 @@ To set up a dashboard, with lovely graphs on it click on 'Dashboards' in the top
 
 #### MQTT
 
-Want to post your data into a database or home automation system? MQTT is a common way of doing that - to set it up you'll need an IP address or hostname for your MQTT broker, and a username and password.
+Want to post your data into a database or home automation system? MQTT is a commonly used protocol for doing that - to set it up you'll need the IP address or hostname of your MQTT broker, and a username and password.
+
+The default topic that your broker needs to listen to is `enviro/board-nickname`
+
+The default MQTT message will be a JSON dictionary that includes the timestamp of the reading, and the reading values.
 
 #### Custom HTTP endpoint
 
@@ -139,8 +143,8 @@ The body of the `POST` will be a JSON dictionary that includes the timestamp of 
   "timestamp": "2022-08-02 15:32:10",
   "readings": {
     "temperature": 22.4,
-    "humidty": 48.9,
-    "pressue": 998.8,
+    "humidity": 48.9,
+    "pressure": 998.8,
     "lux": 87.3,
     "colour_temperature": 6840
   }
