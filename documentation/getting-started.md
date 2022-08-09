@@ -164,3 +164,5 @@ Click **We're done! ➔** to continue.
 That's it, we're ready to gather some readings! Place your Enviro in the location where you want it to do its work, hook up power, and perhaps give **POKE** a quick poke so that it can take its first reading - you should see the **ACTIVITY** LED light up briefly while it works.
 
 After Enviro has taken enough readings to trigger an upload you'll start to see data appear in the service you selected.
+
+Encountered a problem? Check out our [troubleshooting guide](troubleshooting.md)!
