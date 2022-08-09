@@ -17,7 +17,7 @@ def upload_readings():
 
   mqtt_client = MQTTClient(nickname, server, user=username, password=password, keepalive=60)
   mqtt_client.connect()
-  
+
   for cache_file in os.ilistdir("uploads"):
     cache_file = cache_file[0]
     try:
@@ -31,9 +31,13 @@ def upload_readings():
         }
         for key, value in data.items():
           payload[key] = value
-        
+
         topic = f"enviro/{nickname}"
-        mqtt_client.publish(topic, ujson.dumps(payload))
+        # by default the MQTT messages will be published with the retain flag
+        # set, so that if a consumer is not subscribed, the most recent set
+        # of readings can still be read by another subscriber later. Change
+        # retain to False (or drop from the method call) below to change this
+        mqtt_client.publish(topic, ujson.dumps(payload), retain=True)
 
         logging.info(f"  - uploaded {cache_file}")
         os.remove(f"uploads/{cache_file}")

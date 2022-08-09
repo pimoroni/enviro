@@ -3,7 +3,7 @@
 Our Enviro range of boards offer a wide array of environmental sensing and data logging functionality. They are designed to be setup in location for months at a time and take regular measurements.
 
 - [Getting started guide](documentation/getting-started.md)
-- [Troubleshooting your Enviro board](documentation/troubleshooting.md)
+- [Troubleshooting your Enviro board](documentation/trouble-shooting.md)
 - [Upgrading firmware](documentation/upgrading-firmware.md)
 
 ## About Enviro
@@ -19,7 +19,7 @@ On top of their individual features the boards all share a common set of functio
 - activity and warn LEDs to show current status
 - Qw/ST connector to allow you to customise your sensor suite
 
-These common features are mostly aimed at ensuring the modules can run off very little power for long periods of time. During sleep (when the RTC remains active) the boards only consume a few microamps of power meaning they can last for months on a small battery pack. The modules wake up at regular intervales (or on a fixed schedule) to take a reading, store it, and go back to sleep.
+These common features are mostly aimed at ensuring the modules can run off very little power for long periods of time. During sleep (when the RTC remains active) the boards only consume a few microamps of power meaning they can last for months on a small battery pack. The modules wake up at regular intervals (or on a fixed schedule) to take a reading, store it, and go back to sleep.
 
 As well as logging data locally the modules can also (if they have access to a wireless network) upload the data they capture to a service like Adafruit.io. Wireless communications takes a lot of power so this should be done as infrequently as possible.
 
