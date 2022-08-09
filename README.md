@@ -30,7 +30,7 @@ As well as logging data locally the modules can also (if they have access to a w
 - Enviro Grow ([store link](https://shop.pimoroni.com/products/enviro-grow))
 - Enviro Weather ([store link](https://shop.pimoroni.com/products/enviro-weather))
 - Enviro Urban ([store link](https://shop.pimoroni.com/products/enviro-urban))
-- Enviro Camera ([store link](https://shop.pimoroni.com/products/enviro-camera), coming soon!)
+- Enviro Camera ([store link](https://shop.pimoroni.com/products/enviro-camera)) - coming soon!
 
 ## Powering Enviro boards
 
