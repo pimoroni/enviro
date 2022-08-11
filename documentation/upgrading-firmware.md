@@ -6,7 +6,7 @@
   - [Transferring files using Thonny](#transferring-files-using-thonny)
 - [Starting from scratch](#starting-from-scratch)
 
-Here's how to install/update the firmware and software on your Enviro board for all the latest fixes and tweaks! These instructions should also work if you're setting up an Enviro board from scratch.
+Here's how to update the firmware and software on your Enviro board for all the latest fixes and tweaks! These instructions should also work if you're setting up an Enviro board from scratch.
 
 ## Downloading MicroPython
 
@@ -28,11 +28,13 @@ Copy the .uf2 file across to this drive. Your Pico W will then reboot running th
 
 ## Downloading the Enviro software
 
-Clone [this repo](https://github.com/pimoroni/enviro) to your computer (or download it as a zip) so you have a local copy:
+Clone this repo to your computer so you have a local copy:
 
 `git clone https://github.com/pimoroni/enviro --recursive`
 
-(we're using the `--recursive` flag so that it grabs the Phew submodule as well). 
+(we're using the `--recursive` flag so that it downloads the phew submodule as well - phew is a small web server library). 
+
+Alternatively, if you don't want to use Git, you could download the Enviro repo as a zip file using the green 'code' dropdown on the [front page](https://github.com/pimoroni/enviro). If you do it this way, it won't download phew, but you can install `micropython-phew` easily from within Thonny (Tools > Manage Packages).
 
 ### Transferring files using the Linux command line
 
