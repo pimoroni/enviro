@@ -10,7 +10,7 @@ Here's how to update the firmware and software on your Enviro board for all the 
 
 ## Downloading MicroPython
 
-You can download the most recent version of our custom MicroPython build from the link below. 
+You can download the most recent version of our custom MicroPython firmware from the link below. 
 
 - https://github.com/pimoroni/pimoroni-pico/releases
 
@@ -38,7 +38,7 @@ Alternatively, you could download the Enviro repo as a zip file using the green 
 
 ### Transferring files using the Linux command line
 
-If you're running Linux and are happy using command line tools you can use our`install-on-device-fs` script to copy the files across easily. You'll need to install `mpremote` if you don't have it installed already (`pip3 install mpremote`). You may need to edit the script to change `pattern="/dev/tty.usbmodem1*"` to match the location of your USB device (find it using `lsusb`).
+If you're running Linux and are happy using command line tools you can use our `install-on-device-fs` script to copy the files across easily. You'll need to install `mpremote` if you don't have it installed already (`pip3 install mpremote`). You may need to edit the script to change `pattern="/dev/tty.usbmodem1*"` to match the location of your USB device (find it using `lsusb`).
 
 You can also use this method on Windows using Windows Subsystem for Linux, though you will need to [set up USB passthrough](https://docs.microsoft.com/en-us/windows/wsl/connect-usb) to enable WSL to see the Pico W.
 
