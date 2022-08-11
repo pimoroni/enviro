@@ -34,23 +34,23 @@ Clone this repo to your computer so you have a local copy:
 
 (we're using the `--recursive` flag so that it downloads the phew submodule as well - phew is a small web server library). 
 
-Alternatively, if you don't want to use Git, you could download the Enviro repo as a zip file using the green 'code' dropdown on the [front page](https://github.com/pimoroni/enviro). If you do it this way, it won't download phew, but you can install `micropython-phew` easily from within Thonny (Tools > Manage Packages).
+Alternatively, you could download the Enviro repo as a zip file using the green 'code' dropdown on the [front page](https://github.com/pimoroni/enviro). If you do it this way, it won't download the phew files, but you can install `micropython-phew` easily from within Thonny (Tools > Manage Packages).
 
 ### Transferring files using the Linux command line
 
-If you're running Linux and are happy using the command line you can use our`install-on-device-fs` script to copy the files across easily. You'll need to install `mpremote` if you don't have it installed already (`pip3 install mpremote`). You may need to edit the script to change `pattern="/dev/tty.usbmodem1*"`to match the location of your USB device (find it using `lsusb`).
+If you're running Linux and are happy using command line tools you can use our`install-on-device-fs` script to copy the files across easily. You'll need to install `mpremote` if you don't have it installed already (`pip3 install mpremote`). You may need to edit the script to change `pattern="/dev/tty.usbmodem1*"` to match the location of your USB device (find it using `lsusb`).
 
-You can also use this method on Windows using Windows Subsystem for Linux), though you will need to [set up USB passthrough](https://docs.microsoft.com/en-us/windows/wsl/connect-usb) to enable WSL to see the Pico W.
+You can also use this method on Windows using Windows Subsystem for Linux, though you will need to [set up USB passthrough](https://docs.microsoft.com/en-us/windows/wsl/connect-usb) to enable WSL to see the Pico W.
 
 ### Transferring files using Thonny
 
-Alternatively, if you'd rather avoid the command line, you can also transfer the files using Thonny. Open up the Files window if you can't see it (View>Files).
+Alternatively, if you'd rather avoid the command line, you could copy the files to your Pico W using Thonny. Open up the Files window if you can't see it (View > Files).
 
 Navigate to the downloaded enviro files on your computer in the top box. You'll need to copy across the `enviro` and `phew` subdirectories and `main.py` to your Pico  - right click on em and select 'Upload to /'.
 
 ![Transferring files using Thonny](images/transferring_files_using_thonny.png)
 
-Once that's done, the files on your Pico W should look something like this (though you'll see more files and directories if you've provisioned your device and if you've been using it to log data. 
+Once that's done, the files on your Pico W should look something like this (though you'll see more files and directories if you've provisioned your device and if you've been using it to log data). 
 
 ![Screenshot showing the transferred files](images/transferred_files.png)
 
