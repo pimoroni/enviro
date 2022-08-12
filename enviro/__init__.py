@@ -219,8 +219,12 @@ def sleep(minutes = -1):
 
   # we'll wait here until the rtc timer triggers and then reset the board
   logging.debug("  - on usb power (so can't shutdown) halt and reset instead")
-  while not board.rtc.read_timer_flag():    
-    time.sleep(0.1)
+  while not board.rtc.read_timer_flag(): 
+     if board.button_pin.value():
+        board.reset()
+     else:
+        time.sleep(0.1)
+
 
   logging.debug("  - hard reset")
 
