@@ -27,7 +27,7 @@ def upload_readings():
           "readings": ujson.load(f)
         }
         result = urequests.post(url, auth=auth, json=payload)
-        if result.status_code < 200 and result.status_code > 299:
+        if result.status_code < 200 or result.status_code > 299:
           logging.error(f"  - failed to upload '{cache_file}' ({result.status_code} {result.reason})", cache_file)
         else:
           logging.info(f"  - uploaded {cache_file}")
