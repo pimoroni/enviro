@@ -31,7 +31,7 @@ def upload_readings():
           logging.error(f"  - failed to upload '{cache_file}' ({result.status_code} {result.reason})", cache_file)
         else:
           logging.info(f"  - uploaded {cache_file}")
-        os.remove(f"uploads/{cache_file}")
+          os.remove(f"uploads/{cache_file}")
         result.close()
 
     except OSError as e:
