@@ -80,7 +80,7 @@ def clock_set():
 # connect to wifi and then attempt to fetch the current time from an ntp server
 # once fetch set the onboard rtc and the pico's own rtc
 def sync_clock_from_ntp():
-  if not helpers.connect_to_wifi():
+  if not helpers.wlan.isconnected():
     return False
   t = helpers.update_rtc_from_ntp()
   if not t:
@@ -225,8 +225,4 @@ def sleep(minutes = -1):
      else:
         time.sleep(0.1)
 
-
-  logging.debug("  - hard reset")
-
-  # reset the board
-  board.reset()
+  logging.debug("  - wake-up")

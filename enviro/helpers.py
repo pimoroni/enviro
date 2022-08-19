@@ -1,6 +1,8 @@
 import machine, os, time, network, usocket, struct
 from enviro.constants import *
 
+wlan = network.WLAN(network.STA_IF)
+
 def datetime_string():
   dt = machine.RTC().datetime()
   return "{0:04d}-{1:02d}-{2:02d} {4:02d}:{5:02d}:{6:02d}".format(*dt)
@@ -60,7 +62,6 @@ def connect_to_wifi():
 
   logging.info(f"> connecting to wifi network '{wifi_ssid}'")
 
-  wlan = network.WLAN(network.STA_IF)
   wlan.active(True)
   wlan.connect(wifi_ssid, wifi_password)
 

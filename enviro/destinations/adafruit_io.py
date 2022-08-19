@@ -1,9 +1,9 @@
-from enviro.helpers import get_config, connect_to_wifi
+from enviro.helpers import get_config, connect_to_wifi, wlan
 from enviro import logging
 import urequests, ujson, os, gc, time
 
 def upload_readings():
-  if not connect_to_wifi():
+  if not wlan.isconnected():
     logging.error(f"  - cannot upload readings, wifi connection failed")
     return False
 
