@@ -7,11 +7,13 @@
   - [Transferring files using Thonny](#transferring-files-using-thonny)
   - [Starting from scratch](#starting-from-scratch)
 
-Here's how to update the firmware and software on your Enviro board for all the latest fixes and tweaks! These instructions should also work if you're setting up an Enviro board from scratch.
+Here's how to update the firmware on your Enviro board for all the latest fixes and tweaks! These instructions should also work if you're setting up an Enviro board from scratch.
 
 ## Easy Mode
 
-You can now download a special **pre-built Enviro MicroPython uf2 image** that comes with all the files you need. Hop over to the releases page of this repo and download the most recent uf2 file:
+You can now download a special **pre-built Enviro uf2 image** that comes with all the files you'll need, so you can copy everything to your Enviro in one easy step.
+
+Hop over to the releases page of this repo and download the most recent uf2 file (you'll find it under 'Assets'):
 
 - [Enviro releases page](https://github.com/pimoroni/enviro/releases)
 
@@ -27,13 +29,13 @@ Copy the .uf2 file across to this drive. Your Pico W will then reboot running th
 
 ## Advanced Mode
 
-If you want to upgrade to the very latest version without waiting for a release, you can grab the latest MicroPython and copy across the files manually.
+If you want to upgrade to the very latest version of the firmware without waiting for a release, you can grab the latest MicroPython and copy across the files manually.
 
 ### Downloading MicroPython
 
-You can download the most recent version of our custom MicroPython firmware from pimoroni-pico. 
+You can download the most recent version of our custom MicroPython firmware from the link below. 
 
-- https://github.com/pimoroni/pimoroni-pico/releases
+- [Pimoroni-pico releases page](https://github.com/pimoroni/pimoroni-pico/releases)
 
 You can find the list of .uf2 image files under 'Assets' - make sure you pick the one for **pimoroni-picow-enviro**.
 
