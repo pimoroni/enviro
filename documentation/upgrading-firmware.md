@@ -11,7 +11,7 @@ Here's how to update the firmware and software on your Enviro board for all the 
 
 ## Easy Mode
 
-You can now download a special **pre-built Enviro MicroPython uf2 image** that includes all the files you need. Hop over to the releases page of this repo and download the most recent uf2 file:
+You can now download a special **pre-built Enviro MicroPython uf2 image** that comes with all the files you need. Hop over to the releases page of this repo and download the most recent uf2 file:
 
 - [Enviro releases page](https://github.com/pimoroni/enviro/releases)
 
@@ -21,17 +21,17 @@ Plug Enviro into your computer (or tap RESET if it's already plugged in) whilst 
 
 Copy the .uf2 file across to this drive. Your Pico W will then reboot running the latest version of MicroPython, and it should go straight into provisioning mode.
 
-⚠ Note that **flashing this uf2 file will replace the contents of your flash**, so you might want to back up `config.py` (and potentially your `readings` and `uploads` directories) first.
+⚠ **This uf2 file will replace the contents of your flash**, so you might want to back up `config.py` (and potentially your `readings` and `uploads` directories) first.
 
 ⚠ You only need to use DFU mode when uploading the MicroPython image. You can't copy other files to it this way - you'll need to communicate with it using Thonny (or another interpreter).
 
 ## Advanced Mode
 
-If you want to upgrade to the latest version without waiting for a release, you can grab the latest MicroPython and copy across the files manually.
+If you want to upgrade to the very latest version without waiting for a release, you can grab the latest MicroPython and copy across the files manually.
 
 ### Downloading MicroPython
 
-You can download the most recent version of our custom MicroPython firmware from the link below. 
+You can download the most recent version of our custom MicroPython firmware from pimoroni-pico. 
 
 - https://github.com/pimoroni/pimoroni-pico/releases
 
@@ -48,8 +48,6 @@ Clone this repo to your computer so you have a local copy:
 `git clone https://github.com/pimoroni/enviro --recursive`
 
 (we're using the `--recursive` flag so that it downloads the phew submodule as well - phew is a small web server library). 
-
-Alternatively, you could download the Enviro repo as a zip file using the green 'code' dropdown on the [front page](https://github.com/pimoroni/enviro). If you do it this way, it won't download the phew files, but you can install `micropython-phew` easily from within Thonny (Tools > Manage Packages).
 
 ### Transferring files using the Linux command line
 
