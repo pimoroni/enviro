@@ -34,7 +34,7 @@ def upload_readings():
           "timestamp": timestamp,
           "device": nickname,
           "model": model,
-          "mac": mac,
+          "mac": mac
         }
         for key, value in data.items():
           payload[key] = value
