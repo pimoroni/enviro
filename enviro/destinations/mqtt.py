@@ -2,6 +2,9 @@ from enviro.helpers import get_config, connect_to_wifi
 from enviro import logging
 import ujson, os
 from enviro.mqttsimple import MQTTClient
+import enviro.board as board
+import network
+import ubinascii
 
 def upload_readings():
   if not connect_to_wifi():
@@ -12,6 +15,8 @@ def upload_readings():
   username = get_config("mqtt_broker_username")
   password = get_config("mqtt_broker_password")
   nickname = get_config("nickname")
+  model = board.model()
+  mac = ubinascii.hexlify(network.WLAN().config('mac'),':').decode()
 
   logging.info(f"> uploading cached readings to {server}")
 
@@ -27,7 +32,9 @@ def upload_readings():
 
         payload = {
           "timestamp": timestamp,
-          "device": nickname
+          "device": nickname,
+          "model": model,
+          "mac": mac,
         }
         for key, value in data.items():
           payload[key] = value
