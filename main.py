@@ -22,6 +22,7 @@
 import enviro
 from enviro import logging
 import time, os, urequests
+from enviro.board import warn_led
 
 
 # initialise 
@@ -52,7 +53,7 @@ if not enviro.clock_set():
     # if we failed to synchronise the clock then turn on the warning
     # led and go back to sleep for another cycle
     logging.error("! failed to synchronise clock")
-    warn_led(WARN_LED_BLINK)
+    warn_led('WARN_LED_BLINK')
     enviro.sleep(config.reading_frequency)
 
 
@@ -61,7 +62,7 @@ if enviro.low_disk_space():
   # means that cached results are not getting uploaded and cleared so
   # warn the user and go back to sleep
   logging.error("! low disk space")
-  warn_led(WARN_LED_BLINK)
+  warn_led('WARN_LED_BLINK')
   enviro.sleep(config.reading_frequency)
 
 filesystem_stats = os.statvfs(".")

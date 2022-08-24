@@ -32,16 +32,16 @@ rtc = PCF85063A(i2c)
 i2c.writeto_mem(0x51, 0x00, b'\x00')
 
 def warn_led(state):
-  if state == WARN_LED_OFF:
+  if state == 'WARN_LED_OFF':
     rtc.set_clock_output(PCF85063A.CLOCK_OUT_OFF)
-  elif state == WARN_LED_ON:
+  elif state == 'WARN_LED_ON':
     rtc.set_clock_output(PCF85063A.CLOCK_OUT_1024HZ)
-  elif state == WARN_LED_BLINK:
+  elif state == 'WARN_LED_BLINK':
     rtc.set_clock_output(PCF85063A.CLOCK_OUT_1HZ)
     
 # the pcf85063a defaults to 32KHz clock output so
 # we need to explicitly turn that off by default
-warn_led(WARN_LED_OFF)
+warn_led('WARN_LED_OFF')
 
 def get_date_str(self):
   datetime = rtc.datetime()
