@@ -125,8 +125,6 @@ def save_reading(readings):
     # write sensor data
     row = [helpers.datetime_string()]
     if qtstemma is not None:
-      print(sensors() + qtsensors(), readings)
-      print(row)
       row.extend(str(readings[key]) for key in (sensors() + qtsensors()))
     else:
       row.extend(str(readings[key]) for key in sensors())
