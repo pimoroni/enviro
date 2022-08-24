@@ -117,12 +117,19 @@ def save_reading(readings):
   with open(readings_filename, "a") as f:
     if new_file:
       # new readings file so write out column headings first
-      f.write("time," + ",".join(sensors()) + "\r\n")
+      if qtstemma:
+        f.write("time," + ",".join(sensors() + qtsensors()) + "\r\n")
+      else: 
+        f.write("time," + ",".join(sensors()) + "\r\n")
 
     # write sensor data
     row = [helpers.datetime_string()]
-    for key in sensors():
-      row.append(str(readings[key]))
+    if qtstemma is not None:
+      print(sensors() + qtsensors(), readings)
+      print(row)
+      row.extend(str(readings[key]) for key in (sensors() + qtsensors()))
+    else:
+      row.extend(str(readings[key]) for key in sensors())
     f.write(",".join(row) + "\r\n")
 
 
@@ -145,6 +152,10 @@ if model == "weather":
   from enviro.boards.weather import sensors, get_sensor_readings
 if model == "urban":
   from enviro.boards.urban import sensors, get_sensor_readings
+
+qtstemma = board.qtstemma()
+if qtstemma == "scd41":
+  from enviro.boards.scd41 import qtsensors, get_qtsensor_readings
 
 destination = helpers.get_config("destination")
 if destination == "http":

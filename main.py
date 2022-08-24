@@ -23,7 +23,6 @@ import enviro
 from enviro import logging
 import time, os, urequests
 
-
 # initialise 
 enviro.startup()
 
@@ -69,7 +68,10 @@ logging.debug(f"> {filesystem_stats[3]} blocks free out of {filesystem_stats[2]}
 
 
 # take a reading from the sensors
-reading = enviro.get_sensor_readings()
+if enviro.board.qtstemma:
+  reading = dict(enviro.get_sensor_readings(),**enviro.get_qtsensor_readings()) # Merge dicts
+else:
+  reading = enviro.get_sensor_readings()
 
 
 # save the reading into the local reading files (look in "/readings")

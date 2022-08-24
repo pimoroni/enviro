@@ -18,7 +18,7 @@ log_count = 20
 # how often to wake up and take a reading (in minutes)
 reading_frequency = 15
 
-# where to upload to ("web_hook", "mqtt", "adafruitio")
+# where to upload to ("web_hook", "mqtt", "adafruit_io")
 destination = None
 
 # how often to upload data (number of cached readings)

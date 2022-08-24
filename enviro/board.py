@@ -124,5 +124,16 @@ def model():
   return result
 
 
+def qtstemma():
+  # determine which type of board is connected
+  i2c_devices = i2c.scan()
+
+  result = None
+  if 98 in i2c_devices: # 98 = sdc41 0x62
+    result = "scd41"
+    logging.info("Detected scd41 on i2c")
+
+  return result
+
 def reset():
   machine.reset()
