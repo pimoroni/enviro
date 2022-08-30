@@ -3,7 +3,7 @@ from machine import Pin, ADC
 from breakout_bme280 import BreakoutBME280
 from pimoroni_i2c import PimoroniI2C
 from enviro import logging
-from enviro.board import i2c
+from enviro import i2c
 
 sensor_reset_pin = Pin(9, Pin.OUT, value=True)
 sensor_enable_pin = Pin(10, Pin.OUT, value=False)

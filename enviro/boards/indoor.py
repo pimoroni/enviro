@@ -1,7 +1,7 @@
 from breakout_bme68x import BreakoutBME68X
 from breakout_bh1745 import BreakoutBH1745
 
-from enviro.board import i2c
+from enviro import i2c
 
 bme688 = BreakoutBME68X(i2c, address=0x77)
 
