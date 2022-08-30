@@ -155,9 +155,6 @@ if destination == "adafruit_io":
   from enviro.destinations.adafruit_io import upload_readings
 
 def startup():
-  # truncate log to keep it to at most three blocks on disk)
-  logging.truncate(8192)
-
   # write startup banner into log file
   logging.info("")
   logging.info("hey enviro, let's go!")
