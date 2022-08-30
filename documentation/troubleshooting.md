@@ -50,7 +50,7 @@ To mitigate this Enviro will actively delete old recordings, log files, and cach
 
 Sometimes it may not be possible for Enviro to connect to the NTP server that provides it with time and date information.
 
-You can normally ignore this error as it will only be a temporary issue and start working again without intervention.
+You can normally ignore this error as it will only be a temporary issue and start working again without intervention. If it doesn't, double check your wi-fi details are correct.
 
 #### `! failed to upload '[cache_file]'`
 
@@ -60,6 +60,4 @@ If you're using Adafruit IO and this message also includes `Unprocessable Entity
 
 ### Upgrade your firmware
 
-It's possible that you've encountered a bug that we've fixed in a newer version of the Enviro software so it's worth upgrading the onboard software with the latest version.
-
-Upgrading is a safe process and it won't affect any readings or uploads you have cached on the device.
+It's possible that you've encountered a bug that we've fixed in a newer version of the Enviro software so it's worth [upgrading the onboard software to the latest version.](https://github.com/pimoroni/enviro/blob/main/documentation/upgrading-firmware.md)
