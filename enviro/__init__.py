@@ -7,6 +7,7 @@ from enviro.constants import *
 import enviro.helpers as helpers
 from enviro.helpers import file_exists, date_string, datetime_string
 from phew import logging, ntp
+import phew
 
 rp2.country("GB")
 
@@ -254,9 +255,6 @@ def detect_model():
   return result
 
 
-def reset():
-  machine.reset()
-
 # import board specific methods
 model = detect_model()
 if model == "indoor":
@@ -335,11 +333,12 @@ def sleep(minutes = -1):
   # if we're still awake it means power is coming from the USB port in which
   # case we can't (and don't need to) sleep.
   stop_activity_led()
+  phew.disable_wifi()
 
   # we'll wait here until the rtc timer triggers and then reset the board
   logging.debug("  - on usb power (so can't shutdown) halt and reset instead")
   while not rtc.read_timer_flag():    
-    time.sleep(0.1)
+    time.sleep(0.25)
 
     if button_pin.value(): # allow button to force reset
       break
@@ -347,4 +346,4 @@ def sleep(minutes = -1):
   logging.debug("  - reset")
 
   # reset the board
-  reset()
+  machine.reset()
