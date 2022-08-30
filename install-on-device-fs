@@ -47,8 +47,6 @@ copy "enviro/boards/*.py" :enviro/boards/
 copy "enviro/destinations/*.py" :enviro/destinations/
 
 copy "enviro/html/*.html" :enviro/html/
-copy "enviro/html/*.js" :enviro/html/
-copy "enviro/html/*.css" :enviro/html/
 
 copy "enviro/html/images/*" :enviro/html/images/
 

@@ -33,33 +33,6 @@
 
     <input type="hidden" id="destination" name="destination" value="{{destination}}" />
 
-    <script>
-      function selectDestination(destination) {
-        $("#destinations li").removeClass("active")
-        $("#destinations li[data-destination='" + destination + "']").addClass("active")
-
-        $("#destination_settings >div").hide()
-        $("#destination_" + destination).show()
-
-        $("#upload_settings").toggle(destination)
-  
-        $("#destination").val(destination)
-      }
-
-      $("#destinations li").on("click",
-        function(e) {
-          let destination = $(this).data("destination")
-          if(destination != "influx_db") {
-            selectDestination(destination)
-          }
-        }
-      )
-
-      $(function() {
-        selectDestination("{{destination}}")
-      })
-    </script>
-
     <div id="destination_settings">
       <div id="destination_mqtt">
         <h1>MQTT broker details</h1>
@@ -108,6 +81,38 @@
       </div>
     </div>
   </form>
+
+  <script>
+    function selectDestination(destination) {
+      document.querySelectorAll("#destinations >li").forEach((listItem) => {          
+        if(listItem.dataset.destination == destination) {
+          listItem.classList.add("active")
+        }else{
+          listItem.classList.remove("active")
+        }
+      })
+
+      document.getElementById("destination").value = destination
+
+      document.querySelectorAll("#destination_settings >div").forEach((destinationItem) => {
+        if(destinationItem.id == "destination_" + destination) {
+          destinationItem.style.display = "block"
+        }else{
+          destinationItem.style.display = "none"
+        }
+      })
+    }
+
+    document.querySelectorAll("#destinations >li").forEach((listItem) => {
+      if(listItem.dataset.destination != "influx_db") {
+        listItem.addEventListener("click", function(e) {
+          selectDestination(listItem.dataset.destination)
+        })
+      }
+    })
+
+    selectDestination("{{destination}}")
+  </script>
 
   <nav>
     <button class="back" onclick="document.location = '/provision-step-3-logging'"><span>➔</span></button>

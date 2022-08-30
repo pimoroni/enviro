@@ -25,7 +25,7 @@
     <h2>Enter your WiFi password so that we can <s>download pictures of cats</s> upload your data.</h2>
     <aside>If your device ever has a problem connecting to WiFi during startup then the alarm LED will blink red to let you know that something's wrong.</aside>
     <fieldset>
-      <input id="wifi_password" name="wifi_password" type="text" value="{{wifi_password}}" placeholder="e.g. Cats4lyfe&lt;3!" autocapitalize="none" autocomplete="off" />
+      <input id="wifi_password" name="wifi_password" type="text" value="{{wifi_password}}" placeholder="e.g. Cats4lyfe&lt;3!" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" />
     </fieldset>
   </form>
 
@@ -40,8 +40,36 @@
   var selectedNetwork = "{{wifi_ssid}}"
 
   function loadNetworks() {
-    $("#loading_networks_message").show()
-    $("#networks").hide()
+    document.getElementById("loading_networks_message").style.display = "block"
+    document.getElementById("networks").style.display = "none"
+
+    fetch("/networks.json")
+    .then((response) => response.json())
+    .then((data) => {
+      document.getElementById("networks").innerHTML = ""
+
+      for(let network of data) {
+        let listItem = document.createElement("li")
+        listItem.textContent = network
+        if(network == selectedNetwork) {
+          listItem.classList.add("active")
+        }    
+        document.getElementById("networks").appendChild(listItem)
+
+        listItem.addEventListener("click", function(e) {
+          document.querySelectorAll("#networks >li").forEach((e) => {
+            e.classList.remove("active")
+          })
+          listItem.classList.add("active")
+          document.getElementById("networks").value = listItem.text
+        })
+      }
+
+      document.getElementById("loading_networks_message").style.display = "none"
+      document.getElementById("networks").style.display = "block"
+    })
+
+/*
     $.getJSON("/networks.json", function(response){
       $("#networks").empty()
       for(let network of response) {
@@ -60,12 +88,10 @@
           $("#wifi_ssid").val($(this).text())
         }
       )
-    })
+    })*/
   }
 
-  $(function() {
-    loadNetworks()
-  })
+  loadNetworks()  
 </script>
 
 {{render_template("enviro/html/footer.html")}}

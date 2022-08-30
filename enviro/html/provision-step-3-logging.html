@@ -14,7 +14,7 @@
         Every five minutes
         <span class="note">(shortest battery life)</span>
       </li>
-      <li data-reading-frequency="10" > 
+      <li data-reading-frequency="10"> 
         Every ten minutes
       </li>
       <li data-reading-frequency="15">
@@ -32,26 +32,27 @@
         <span class="note">(best for long battery life)</span>
       </li>
     </ul>        
-  
     <input type="hidden" id="reading_frequency" name="reading_frequency" value="{{reading_frequency}}" />
 
     <script>
       function selectReadingFrequency(reading_frequency) {
-        $("#reading_frequencies >li").removeClass("active")
-        $("#reading_frequencies >li[data-reading-frequency='" + reading_frequency + "']").addClass("active")
-
-        $("#reading_frequency").val(reading_frequency)
+        document.querySelectorAll("#reading_frequencies >li").forEach((listItem) => {          
+          if(listItem.dataset.readingFrequency == reading_frequency) {
+            listItem.classList.add("active")
+          }else{
+            listItem.classList.remove("active")
+          }
+        })
+        document.getElementById("reading_frequency").value = reading_frequency
       }
 
-      $("#reading_frequencies >li").on("click",
-        function(e) {
-          selectReadingFrequency($(this).data("reading-frequency"))
-        }
-      )
-
-      $(function() {
-        selectReadingFrequency("{{reading_frequency}}")
+      document.querySelectorAll("#reading_frequencies >li").forEach((listItem) => {
+        listItem.addEventListener("click", function(e) {
+          selectReadingFrequency(listItem.dataset.readingFrequency)
+        })
       })
+
+      selectReadingFrequency("{{reading_frequency}}")
     </script>
 
     <aside class="note">
@@ -98,6 +99,29 @@
 
       <script>
         function selectUploadFrequency(upload_frequency) {
+          document.querySelectorAll("#upload_frequencies >li").forEach((listItem) => {          
+            if(listItem.dataset.uploadFrequency == upload_frequency) {
+              listItem.classList.add("active")
+            }else{
+              listItem.classList.remove("active")
+            }
+          })
+          document.getElementById("upload_frequency").value = upload_frequency
+        }
+  
+        document.querySelectorAll("#upload_frequencies >li").forEach((listItem) => {
+          listItem.addEventListener("click", function(e) {
+            selectUploadFrequency(listItem.dataset.uploadFrequency)
+          })
+        })
+  
+        selectUploadFrequency("{{upload_frequency}}")
+      </script>
+
+
+<!--
+      <script>
+        function selectUploadFrequency(upload_frequency) {
           $("#upload_frequencies >li").removeClass("active")
           $("#upload_frequencies >li[data-upload-frequency='" + upload_frequency + "']").addClass("active")
   
@@ -114,7 +138,7 @@
           selectUploadFrequency("{{upload_frequency}}")
         })
       </script>
-
+-->
       <aside class="note">
         We'd recommend not uploading readings more often than once an hour. WiFi communication is a battery hungry process and should be done as little as possible to ensure long run times.
       </aside>

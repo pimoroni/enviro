@@ -12,7 +12,7 @@
     </aside>
 
     <fieldset>
-      <input id="nickname" name="nickname" type="text" placeholder="e.g. gecko-tank-7" value="{{nickname}}" autocapitalize="none" autocomplete="off" />
+      <input id="nickname" name="nickname" type="text" placeholder="e.g. gecko-tank-7" value="{{nickname}}" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" />
     </fieldset>
 
     <aside class="note">
@@ -22,20 +22,21 @@
 
   <nav>
     <button class="back" onclick="document.location = '/provision-welcome'"><span>➔</span></button>
-    <button type="submit" form="main">Wireless setup ➔</button>
+    <button type="submit" form="main">Networking ➔</button>
   </nav>
 </section>
 
 <script>
-  $("#nickname").on("input", function(e) {
+  document.getElementById("nickname").addEventListener("input", function(e) {
     let caretPos = this.selectionStart
-    let nickname = $(this).val().toLowerCase()
+    let nickname = document.getElementById("nickname").value.toLowerCase()
     let filtered = nickname.replace(/[^a-z0-9-]/, "")
     if(filtered != nickname) {
       caretPos -= 1
     }
-    $(this).val(filtered)
+    document.getElementById("nickname").value = filtered
     this.selectionStart = this.selectionEnd = caretPos 
   })
 </script>
+
 {{render_template("enviro/html/footer.html")}}
