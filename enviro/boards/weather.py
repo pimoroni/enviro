@@ -67,15 +67,28 @@ def wind_direction():
   # to determine the heading
   ADC_TO_DEGREES = (0.9, 2.0, 3.0, 2.8, 2.5, 1.5, 0.3, 0.6)
 
-  value = wind_direction_pin.read_voltage()
   closest_index = -1
-  closest_value = float('inf')
+  last_index = None
 
-  for i in range(8):
+  # ensure we have two readings that match in a row as otherwise if
+  # you read during transition between two values it can glitch
+  # fixes https://github.com/pimoroni/enviro/issues/20
+  while True:
+    value = wind_direction_pin.read_voltage()
+
+    closest_index = -1
+    closest_value = float('inf')
+
+    for i in range(8):
       distance = abs(ADC_TO_DEGREES[i] - value)
       if distance < closest_value:
-          closest_value = distance
-          closest_index = i
+        closest_value = distance
+        closest_index = i
+
+    if last_index == closest_index:
+      break
+      
+    last_index = closest_index
 
   return closest_index * 45
 
