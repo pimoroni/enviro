@@ -68,27 +68,6 @@
       document.getElementById("loading_networks_message").style.display = "none"
       document.getElementById("networks").style.display = "block"
     })
-
-/*
-    $.getJSON("/networks.json", function(response){
-      $("#networks").empty()
-      for(let network of response) {
-        let listItem = $("<li>" + network + "</li>")
-        if(network == selectedNetwork) {
-          listItem.addClass("active")
-        }    
-        $("#networks").append(listItem)
-      }
-      $("#loading_networks_message").hide()
-      $("#networks").show()
-
-      $("#networks >li").on("click", function(e) {
-          $("#networks >li").removeClass("active")
-          $(this).addClass("active")
-          $("#wifi_ssid").val($(this).text())
-        }
-      )
-    })*/
   }
 
   loadNetworks()  

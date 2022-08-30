@@ -118,27 +118,6 @@
         selectUploadFrequency("{{upload_frequency}}")
       </script>
 
-
-<!--
-      <script>
-        function selectUploadFrequency(upload_frequency) {
-          $("#upload_frequencies >li").removeClass("active")
-          $("#upload_frequencies >li[data-upload-frequency='" + upload_frequency + "']").addClass("active")
-  
-          $("#upload_frequency").val(upload_frequency)
-        }
-  
-        $("#upload_frequencies >li").on("click",
-          function(e) {
-            selectUploadFrequency($(this).data("upload-frequency"))
-          }
-        )
-  
-        $(function() {
-          selectUploadFrequency("{{upload_frequency}}")
-        })
-      </script>
--->
       <aside class="note">
         We'd recommend not uploading readings more often than once an hour. WiFi communication is a battery hungry process and should be done as little as possible to ensure long run times.
       </aside>
