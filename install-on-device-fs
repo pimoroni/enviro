@@ -1,30 +1,56 @@
 #!/usr/bin/env bash
 
-pattern="/dev/tty.usbmodem1*"
-files=($pattern)
+DEVICES=$(mpremote connect list | grep MicroPython | cut -d " " -f 1)
 
-echo "Copying to ${files[0]}"
+if [ -z $DEVICES ] ; then
+  echo "No MicroPython devices found in FS mode"
+  exit 1
+fi
 
-mpremote connect ${files[0]} mkdir enviro
-mpremote connect ${files[0]} mkdir enviro/boards
-mpremote connect ${files[0]} mkdir enviro/destinations
-mpremote connect ${files[0]} mkdir enviro/html
-mpremote connect ${files[0]} mkdir enviro/html/images
-mpremote connect ${files[0]} mkdir phew
-mpremote connect ${files[0]} mkdir phew/phew
+DEVICE=${DEVICES[0]}
 
-mpremote connect ${files[0]} cp main.py :
+echo "Copying Enviro firmware files to ${DEVICE}"
 
-mpremote connect ${files[0]} cp enviro/*.py :enviro/
+function create_directory {
+  echo -n "> creating directory $1"
+  mpremote connect ${DEVICE} mkdir $1 > /dev/null
+  if [ $? -eq 0 ] ; then
+    echo " .. done!"
+  else
+    echo " .. already exists, skipping."
+  fi
+}
 
-mpremote connect ${files[0]} cp enviro/boards/*.py :enviro/boards/
-mpremote connect ${files[0]} cp enviro/destinations/*.py :enviro/destinations/
+function copy {
+  for file in $1
+  do
+    echo -n "> copying file $file"
+    mpremote connect ${DEVICE} cp $file $2 > /dev/null
+    echo " .. done!"
+  done
+}
 
-mpremote connect ${files[0]} cp enviro/html/*.html :enviro/html/
-mpremote connect ${files[0]} cp enviro/html/*.js :enviro/html/
-mpremote connect ${files[0]} cp enviro/html/*.css :enviro/html/
 
-mpremote connect ${files[0]} cp enviro/html/images/* :enviro/html/images/
+create_directory enviro
+create_directory enviro/boards
+create_directory enviro/destinations
+create_directory enviro/html
+create_directory enviro/html/images
+create_directory phew
+create_directory phew/phew
 
-mpremote connect ${files[0]} cp phew/__init__.py :phew/
-mpremote connect ${files[0]} cp phew/phew/*.py :phew/phew/
+copy "main.py" :
+
+copy "enviro/*.py" :enviro/
+
+copy "enviro/boards/*.py" :enviro/boards/
+copy "enviro/destinations/*.py" :enviro/destinations/
+
+copy "enviro/html/*.html" :enviro/html/
+copy "enviro/html/*.js" :enviro/html/
+copy "enviro/html/*.css" :enviro/html/
+
+copy "enviro/html/images/*" :enviro/html/images/
+
+copy "phew/__init__.py" :phew/
+copy "phew/phew/*.py" :phew/phew/
