@@ -3,7 +3,7 @@ import network, os, json, time, machine
 import enviro.helpers as helpers
 import enviro.board as board
 import enviro
-from phew import logging, server, redirect, serve_file, render_template
+from phew import logging, server, redirect, serve_file, render_template, access_point
 
 DOMAIN = "pico.wireless"
 
@@ -15,7 +15,7 @@ logging.info("  -", board.model())
 
 # put board into access point mode
 logging.info("> going into access point mode")
-ap = helpers.enter_access_point_mode("Enviro " + board.model()[:1].upper() + board.model()[1:] + " Setup")
+ap = access_point("Enviro " + board.model()[:1].upper() + board.model()[1:] + " Setup")
 logging.info("  -", ap.ifconfig()[0])
 
 

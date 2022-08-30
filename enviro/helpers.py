@@ -18,29 +18,6 @@ def mkdir_safe(path):
 
 from phew import logging
 
-# put the wifi into access point mode with the specified ssid (and
-# optional password)
-def enter_access_point_mode(ssid, password = None):
-  import rp2, network
-
-  # start up network in access point mode
-  rp2.country("GB")
-  ap = network.WLAN(network.AP_IF)
-
-  if ap.isconnected():
-    ap.disconnect()
-
-  ap.active(False)
-  ap.config(essid=ssid)
-  if password:
-    ap.config(password=password)
-  else:
-    # disable password
-    ap.config(security=0) 
-
-  ap.active(True)
-
-  return ap
 
 def file_size(filename):
   try:
