@@ -32,11 +32,12 @@ def upload_readings():
           "mac": ("{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}").format(*network.WLAN().config("mac"))
         }
         result = urequests.post(url, auth=auth, json=payload)
-        if result.status_code != 200:
-          logging.error(f"  - failed to upload '{cache_file}' ({result.status_code} {result.reason})", cache_file)
-        else:
+        if result.status_code in [200, 201, 202]:
           logging.info(f"  - uploaded {cache_file}")
-        os.remove(f"uploads/{cache_file}")
+          os.remove(f"uploads/{cache_file}")
+        else:
+          logging.error(f"  - failed to upload '{cache_file}' ({result.status_code} {result.reason})", cache_file)
+        result.close()
 
     except OSError as e:
       logging.error(f"  - failed to upload '{cache_file}'")
