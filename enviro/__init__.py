@@ -243,8 +243,6 @@ def detect_model():
   if 56 in i2c_devices: # 56 = colour / light sensor and only present on Indoor
     result = "indoor"
   elif 35 in i2c_devices: # 35 = ltr-599 on grow & weather
-    # the wind vane pin is pulled high with a 10k resistor on the weather
-    # board - we can detect this and disambiguate using it
     pump1_pin = Pin(10, Pin.IN, Pin.PULL_UP)
     result = "grow" if pump1_pin.value() == False else "weather"
     # disable the pull up (otherwise this keeps the weather board awake)
