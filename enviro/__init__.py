@@ -343,7 +343,10 @@ def sleep(minutes = -1):
   while not rtc.read_timer_flag():    
     time.sleep(0.1)
 
-  logging.debug("  - hard reset")
+    if button_pin.value(): # allow button to force reset
+      break
+
+  logging.debug("  - reset")
 
   # reset the board
   reset()
