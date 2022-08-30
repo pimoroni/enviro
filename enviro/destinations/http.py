@@ -1,6 +1,8 @@
+import enviro
 from enviro.helpers import get_config, connect_to_wifi
 from enviro import logging
 import urequests, ujson, os
+from machine import unique_id
 
 def upload_readings():
   if not connect_to_wifi():
@@ -24,7 +26,10 @@ def upload_readings():
         payload = {
           "nickname": nickname,
           "timestamp": timestamp,
-          "readings": ujson.load(f)
+          "readings": ujson.load(f),
+          "model": enviro.model,
+          "uid": ("{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}").format(*machine.unique_id()),
+          "mac": ("{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}").format(*network.WLAN().config("mac"))
         }
         result = urequests.post(url, auth=auth, json=payload)
         if result.status_code != 200:

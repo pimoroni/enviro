@@ -1,7 +1,9 @@
+import enviro
 from enviro.helpers import get_config, connect_to_wifi
 from enviro import logging
 import ujson, os
 from enviro.mqttsimple import MQTTClient
+from machine import unique_id
 
 def upload_readings():
   if not connect_to_wifi():
@@ -27,8 +29,12 @@ def upload_readings():
 
         payload = {
           "timestamp": timestamp,
-          "device": nickname
+          "device": nickname,
+          "model": enviro.model,
+          "uid": ("{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}").format(*machine.unique_id()),
+          "mac": ("{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}").format(*network.WLAN().config("mac"))
         }
+
         for key, value in data.items():
           payload[key] = value
 

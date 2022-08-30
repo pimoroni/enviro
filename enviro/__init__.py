@@ -1,12 +1,14 @@
 # set up and enable vsys hold as soon as possible so we don't go to sleep
-import math, time, machine, sys, os, ujson
+import math, time, machine, sys, os, ujson, rp2
 from machine import Pin, PWM, Timer
 from pimoroni_i2c import PimoroniI2C
 from pcf85063a import PCF85063A
 from enviro.constants import *
 import enviro.helpers as helpers
 from enviro.helpers import file_exists, date_string, datetime_string
-from phew import logging
+from phew import logging, ntp
+
+rp2.country("GB")
 
 # set up the button, external trigger, and rtc alarm pins
 button_pin = Pin(BUTTON_PIN, Pin.IN, Pin.PULL_DOWN)
@@ -106,15 +108,16 @@ def clock_set():
 def sync_clock_from_ntp():
   if not helpers.connect_to_wifi():
     return False
-  t = helpers.update_rtc_from_ntp()
-  if not t:
+
+  timestamp = ntp.fetch()
+  if not timestamp:
     logging.error("  - failed to fetch time from ntp server")
     return False
+
   # set the time on the rtc chip
-  rtc.datetime((t[0], t[1], t[2], t[3], t[4], t[5], t[6]))
-  # set the pico rtc time as well
-  machine.RTC().datetime((t[0], t[1], t[2], t[6], t[3], t[4], t[5], 0))      
+  rtc.datetime(timestamp)
   logging.info("  - rtc synched")      
+
   return True
 
 

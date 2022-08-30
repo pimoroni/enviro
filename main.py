@@ -63,9 +63,6 @@ if enviro.low_disk_space():
   enviro.warn_led(enviro.WARN_LED_BLINK)
   enviro.sleep(config.reading_frequency)
 
-filesystem_stats = os.statvfs(".")
-logging.debug(f"> {filesystem_stats[3]} blocks free out of {filesystem_stats[2]}")
-
 
 # take a reading from the sensors
 reading = enviro.get_sensor_readings()

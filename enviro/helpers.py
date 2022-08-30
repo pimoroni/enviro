@@ -1,5 +1,6 @@
 import machine, os, time, network, usocket, struct
 from enviro.constants import *
+import phew
 
 def datetime_string():
   dt = machine.RTC().datetime()
@@ -36,58 +37,16 @@ def connect_to_wifi():
   wifi_password = get_config("wifi_password")
 
   logging.info(f"> connecting to wifi network '{wifi_ssid}'")
+  ip = phew.connect_to_wifi(wifi_ssid, wifi_password, timeout_seconds=30)
 
-  wlan = network.WLAN(network.STA_IF)
-  wlan.active(True)
-  wlan.connect(wifi_ssid, wifi_password)
-
-  start = time.ticks_ms()
-  while (time.ticks_ms() - start) < 30000:
-    if wlan.status() < 0 or wlan.status() >= 3:
-      break
-    time.sleep(0.5)
-
-  seconds_to_connect = int((time.ticks_ms() - start) / 1000)
-  
-  if wlan.status() != 3:
+  if not ip:
     logging.error(f"! failed to connect to wireless network {wifi_ssid}")
     return False
 
-  # a slow connection time will drain the battery faster and may
-  # indicate a poor quality connection
-  if seconds_to_connect > 5:
-    logging.warn("  - took", seconds_to_connect, "seconds to connect to wifi")
-  
-  ip_address = wlan.ifconfig()[0]
-  logging.info("  - ip address: ", ip_address)
-  
+  logging.info("  - ip address: ", ip)
+
   return True
 
-
-def update_rtc_from_ntp(max_attempts = 5):
-  logging.info("> fetching date and time from ntp server")
-  ntp_host = "pool.ntp.org"
-  attempt = 1
-  while attempt < max_attempts:
-    try:
-      logging.info("  - synching rtc attempt", attempt)
-      query = bytearray(48)
-      query[0] = 0x1b
-      address = usocket.getaddrinfo(ntp_host, 123)[0][-1]
-      socket = usocket.socket(usocket.AF_INET, usocket.SOCK_DGRAM)
-      socket.settimeout(30)
-      socket.sendto(query, address)
-      data = socket.recv(48)
-      socket.close()
-      local_epoch = 2208988800  # selected by Chris, by experiment. blame him. :-D
-      timestamp = struct.unpack("!I", data[40:44])[0] - local_epoch
-      t = time.gmtime(timestamp)
-      return t      
-    except Exception as e:
-      logging.error(e)
-
-    attempt += 1
-  return False
 
 def copy_file(source, target):
   with open("enviro/config_template.py", "rb") as infile:
@@ -170,73 +129,3 @@ def get_state(key = None):
 
 def set_state(key, value):
   set_values_in_file("state.py", key, value)
-
-
-def parse_template(response, template, **kwargs):
-  import time
-
-  start_time = time.ticks_ms()
-
-  with open(template, "rb") as f:
-    # read the whole template file, we could work on single lines but 
-    # the performance is much worse - so long as our templates are
-    # just a handful of kB it's ok to do this
-    data = f.read()
-    token_caret = 0
-
-    while True:
-      # find the next tag that needs evaluating
-      start = data.find(b"{{", token_caret)
-      end = data.find(b"}}", start)
-
-      match = start != -1 and end != -1
-
-      # no more magic to handle, just return what's left
-      if not match:
-        yield data[token_caret:]
-        break
-
-      expression = data[start + 2:end]
-
-      # output the bit before the tag
-      yield data[token_caret:start] 
-
-      # merge locals with the supplied named arguments and
-      # the response object
-      params = {}
-      params.update(locals())
-      params.update(kwargs)
-      params["response"] = response
-
-      # parse the expression
-      result = ""
-      try:
-        result = eval(expression, globals(), params)
-      except:
-        pass
-
-      if type(result).__name__ == "generator":
-        # if expression returned a generator then iterate it fully
-        # and yield each result
-        for include_line in result:
-          yield include_line
-      else:
-        # yield the result of the expression
-        if result:
-          yield str(result)
-
-      # discard the parsed bit
-      token_caret = end + 2
-
-  logging.info("    - parsed template:", template, " (", time.ticks_ms() - start_time, "ms)")
-
-
-async def serve_template(response, template, **kwargs):
-  logging.info("  - serve template: ", template)
-  
-  response.add_header("Content-Type", "text/html")
-  await response._send_headers()
-
-  for line in parse_template(response, template, **kwargs):
-    await response.send(line)
-
