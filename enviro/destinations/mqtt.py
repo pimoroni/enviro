@@ -1,9 +1,8 @@
 import enviro
 from enviro.helpers import get_config, connect_to_wifi
 from enviro import logging
-import ujson, os
+import ujson, os, network, machine
 from enviro.mqttsimple import MQTTClient
-from machine import unique_id
 
 def upload_readings():
   if not connect_to_wifi():
@@ -18,7 +17,12 @@ def upload_readings():
   logging.info(f"> uploading cached readings to {server}")
 
   mqtt_client = MQTTClient(nickname, server, user=username, password=password, keepalive=60)
-  mqtt_client.connect()
+
+  try:
+    mqtt_client.connect()
+  except:
+    logging.error(f"  - failed to connect to MQTT server '{server}'")
+    return False
 
   for cache_file in os.ilistdir("uploads"):
     cache_file = cache_file[0]

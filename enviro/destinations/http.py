@@ -1,8 +1,7 @@
 import enviro
 from enviro.helpers import get_config, connect_to_wifi
 from enviro import logging
-import urequests, ujson, os
-from machine import unique_id
+import urequests, ujson, os, network, machine
 
 def upload_readings():
   if not connect_to_wifi():
