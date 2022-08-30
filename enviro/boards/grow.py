@@ -26,40 +26,40 @@ def sensors():
     "moisture_3"
   ]
 
-def moisture_readings(sample_time_ms=500):  
-  # get initial sensor state
-  state = [sensor.value() for sensor in moisture_sensor_pins]
-
-  # create an array for each sensor to log the times when the sensor state changed
-  # then we can use those values to calculate an average tick time for each sensor
-  changes = [[], [], []]
-  
-  start = time.ticks_ms()
-  while time.ticks_ms() - start <= sample_time_ms:
-    for i in range(0, len(state)):
-      now = moisture_sensor_pins[i].value()
-      if now != state[i]: # sensor output changed
-        # record the time of the change and update the state
-        changes[i].append(time.ticks_ms())
-        state[i] = now
-
-  # now we can average the readings for each sensor
+def moisture_readings(sample_time_ms=500):
   results = []
-  for i in range(0, len(changes)):
-    # if no sensor connected to change then we have no readings, skip
-    if len(changes[i]) < 2:
-      results.append(0)
+
+  for i in range(0, 3):
+    # count time for sensor to "tick" 25 times
+    sensor = moisture_sensor_pins[i]
+
+    last_value = sensor.value()
+    start = time.ticks_ms()
+    first = None
+    last = None
+    ticks = 0
+    while time.ticks_ms() - start <= sample_time_ms:
+      value = sensor.value()
+      if last_value != value:
+        if first == None:
+          first = time.ticks_ms()
+        last = time.ticks_ms()
+        ticks += 1
+        last_value = value
+
+    if not first or not last:
+      results.append(0.0)
       continue
 
     # calculate the average tick between transitions in ms
-    average = (changes[i][-1] - changes[i][0]) / (len(changes[i]) - 1)
+    average = (last - first) / ticks
 
     # scale the result to a 0...100 range where 0 is very dry
     # and 100 is standing in water
     #
     # dry = 20ms per transition, wet = 60ms per transition
     scaled = (min(40, max(0, average - 20)) / 40) * 100
-    results.append(scaled)
+    results.append(round(scaled, 2))
 
   return results
 
