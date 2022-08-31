@@ -61,7 +61,7 @@ def needs_provisioning():
   # if config fails to import (missing or corrupt) then we need to provision
   try:
     import config
-    if not config.provisioned: # provisioned flag is not set
+    if not helpers.get_config("provisioned"):
       return True
   except ImportError as e:
     logging.error("> error in config.py", e)
@@ -82,7 +82,7 @@ def wake_reason():
 def halt(message):
   logging.error(message)
   warn_led(WARN_LED_BLINK)
-  sleep(config.reading_frequency)
+  sleep(helpers.get_config("reading_frequency"))
 
 # returns True if we've used up 90% of the internal filesystem
 def low_disk_space():
