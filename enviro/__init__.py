@@ -152,7 +152,7 @@ def pulse_activity_led(speed_hz = 1):
 def stop_activity_led():
   global activity_led_timer
   activity_led_timer.deinit()
-  activity_led_pwm.duty_u16(value)
+  activity_led_pwm.duty_u16(0)
 
 # returns the reason the board woke up from deep sleep
 def get_wake_reason():
