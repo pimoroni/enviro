@@ -33,8 +33,6 @@ i2c = PimoroniI2C(I2C_SDA_PIN, I2C_SCL_PIN, 100000)
 activity_led_pwm = PWM(Pin(ACTIVITY_LED_PIN))
 activity_led_pwm.freq(1000)
 activity_led_pwm.duty_u16(0)
-activity_led_timer = Timer(-1)
-activity_led_pulse_speed_hz = 1
 
 # intialise the pcf85063a real time clock chip
 rtc = PCF85063A(i2c)
@@ -63,12 +61,12 @@ def needs_provisioning():
   # if config fails to import (missing or corrupt) then we need to provision
   try:
     import config
-    if not config.provisioned:
+    if not config.provisioned: # provisioned flag is not set
       return True
-    return False
   except ImportError as e:
     logging.error("> error in config.py", e)
-  return True
+    return True # error importing config
+  return False # config imported fine
 
 def provision():
   # this import starts the provisioning process and control will never 
@@ -130,28 +128,31 @@ warn_led(WARN_LED_OFF)
 
 # set the brightness of the activity led
 def activity_led(brightness):
-  stop_activity_led()
   brightness = max(0, min(100, brightness)) # clamp to range
   # gamma correct the brightness (gamma 2.8)
   value = int(pow(brightness / 100.0, 2.8) * 65535.0 + 0.5)
   activity_led_pwm.duty_u16(value)
   
+activity_led_timer = Timer(-1)
+activity_led_pulse_speed_hz = 1
 def activity_led_callback(t):
   # updates the activity led brightness based on a sinusoid seeded by the current time
-  activity_led((math.sin(time.ticks_ms() * math.pi * 2 / (1000 / activity_led_pulse_speed_hz)) * 40) + 60)
+  brightness = (math.sin(time.ticks_ms() * math.pi * 2 / (1000 / activity_led_pulse_speed_hz)) * 40) + 60
+  value = int(pow(brightness / 100.0, 2.8) * 65535.0 + 0.5)
+  activity_led_pwm.duty_u16(value)
 
 # set the activity led into pulsing mode
 def pulse_activity_led(speed_hz = 1):
   global activity_led_timer, activity_led_pulse_speed_hz
   activity_led_pulse_speed_hz = speed_hz
-  stop_activity_led() # if led already active then kill timer
+  activity_led_timer.deinit()
   activity_led_timer.init(period=50, mode=Timer.PERIODIC, callback=activity_led_callback)
 
 # turn off the activity led and disable any pulsing animation that's running
 def stop_activity_led():
   global activity_led_timer
   activity_led_timer.deinit()
-  activity_led_pwm.duty_u16(0)
+  activity_led_pwm.duty_u16(value)
 
 # returns the reason the board woke up from deep sleep
 def get_wake_reason():
