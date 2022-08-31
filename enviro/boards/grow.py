@@ -15,17 +15,6 @@ moisture_sensor_pins = [
   Pin(13, Pin.IN, Pin.PULL_DOWN)
 ]
 
-def sensors():
-  return [
-    "temperature",
-    "humidity",
-    "pressure",
-    "light",
-    "moisture_1",
-    "moisture_2",
-    "moisture_3"
-  ]
-
 def moisture_readings(sample_time_ms=500):
   results = []
 
@@ -74,7 +63,9 @@ def get_sensor_readings():
 
   moisture_data = moisture_readings(2000)
 
-  return {
+  from ucollections import OrderedDict
+
+  return OrderedDict({
     "temperature": round(bme280_data[0], 2),
     "humidity": round(bme280_data[2], 2),
     "pressure": round(bme280_data[1] / 100.0, 2),
@@ -82,7 +73,7 @@ def get_sensor_readings():
     "moisture_1": round(moisture_data[0], 2),
     "moisture_2": round(moisture_data[1], 2),
     "moisture_3": round(moisture_data[2], 2)
-  }
+  })
   
 def play_tone(frequency = None):
   if frequency:

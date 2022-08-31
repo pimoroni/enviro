@@ -1,20 +1,30 @@
-# set up and enable vsys hold as soon as possible so we don't go to sleep
-import math, time, machine, sys, os, ujson, rp2
-from phew import logging
+# keep the power rail alive by holding VSYS_EN high as early as possible
+from enviro.constants import *
+from machine import Pin
+hold_vsys_en_pin = Pin(HOLD_VSYS_EN_PIN, Pin.OUT, value=True)
 
-from machine import Pin, PWM, Timer
+# all the other imports, so many shiny modules
+import math, time, machine, sys, os, ujson
+from machine import Timer, PWM, RTC, ADC
+from phew import logging, remote_mount
 from pimoroni_i2c import PimoroniI2C
 from pcf85063a import PCF85063A
-from enviro.constants import *
 import enviro.helpers as helpers
 
+# read battery voltage - we have to toggle the wifi chip select
+# pin to take the reading - this is probably not ideal but doesn't
+# seem to cause issues. there is no obvious way to shut down the
+# wifi for a while properly to do this (wlan.disonnect() and
+# wlan.active(False) both seem to mess things up big style..)
+old_state = Pin(WIFI_CS_PIN).value()
+Pin(WIFI_CS_PIN, Pin.OUT, value=True)
+battery_voltage = round((ADC(29).read_u16() * 3.3 / 65535) * 3, 3)
+Pin(WIFI_CS_PIN).value(old_state)
 
 # set up the button, external trigger, and rtc alarm pins
 button_pin = Pin(BUTTON_PIN, Pin.IN, Pin.PULL_DOWN)
 rtc_alarm_pin = Pin(RTC_ALARM_PIN, Pin.IN, Pin.PULL_DOWN)
 external_trigger_pin = Pin(EXTERNAL_INTERRUPT_PIN, Pin.IN, Pin.PULL_DOWN)
-
-hold_vsys_en_pin = Pin(HOLD_VSYS_EN_PIN, Pin.OUT, value=True)
 
 # setup the i2c bus
 i2c = PimoroniI2C(I2C_SDA_PIN, I2C_SCL_PIN, 100000)
@@ -23,25 +33,14 @@ i2c = PimoroniI2C(I2C_SDA_PIN, I2C_SCL_PIN, 100000)
 activity_led_pwm = PWM(Pin(ACTIVITY_LED_PIN))
 activity_led_pwm.freq(1000)
 activity_led_pwm.duty_u16(0)
-
 activity_led_timer = Timer(-1)
 activity_led_pulse_speed_hz = 1
 
 # intialise the pcf85063a real time clock chip
 rtc = PCF85063A(i2c)
-
-# ensure rtc clock is running - this should be true anyway?
-i2c.writeto_mem(0x51, 0x00, b'\x00')
-
-# sync pico sdk rtc object to correct time so that standard micropython date 
-# and time methods return the correct value
+i2c.writeto_mem(0x51, 0x00, b'\x00') # ensure rtc is running (this should be default?)
 t = rtc.datetime()
-machine.RTC().datetime((t[0], t[1], t[2], t[6], t[3], t[4], t[5], 0))
-
-
-# will become our btree once the file is opened
-_upload_cache = None
-
+RTC().datetime((t[0], t[1], t[2], t[6], t[3], t[4], t[5], 0)) # synch PR2040 rtc too
 
 # jazz up that console! toot toot!
 print("       ___            ___            ___          ___          ___            ___       ")
@@ -50,27 +49,14 @@ print("     /  /:/_         \  \:\         \  \:\      /  /:/       /  /::\     
 print("    /  /:/ /\         \  \:\         \  \:\    /  /:/       /  /:/\:\      /  /:/\:\    ")
 print("   /  /:/ /:/_    _____\__\:\    ___  \  \:\  /__/::\      /  /:/~/:/     /  /:/  \:\   ")
 print("  /__/:/ /:/ /\  /__/::::::::\  /___\  \__\:\ \__\/\:\__  /__/:/ /:/___  /__/:/ \__\:\  ")
-print("  \  \:\/:/ /:/  \  \:\^^^__\/  \  \:\ |  |:|    \  \:\/\ \  \:\/:::::/  \  \:\ /  /:/  ")
-print("   \  \::/ /:/    \  \:\         \  \:\|  |:|     \__\::/  \  \::/^^^^    \  \:\  /:/   ")
+print("  \  \:\/:/ /:/  \  \:\~~~__\/  \  \:\ |  |:|    \  \:\/\ \  \:\/:::::/  \  \:\ /  /:/  ")
+print("   \  \::/ /:/    \  \:\         \  \:\|  |:|     \__\::/  \  \::/~~~`    \  \:\  /:/   ")
 print("    \  \:\/:/      \  \:\         \  \:\__|:|     /  /:/    \  \:\         \  \:\/:/    ")
 print("     \  \::/        \  \:\         \  \::::/     /__/:/      \  \:\         \  \::/     ")
-print("      \__\/          \__\/          `^^^^^`      \__\/        \__\/          \__\/      ")
+print("      \__\/          \__\/          `~~~~~`      \__\/        \__\/          \__\/      ")
 print("")
 print("    -  --  ---- -----=--==--===  hey enviro, let's go!  ===--==--=----- ----  --  -     ")
 print("")
-
-
-def provision():
-  # this import starts the provisioning process and control will never 
-  # return from here
-  import enviro.provisioning
-
-
-# returns the reason we woke up
-def wake_reason():
-  reason = get_wake_reason()
-  return wake_reason_name(reason)
-
 
 # returns True if the board needs provisioning
 def needs_provisioning():
@@ -84,72 +70,42 @@ def needs_provisioning():
     logging.error("> error in config.py", e)
   return True
 
+def provision():
+  # this import starts the provisioning process and control will never 
+  # return from here
+  import enviro.provisioning
+
+# returns the reason we woke up
+def wake_reason():
+  reason = get_wake_reason()
+  return wake_reason_name(reason)
+
+# log the error, blink the warning led, and go back to sleep
+def halt(message):
+  logging.error(message)
+  warn_led(WARN_LED_BLINK)
+  sleep(config.reading_frequency)
 
 # returns True if we've used up 90% of the internal filesystem
 def low_disk_space():
-  try:
-    return (os.statvfs(".")[3] / os.statvfs(".")[2]) < 0.1
-  except:
-    # os.statvfs doesn't exist on remote mounts but in that case we can
-    # assume plenty of space
-    pass
+  if not remote_mount: # os.statvfs doesn't exist on remote mounts
+    return (os.statvfs(".")[3] / os.statvfs(".")[2]) < 0.1   
   return False
 
-
-# returns True if the rtc clock has been set - PCF85063A defaults to year 2000
-# so if current date much later then we know that the rtc has been synched
-def clock_set():
+# returns True if the rtc clock has been set
+def is_clock_set():
   return rtc.datetime()[0] > 2020 # year greater than 2020? we're golden!
 
-
-# connect to wifi and then attempt to fetch the current time from an ntp server
-# once fetch set the onboard rtc and the pico's own rtc
+# connect to wifi and attempt to fetch the current time from an ntp server
 def sync_clock_from_ntp():
   from phew import ntp
-
   if not helpers.connect_to_wifi():
     return False
-
   timestamp = ntp.fetch()
   if not timestamp:
-    logging.error("  - failed to fetch time from ntp server")
-    return False
-
-  # set the time on the rtc chip
-  rtc.datetime(timestamp)
-  logging.info("  - rtc synched")      
-
+    return False  
+  rtc.datetime(timestamp) # set the time on the rtc chip
   return True
-
-
-# save the provided readings into a cache file for future uploading
-def cache_upload(readings):
-  uploads_filename = f"uploads/{helpers.datetime_string()}.json"
-  with open(uploads_filename, "w") as f:
-    f.write(ujson.dumps(readings))
-
-
-# return the number of cached results waiting to be uploaded
-def cached_upload_count():
-  return len(os.listdir("uploads"))
-
-
-# save the provided readings into a todays readings data file
-def save_reading(readings):
-  # open todays reading file and save readings
-  readings_filename = f"readings/{helpers.date_string()}.txt"
-  new_file = not helpers.file_exists(readings_filename)
-  with open(readings_filename, "a") as f:
-    if new_file:
-      # new readings file so write out column headings first
-      f.write("time," + ",".join(sensors()) + "\r\n")
-
-    # write sensor data
-    row = [helpers.datetime_string()]
-    for key in sensors():
-      row.append(str(readings[key]))
-    f.write(",".join(row) + "\r\n")
-
 
 # returns true if the button is held for the number of seconds provided
 def button_held_for(seconds):
@@ -158,9 +114,9 @@ def button_held_for(seconds):
     if time.time() - start > seconds:
       return True
     time.sleep(0.1)
+  return False
 
-
-
+# set the state of the warning led (off, on, blinking)
 def warn_led(state):
   if state == WARN_LED_OFF:
     rtc.set_clock_output(PCF85063A.CLOCK_OUT_OFF)
@@ -169,19 +125,12 @@ def warn_led(state):
   elif state == WARN_LED_BLINK:
     rtc.set_clock_output(PCF85063A.CLOCK_OUT_1HZ)
     
-# the pcf85063a defaults to 32KHz clock output so
-# we need to explicitly turn that off by default
+# the pcf85063a defaults to 32KHz clock output so need to explicitly turn off
 warn_led(WARN_LED_OFF)
 
-def get_date_str(self):
-  datetime = rtc.datetime()
-  return "{:04}-{:02}-{:02}".format(datetime[0], datetime[1], datetime[2])
-
-def get_datetime_str(self):
-  datetime = rtc.datetime()
-  return "{:04}-{:02}-{:02} {:02}:{:02}:{:02}".format(datetime[0], datetime[1], datetime[2], datetime[4], datetime[5], datetime[6])
-
+# set the brightness of the activity led
 def activity_led(brightness):
+  stop_activity_led()
   brightness = max(0, min(100, brightness)) # clamp to range
   # gamma correct the brightness (gamma 2.8)
   value = int(pow(brightness / 100.0, 2.8) * 65535.0 + 0.5)
@@ -191,18 +140,20 @@ def activity_led_callback(t):
   # updates the activity led brightness based on a sinusoid seeded by the current time
   activity_led((math.sin(time.ticks_ms() * math.pi * 2 / (1000 / activity_led_pulse_speed_hz)) * 40) + 60)
 
+# set the activity led into pulsing mode
 def pulse_activity_led(speed_hz = 1):
   global activity_led_timer, activity_led_pulse_speed_hz
   activity_led_pulse_speed_hz = speed_hz
   stop_activity_led() # if led already active then kill timer
   activity_led_timer.init(period=50, mode=Timer.PERIODIC, callback=activity_led_callback)
 
+# turn off the activity led and disable any pulsing animation that's running
 def stop_activity_led():
   global activity_led_timer
   activity_led_timer.deinit()
-  activity_led(0)
+  activity_led_pwm.duty_u16(0)
 
-
+# returns the reason the board woke up from deep sleep
 def get_wake_reason():
   wake_reason = None
   if button_pin.value():
@@ -211,12 +162,11 @@ def get_wake_reason():
     wake_reason = WAKE_REASON_RTC_ALARM
   elif not external_trigger_pin.value():
     wake_reason = WAKE_REASON_EXTERNAL_TRIGGER
-
-
   return wake_reason
 
+# convert a wake reason into it's name
 def wake_reason_name(wake_reason):
-  wake_reason_names = {
+  names = {
     None: "unknown",
     WAKE_REASON_PROVISION: "provisioning",
     WAKE_REASON_BUTTON_PRESS: "button",
@@ -224,60 +174,97 @@ def wake_reason_name(wake_reason):
     WAKE_REASON_EXTERNAL_TRIGGER: "external_trigger",
     WAKE_REASON_RAIN_TRIGGER: "rain_sensor"
   }
+  return names[wake_reason] if wake_reason in names else None
 
-  if wake_reason in wake_reason_names:
-    return wake_reason_names[wake_reason]
-  return None
-
-
-
-# guess which type of board this is based on the devices on the i2c bus
-# and state of certain pins at startup
-def detect_model():
-  # determine which type of board is connected
+# guess board type based on devices on the i2c bus and pin state
+def detect_model():  
   i2c_devices = i2c.scan()
-
   result = None
   if 56 in i2c_devices: # 56 = colour / light sensor and only present on Indoor
     result = "indoor"
   elif 35 in i2c_devices: # 35 = ltr-599 on grow & weather
     pump1_pin = Pin(10, Pin.IN, Pin.PULL_UP)
-    result = "grow" if pump1_pin.value() == False else "weather"
-    # disable the pull up (otherwise this keeps the weather board awake)
-    pump1_pin.init(pull=None)
-  else:
-    # otherwise it's urban, we'll need to add camera in the future too...
-    result = "urban"
-
+    result = "grow" if pump1_pin.value() == False else "weather"    
+    pump1_pin.init(pull=None) # disable the pull up (or weather stays awake)
+  else:    
+    result = "urban" # otherwise it's urban..
   return result
 
+# return the module that implements this board type
+def get_board():
+  model = detect_model()
+  if model == "indoor":
+    import enviro.boards.indoor as board
+  if model == "grow":
+    import enviro.boards.grow as board
+  if model == "weather":
+    import enviro.boards.weather as board
+  if model == "urban":
+    import enviro.boards.urban as board
+  return board
 
-# import board specific methods
-model = detect_model()
-if model == "indoor":
-  from enviro.boards.indoor import sensors, get_sensor_readings
-if model == "grow":
-  from enviro.boards.grow import sensors, get_sensor_readings
-if model == "weather":
-  from enviro.boards.weather import sensors, get_sensor_readings
-if model == "urban":
-  from enviro.boards.urban import sensors, get_sensor_readings
+# get the readings from the on board sensors
+def get_sensor_readings():
+  readings = get_board().get_sensor_readings()
+  readings["voltage"] = battery_voltage
+  return readings
 
-destination = helpers.get_config("destination")
-if destination == "http":
-  from enviro.destinations.http import upload_readings
-if destination == "mqtt":
-  from enviro.destinations.mqtt import upload_readings
-if destination == "adafruit_io":
-  from enviro.destinations.adafruit_io import upload_readings
+# save the provided readings into a todays readings data file
+def save_reading(readings):
+  # open todays reading file and save readings
+  readings_filename = f"readings/{helpers.date_string()}.txt"
+  new_file = not helpers.file_exists(readings_filename)
+  with open(readings_filename, "a") as f:
+    if new_file:
+      # new readings file so write out column headings first
+      f.write("timestamp," + ",".join(readings.keys()) + "\r\n")
+    # write sensor data
+    row = [helpers.datetime_string()]
+    for key in readings.keys():
+      row.append(str(readings[key]))
+    f.write(",".join(row) + "\r\n")
+
+  # is an upload destination set? if so cache this reading for upload too
+  if helpers.get_config("destination"):
+    cache_upload(readings)
+
+# save the provided readings into a cache file for future uploading
+def cache_upload(readings):
+  payload = {
+    "nickname": helpers.get_config("nickname"),
+    "timestamp": helpers.datetime_string(),
+    "readings": readings,
+    "model": detect_model(),
+    "uid": helpers.uid()
+  }
+  uploads_filename = f"uploads/{helpers.datetime_string()}.json"
+  with open(uploads_filename, "w") as f:
+    f.write(ujson.dumps(payload))
+
+# return the number of cached results waiting to be uploaded
+def cached_upload_count():
+  return len(os.listdir("uploads"))
+
+# returns True if we have more cached uploads than our config allows
+def is_upload_needed():
+  return cached_upload_count() >= helpers.get_config("upload_frequency")
+
+# upload cached readings to the configured destination
+def upload_readings():
+  if not helpers.connect_to_wifi():
+    return False
+  destination = helpers.get_config("destination")
+  if destination == "http":
+    import enviro.destinations.http as destination
+  if destination == "mqtt":
+    import enviro.destinations.mqtt as destination
+  if destination == "adafruit_io":
+    import enviro.destinations.adafruit_io as destination
+  return destination.upload_readings()
 
 def startup():
   # write startup banner into log file
   logging.debug("> performing startup")
-
-  # keep the power rail alive by holding VSYS_EN high
-  logging.debug("  - hold vsys_en high")
-  hold_vsys_en_pin = Pin(HOLD_VSYS_EN_PIN, Pin.OUT, value=True)
 
   # log the wake reason
   logging.info("  - wake reason:", wake_reason())
@@ -293,13 +280,12 @@ def startup():
   # put the board into provisioning (setup) mode
   if user_requested_provisioning or needs_provisioning():
     logging.info("> entering provisioning mode")
-    enviro.provision()
+    provision()
     # control never returns to here, provisioning takes over comp letely
 
   # ensure we have a directory to store reading and upload files
   helpers.mkdir_safe("readings")
   helpers.mkdir_safe("uploads")
-
 
 def sleep(minutes = -1):
   logging.info("> going to sleep")
@@ -323,8 +309,10 @@ def sleep(minutes = -1):
   # case we can't (and don't need to) sleep.
   stop_activity_led()
 
-  from phew import disable_wifi
-  disable_wifi()
+  # if running via mpremote/pyboard.py with a remote mount then we can't
+  # reset the board so just exist
+  if remote_mount:
+    sys.exit()
 
   # we'll wait here until the rtc timer triggers and then reset the board
   logging.debug("  - on usb power (so can't shutdown) halt and reset instead")

@@ -1,76 +1,68 @@
-# enviro - wireless environmental monitoring and logging
+# Enviro - wireless environmental monitoring and logging
 #
-# on first run enviro will go into provisioning mode where it appears
-# as a wireless access point called "Enviro <board type> Setup". connect
+# On first run Enviro will go into provisioning mode where it appears
+# as a wireless access point called "Enviro <board type> Setup". Connect
 # to the access point with your phone, tablet or laptop and follow the
 # on screen instructions.
 #
-# the provisioning process will generate a `config.py` file which 
+# The provisioning process will generate a `config.py` file which 
 # contains settings like your wifi username/password, how often you
 # want to log data, and where to upload your data once it is collected.
 #
-# you can use enviro out of the box with the options that we supply
+# You can use enviro out of the box with the options that we supply
 # or alternatively you can create your own firmware that behaves how
 # you want it to - please share your setups with us! :-)
 #
-# need help? check out https://pimoroni.com/enviro-guide
+# Need help? check out https://pimoroni.com/enviro-guide
 #
-# happy data hoarding,
+# Happy data hoarding folks,
 #
-#   - the Pimoroni Pirate Crew
+#   - the Pimoroni pirate crew
 
+# import enviro firmware
 import enviro
-from enviro import logging
-import time, os, urequests
 
-
-# initialise 
+# initialise enviro, this will trigger provisioning if needed
 enviro.startup()
 
+# now that we know the device is provisioned import the config
+try:
+  import config
+except:
+  halt("! failed to load config.py")
 
-# import config now that we know provisioning isn't needed
-import config
+# if the clock isn't set...
+if not enviro.is_clock_set():
+  enviro.logging.info("> clock not set, synchronise from ntp server")
+  if not enviro.sync_clock_from_ntp():
+    # failed to talk to ntp server go back to sleep for another cycle
+    enviro.halt("! failed to synchronise clock")
+  enviro.logging.info("  - rtc synched")      
 
-# if the clock isn't set then we need to fetch the time from an NTP
-# server. this requires connecting to WiFi
-if not enviro.clock_set():
-  logging.info("> clock not set, synchronise from ntp server")
-  if not enviro.sync_clock_from_ntp():    
-    # if we failed to synchronise the clock then turn on the warning
-    # led and go back to sleep for another cycle
-    logging.error("! failed to synchronise clock")
-    enviro.warn_led(enviro.WARN_LED_BLINK)
-    enviro.sleep(config.reading_frequency)
-
-
+# check disk space...
 if enviro.low_disk_space():
-  # there is less than 10% of the filesystem available, this probably
-  # means that cached results are not getting uploaded and cleared so
-  # warn the user and go back to sleep
-  logging.error("! low disk space")
-  enviro.warn_led(enviro.WARN_LED_BLINK)
-  enviro.sleep(config.reading_frequency)
+  # less than 10% of diskspace left, this probably means cached results
+  # are not getting uploaded so warn the user and halt with an error
+  enviro.halt("! low disk space")
 
-
-# take a reading from the sensors
+# take a reading from the onboard sensors
 reading = enviro.get_sensor_readings()
 
+# here you can customise the sensor readings by adding extra information
+# or removing readings that you don't want, for example:
+# 
+#   del readings["temperature"]        # remove the temperature reading
+#
+#   readings["custom"] = my_reading()  # add my custom reading value
 
 # save the reading into the local reading files (look in "/readings")
 enviro.save_reading(reading)
 
+# if we have enough cached uploads...
+if enviro.is_upload_needed():
+  enviro.logging.info(f"> {enviro.cached_upload_count()} cache files need uploading")
+  if not enviro.upload_readings():
+    enviro.halt("! reading upload failed")
 
-# if we have a destination to send our readings to then also cache it
-# until our next scheduled upload
-if config.destination:
-  enviro.cache_upload(reading)
-
-
-# check if we've reached the time to upload our cached data
-cache_file_count = enviro.cached_upload_count()
-if cache_file_count >= config.upload_frequency:
-  logging.info(f"> {cache_file_count} cache files need uploading")
-
-  enviro.upload_readings()
-
+# go to sleep until our next scheduled reading
 enviro.sleep(config.reading_frequency)

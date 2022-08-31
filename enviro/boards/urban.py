@@ -26,17 +26,6 @@ PM2_5_PER_LITRE         = 11
 PM5_PER_LITRE           = 12
 PM10_PER_LITRE          = 13
 
-def sensors():
-  return [
-    "temperature",
-    "humidity",
-    "pressure",
-    "noise",
-    "pm1",
-    "pm2_5",
-    "pm10"
-  ]
-
 def particulates(particulate_data, measure):
   # bit of a fudge to convert decilitres into litres... who uses decilitre?!
   multiplier = 10 if measure >= PM0_3_PER_LITRE else 1
@@ -74,7 +63,8 @@ def get_sensor_readings():
   
   noise_vpp = round((max_value - min_value), 3)
 
-  return {
+  from ucollections import OrderedDict
+  return OrderedDict({
     "temperature": round(bme280_data[0], 2),
     "humidity": round(bme280_data[2], 2),
     "pressure": round(bme280_data[1] / 100.0, 2),
@@ -82,5 +72,5 @@ def get_sensor_readings():
     "pm1": particulates(particulate_data, PM1_UGM3), 
     "pm2_5": particulates(particulate_data, PM2_5_UGM3), 
     "pm10": particulates(particulate_data, PM10_UGM3), 
-  }
+  })
 

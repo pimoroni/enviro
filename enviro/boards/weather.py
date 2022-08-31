@@ -14,17 +14,6 @@ wind_direction_pin = Analog(26)
 wind_speed_pin = Pin(9, Pin.IN, Pin.PULL_UP)
 rain_pin = Pin(10, Pin.IN, Pin.PULL_DOWN)
 
-def sensors():
-  return [
-    "temperature",
-    "humidity",
-    "pressure",
-    "light",
-    "wind_speed",
-    "rain",
-    "wind_direction"
-  ]
-
 def wind_speed(sample_time_ms=500):  
   # get initial sensor state
   state = wind_speed_pin.value()
@@ -101,7 +90,8 @@ def get_sensor_readings():
 
   ltr_data = ltr559.get_reading()
 
-  return {
+  from ucollections import OrderedDict
+  return OrderedDict({
     "temperature": round(bme280_data[0], 2),
     "humidity": round(bme280_data[2], 2),
     "pressure": round(bme280_data[1] / 100.0, 2),
@@ -109,5 +99,5 @@ def get_sensor_readings():
     "wind_speed": wind_speed(),
     "rain": 0, #
     "wind_direction": wind_direction()
-  }
+  })
   

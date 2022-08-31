@@ -16,6 +16,9 @@ BUTTON_PIN                    = 7
 RTC_ALARM_PIN                 = 8
 RAIN_PIN                      = 10
 
+# system pins
+WIFI_CS_PIN                   = 25
+
 # wake reasons
 WAKE_REASON_UNKNOWN           = None
 WAKE_REASON_PROVISION         = 1

@@ -10,15 +10,6 @@ bh1745 = BreakoutBH1745(i2c)
 # reports bad results (this is undocumented...)
 i2c.writeto_mem(0x38, 0x44, b'\x02')
 
-def sensors():
-  return [
-    "temperature",
-    "humidity",
-    "pressure",
-    "luminance",
-    "color_temperature"
-  ]
-
 def lux_from_rgbc(r, g, b, c):
   if g < 1:
       tmp = 0
@@ -54,10 +45,11 @@ def get_sensor_readings():
 
   r, g, b, c = bh1745.rgbc_raw()
 
-  return {
+  from ucollections import OrderedDict
+  return OrderedDict({
     "temperature": round(data[0], 2),
     "humidity": round(data[2], 2),
     "pressure": round(data[1] / 100.0, 2),
     "luminance": lux_from_rgbc(r, g, b, c),
     "color_temperature": colour_temperature_from_rgbc(r, g, b, c)
-  }
+  })

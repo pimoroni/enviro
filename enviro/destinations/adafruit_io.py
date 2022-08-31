@@ -3,10 +3,6 @@ from enviro import logging
 import urequests, ujson, os, gc, time
 
 def upload_readings():
-  if not connect_to_wifi():
-    logging.error(f"  - cannot upload readings, wifi connection failed")
-    return False
-
   username = get_config("adafruit_io_username")
   headers = {'X-AIO-Key': get_config("adafruit_io_key"), 'Content-Type': 'application/json'}
 
@@ -24,7 +20,7 @@ def upload_readings():
           "created_at": timestamp,
           "feeds": []
         }
-        for key, value in data.items():
+        for key, value in data["readings"].items():
           key = key.replace("_", "-")
           payload["feeds"].append({
             "key": f"{nickname}-{key}",
@@ -49,3 +45,5 @@ def upload_readings():
         result.close()
     except OSError as e:
       logging.error(f"  - failed to upload '{cache_file}'")
+
+  return True

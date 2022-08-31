@@ -4,10 +4,6 @@ from enviro import logging
 import urequests, ujson, os, network, machine
 
 def upload_readings():
-  if not connect_to_wifi():
-    logging.error(f"  - cannot upload readings, wifi connection failed")
-    return False
-
   url = get_config("custom_http_url")
   logging.info(f"> uploading cached readings to {url}")
 
@@ -21,15 +17,7 @@ def upload_readings():
     cache_file = cache_file[0]
     try:
       with open(f"uploads/{cache_file}", "r") as f:
-        timestamp = cache_file.split(".")[0]
-        payload = {
-          "nickname": nickname,
-          "timestamp": timestamp,
-          "readings": ujson.load(f),
-          "model": enviro.model,
-          "uid": ("{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}").format(*machine.unique_id()),
-          "mac": ("{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}").format(*network.WLAN().config("mac"))
-        }
+        payload = ujson.load(f)
         result = urequests.post(url, auth=auth, json=payload)
         if result.status_code in [200, 201, 202]:
           logging.info(f"  - uploaded {cache_file}")
@@ -40,3 +28,5 @@ def upload_readings():
 
     except OSError as e:
       logging.error(f"  - failed to upload '{cache_file}'")
+
+  return True

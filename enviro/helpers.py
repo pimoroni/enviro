@@ -4,7 +4,7 @@ import phew
 
 def datetime_string():
   dt = machine.RTC().datetime()
-  return "{0:04d}-{1:02d}-{2:02d} {4:02d}:{5:02d}:{6:02d}".format(*dt)
+  return "{0:04d}-{1:02d}-{2:02d}T{4:02d}:{5:02d}:{6:02d}Z".format(*dt)
 
 def date_string():
   dt = machine.RTC().datetime()
@@ -19,6 +19,8 @@ def mkdir_safe(path):
 
 from phew import logging
 
+def uid():
+  return "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}".format(*machine.unique_id())
 
 def file_size(filename):
   try:
@@ -33,6 +35,10 @@ def file_exists(filename):
     return False
 
 def connect_to_wifi():
+  if phew.is_connected_to_wifi():
+    logging.info(f"> already connected to wifi")
+    return True
+
   wifi_ssid = get_config("wifi_ssid")
   wifi_password = get_config("wifi_password")
 

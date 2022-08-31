@@ -12,9 +12,6 @@ nickname = None
 wifi_ssid = None
 wifi_password = None
 
-# how many log files to keep
-log_count = 20
-
 # how often to wake up and take a reading (in minutes)
 reading_frequency = 15
 
