@@ -28,18 +28,6 @@ import time, os, urequests
 enviro.startup()
 
 
-# if button held for 3 seconds on startup then go into provisioning mode
-user_requested_provisioning = enviro.button_held_for(3)
-
-
-# if enviro isn't configured or the user requested provisioning then
-# put the board into provisioning (setup) mode
-if user_requested_provisioning or enviro.needs_provisioning():
-  logging.info("> entering provisioning mode")
-  enviro.provision()
-  # control never returns to here, provisioning takes over comp letely
-
-
 # import config now that we know provisioning isn't needed
 import config
 

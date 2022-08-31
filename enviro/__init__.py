@@ -1,15 +1,13 @@
 # set up and enable vsys hold as soon as possible so we don't go to sleep
 import math, time, machine, sys, os, ujson, rp2
+from phew import logging
+
 from machine import Pin, PWM, Timer
 from pimoroni_i2c import PimoroniI2C
 from pcf85063a import PCF85063A
 from enviro.constants import *
 import enviro.helpers as helpers
-from enviro.helpers import file_exists, date_string, datetime_string
-from phew import logging, ntp
-import phew
 
-rp2.country("GB")
 
 # set up the button, external trigger, and rtc alarm pins
 button_pin = Pin(BUTTON_PIN, Pin.IN, Pin.PULL_DOWN)
@@ -58,7 +56,7 @@ print("    \  \:\/:/      \  \:\         \  \:\__|:|     /  /:/    \  \:\       
 print("     \  \::/        \  \:\         \  \::::/     /__/:/      \  \:\         \  \::/     ")
 print("      \__\/          \__\/          `^^^^^`      \__\/        \__\/          \__\/      ")
 print("")
-print("       -  --  ---- ------=--==--===  i can has data?  ===--==--=------ ----  --  -      ")
+print("    -  --  ---- -----=--==--===  hey enviro, let's go!  ===--==--=----- ----  --  -     ")
 print("")
 
 
@@ -107,6 +105,8 @@ def clock_set():
 # connect to wifi and then attempt to fetch the current time from an ntp server
 # once fetch set the onboard rtc and the pico's own rtc
 def sync_clock_from_ntp():
+  from phew import ntp
+
   if not helpers.connect_to_wifi():
     return False
 
@@ -124,9 +124,6 @@ def sync_clock_from_ntp():
 
 # save the provided readings into a cache file for future uploading
 def cache_upload(readings):
-  # _upload_cache[helpers.datetime_string().encode("utf-8")] = json.dumps(readings).encode("utf-8")
-  # _upload_cache.flush()
-  # print(len(_upload_cache))
   uploads_filename = f"uploads/{helpers.datetime_string()}.json"
   with open(uploads_filename, "w") as f:
     f.write(ujson.dumps(readings))
@@ -276,10 +273,6 @@ if destination == "adafruit_io":
 
 def startup():
   # write startup banner into log file
-  logging.info("")
-  logging.info("hey enviro, let's go!")
-  logging.info(" - --=-=-===-=-=-- - ")
-  logging.info("")
   logging.debug("> performing startup")
 
   # keep the power rail alive by holding VSYS_EN high
@@ -293,22 +286,18 @@ def startup():
   logging.debug("  - turn on activity led")
   pulse_activity_led(0.5)
 
-  # initialise the upload cache database
-  #try:  
-    # this is a bit clunky but we want to open the file in read/write mode
-    # however that won't create the file if it doesn't exist, so we first
-    # attempt to open it for read/write
-  #  f = open("upload-cache.db", "r+b")
-  #except OSError:
-    # and if that fails we open it write (which would truncate an existing
-    # file if it was there)
-  #  f = open("upload-cache.db", "w+b")
-  #_upload_cache = btree.open(f)
+  # if button held for 3 seconds on startup then go into provisioning mode
+  user_requested_provisioning = button_held_for(3)
 
-  # ensure we have a directory to store reading files
+  # if enviro isn't configured or the user requested provisioning then
+  # put the board into provisioning (setup) mode
+  if user_requested_provisioning or needs_provisioning():
+    logging.info("> entering provisioning mode")
+    enviro.provision()
+    # control never returns to here, provisioning takes over comp letely
+
+  # ensure we have a directory to store reading and upload files
   helpers.mkdir_safe("readings")
-
-  # ensure we have a directory to store reading files
   helpers.mkdir_safe("uploads")
 
 
@@ -333,7 +322,9 @@ def sleep(minutes = -1):
   # if we're still awake it means power is coming from the USB port in which
   # case we can't (and don't need to) sleep.
   stop_activity_led()
-  phew.disable_wifi()
+
+  from phew import disable_wifi
+  disable_wifi()
 
   # we'll wait here until the rtc timer triggers and then reset the board
   logging.debug("  - on usb power (so can't shutdown) halt and reset instead")
