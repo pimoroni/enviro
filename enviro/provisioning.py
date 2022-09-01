@@ -113,7 +113,10 @@ def provision_step_5_done(request):
 def networks(request):
   networks = []
   for network in ap.scan():
-    networks.append(network[0].decode("ascii"))
+    network = network[0].decode("ascii").strip()
+    if network != "":
+      networks.append(network)
+  networks = list(set(networks)) # remove duplicates
   return json.dumps(networks), 200, "application/json"
 
 
