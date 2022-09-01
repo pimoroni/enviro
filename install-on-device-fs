@@ -13,11 +13,21 @@ echo "Copying Enviro firmware files to ${DEVICE}"
 
 function create_directory {
   echo -n "> creating directory $1"
-  mpremote connect ${DEVICE} mkdir $1 > /dev/null
-  if [ $? -eq 0 ] ; then
+
+  RESULT=$(mpremote connect ${DEVICE} mkdir $1)
+  ERROR=$?
+
+
+  if [ $ERROR -eq 0 ] ; then
     echo " .. done!"
   else
-    echo " .. already exists, skipping."
+    if [[ "$RESULT" == *"EEXIST"* ]] ; then
+      echo " .. already exists, skipping."
+    else
+      echo " .. failed!"
+      echo "! it looks like this device is already in use - is Thonny running?"
+      exit 1
+    fi
   fi
 }
 
@@ -26,7 +36,11 @@ function copy {
   do
     echo -n "> copying file $file"
     mpremote connect ${DEVICE} cp $file $2 > /dev/null
-    echo " .. done!"
+    if [ $? -eq 0 ] ; then
+      echo " .. done!"
+    else
+      echo " .. failed!"
+    fi
   done
 }
 
