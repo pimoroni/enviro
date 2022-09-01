@@ -254,14 +254,23 @@ def is_upload_needed():
 def upload_readings():
   if not helpers.connect_to_wifi():
     return False
+
   destination = helpers.get_config("destination")
-  if destination == "http":
-    import enviro.destinations.http as destination
-  if destination == "mqtt":
-    import enviro.destinations.mqtt as destination
-  if destination == "adafruit_io":
-    import enviro.destinations.adafruit_io as destination
-  return destination.upload_readings()
+  exec(f"import enviro.destinations.{destination}")
+  destination_module = sys.modules[f"enviro.destinations.{destination}"]
+  for cache_file in os.ilistdir("uploads"):
+    with open(f"uploads/{cache_file[0]}", "r") as f:
+      success = destination_module.upload_reading(ujson.load(f))
+      if not success:
+        logging.error(f"! failed to upload '{cache_file[0]}' to {destination}")
+        return False
+
+      # remove the cache file now uploaded
+      logging.info(f"  - uploaded {cache_file[0]} to {destination}")
+    
+    os.remove(f"uploads/{cache_file[0]}")
+        
+  return True
 
 def startup():
   # write startup banner into log file
