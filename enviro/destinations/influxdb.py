@@ -1,5 +1,5 @@
-from enviro.helpers import get_config
 import urequests, time
+import config
 
 def url_encode(t):
   result = ""
@@ -14,7 +14,7 @@ def url_encode(t):
   return result
 
 def upload_reading(reading):  
-  bucket = get_config("influxdb_bucket")
+  bucket = config.influxdb_bucket
 
   payload = ""
   for key, value in reading["readings"].items():
@@ -33,13 +33,13 @@ def upload_reading(reading):
     nickname = reading["nickname"]
     payload += f"{key},device={nickname} value={value}"
 
-  influxdb_token = get_config("influxdb_token")
+  influxdb_token = config.influxdb_token
   headers = {
     "Authorization": f"Token {influxdb_token}"
   }
 
-  url = get_config("influxdb_url")
-  org = get_config("influxdb_org")
+  url = config.influxdb_url
+  org = config.influxdb_org
   url += f"/api/v2/write?precision=s&org={url_encode(org)}&bucket={url_encode(bucket)}"
  
   try:

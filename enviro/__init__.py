@@ -1,130 +1,31 @@
 # keep the power rail alive by holding VSYS_EN high as early as possible
+# ===========================================================================
 from enviro.constants import *
 from machine import Pin
 hold_vsys_en_pin = Pin(HOLD_VSYS_EN_PIN, Pin.OUT, value=True)
 
-# all the other imports, so many shiny modules
-import math, time, machine, sys, os, ujson
-from machine import Timer, PWM, RTC, ADC
-from phew import logging, remote_mount
+# detect board model based on devices on the i2c bus and pin state
+# ===========================================================================
 from pimoroni_i2c import PimoroniI2C
-from pcf85063a import PCF85063A
-import enviro.helpers as helpers
-
-# read battery voltage - we have to toggle the wifi chip select
-# pin to take the reading - this is probably not ideal but doesn't
-# seem to cause issues. there is no obvious way to shut down the
-# wifi for a while properly to do this (wlan.disonnect() and
-# wlan.active(False) both seem to mess things up big style..)
-old_state = Pin(WIFI_CS_PIN).value()
-Pin(WIFI_CS_PIN, Pin.OUT, value=True)
-battery_voltage = round((ADC(29).read_u16() * 3.3 / 65535) * 3, 3)
-Pin(WIFI_CS_PIN).value(old_state)
-
-# set up the button, external trigger, and rtc alarm pins
-button_pin = Pin(BUTTON_PIN, Pin.IN, Pin.PULL_DOWN)
-rtc_alarm_pin = Pin(RTC_ALARM_PIN, Pin.IN, Pin.PULL_DOWN)
-external_trigger_pin = Pin(EXTERNAL_INTERRUPT_PIN, Pin.IN, Pin.PULL_DOWN)
-
-# setup the i2c bus
 i2c = PimoroniI2C(I2C_SDA_PIN, I2C_SCL_PIN, 100000)
+i2c_devices = i2c.scan()
+model = None
+if 56 in i2c_devices: # 56 = colour / light sensor and only present on Indoor
+  model = "indoor"
+elif 35 in i2c_devices: # 35 = ltr-599 on grow & weather
+  pump1_pin = Pin(10, Pin.IN, Pin.PULL_UP)
+  model = "grow" if pump1_pin.value() == False else "weather"    
+  pump1_pin.init(pull=None) # disable the pull up (or weather stays awake)
+else:    
+  model = "urban" # otherwise it's urban..
 
 # set up the activity led
+# ===========================================================================
+from machine import PWM, Timer
+import math
 activity_led_pwm = PWM(Pin(ACTIVITY_LED_PIN))
 activity_led_pwm.freq(1000)
 activity_led_pwm.duty_u16(0)
-
-# intialise the pcf85063a real time clock chip
-rtc = PCF85063A(i2c)
-i2c.writeto_mem(0x51, 0x00, b'\x00') # ensure rtc is running (this should be default?)
-t = rtc.datetime()
-RTC().datetime((t[0], t[1], t[2], t[6], t[3], t[4], t[5], 0)) # synch PR2040 rtc too
-
-# jazz up that console! toot toot!
-print("       ___            ___            ___          ___          ___            ___       ")
-print("      /  /\          /__/\          /__/\        /  /\        /  /\          /  /\      ")
-print("     /  /:/_         \  \:\         \  \:\      /  /:/       /  /::\        /  /::\     ")
-print("    /  /:/ /\         \  \:\         \  \:\    /  /:/       /  /:/\:\      /  /:/\:\    ")
-print("   /  /:/ /:/_    _____\__\:\    ___  \  \:\  /__/::\      /  /:/~/:/     /  /:/  \:\   ")
-print("  /__/:/ /:/ /\  /__/::::::::\  /___\  \__\:\ \__\/\:\__  /__/:/ /:/___  /__/:/ \__\:\  ")
-print("  \  \:\/:/ /:/  \  \:\~~~__\/  \  \:\ |  |:|    \  \:\/\ \  \:\/:::::/  \  \:\ /  /:/  ")
-print("   \  \::/ /:/    \  \:\         \  \:\|  |:|     \__\::/  \  \::/~~~`    \  \:\  /:/   ")
-print("    \  \:\/:/      \  \:\         \  \:\__|:|     /  /:/    \  \:\         \  \:\/:/    ")
-print("     \  \::/        \  \:\         \  \::::/     /__/:/      \  \:\         \  \::/     ")
-print("      \__\/          \__\/          `~~~~~`      \__\/        \__\/          \__\/      ")
-print("")
-print("    -  --  ---- -----=--==--===  hey enviro, let's go!  ===--==--=----- ----  --  -     ")
-print("")
-
-# returns True if the board needs provisioning
-def needs_provisioning():
-  # if config fails to import (missing or corrupt) then we need to provision
-  try:
-    import config
-    if not helpers.get_config("provisioned"):
-      return True
-  except ImportError as e:
-    logging.error("> error in config.py", e)
-    return True # error importing config
-  return False # config imported fine
-
-def provision():
-  # this import starts the provisioning process and control will never 
-  # return from here
-  import enviro.provisioning
-
-# returns the reason we woke up
-def wake_reason():
-  reason = get_wake_reason()
-  return wake_reason_name(reason)
-
-# log the error, blink the warning led, and go back to sleep
-def halt(message):
-  logging.error(message)
-  warn_led(WARN_LED_BLINK)
-  sleep(helpers.get_config("reading_frequency"))
-
-# returns True if we've used up 90% of the internal filesystem
-def low_disk_space():
-  if not remote_mount: # os.statvfs doesn't exist on remote mounts
-    return (os.statvfs(".")[3] / os.statvfs(".")[2]) < 0.1   
-  return False
-
-# returns True if the rtc clock has been set
-def is_clock_set():
-  return rtc.datetime()[0] > 2020 # year greater than 2020? we're golden!
-
-# connect to wifi and attempt to fetch the current time from an ntp server
-def sync_clock_from_ntp():
-  from phew import ntp
-  if not helpers.connect_to_wifi():
-    return False
-  timestamp = ntp.fetch()
-  if not timestamp:
-    return False  
-  rtc.datetime(timestamp) # set the time on the rtc chip
-  return True
-
-# returns true if the button is held for the number of seconds provided
-def button_held_for(seconds):
-  start = time.time()
-  while button_pin.value():
-    if time.time() - start > seconds:
-      return True
-    time.sleep(0.1)
-  return False
-
-# set the state of the warning led (off, on, blinking)
-def warn_led(state):
-  if state == WARN_LED_OFF:
-    rtc.set_clock_output(PCF85063A.CLOCK_OUT_OFF)
-  elif state == WARN_LED_ON:
-    rtc.set_clock_output(PCF85063A.CLOCK_OUT_1024HZ)
-  elif state == WARN_LED_BLINK:
-    rtc.set_clock_output(PCF85063A.CLOCK_OUT_1HZ)
-    
-# the pcf85063a defaults to 32KHz clock output so need to explicitly turn off
-warn_led(WARN_LED_OFF)
 
 # set the brightness of the activity led
 def activity_led(brightness):
@@ -154,6 +55,143 @@ def stop_activity_led():
   activity_led_timer.deinit()
   activity_led_pwm.duty_u16(0)
 
+# check whether device needs provisioning
+# ===========================================================================
+import time
+from phew import logging
+button_pin = Pin(BUTTON_PIN, Pin.IN, Pin.PULL_DOWN)
+needs_provisioning = False
+start = time.time()
+while button_pin.value(): # button held for 3 seconds go into provisioning
+  if time.time() - start > 3:
+    needs_provisioning = True
+    break
+
+try:
+  import config # fails to import (missing/corrupt) go into provisioning
+  if not config.provisioned: # provisioned flag not set go into provisioning
+    needs_provisioning = True
+except ImportError as e:
+  logging.error("> missing or corrupt config.py", e)
+  needs_provisioning = True
+
+if needs_provisioning:
+  logging.info("> entering provisioning mode")
+  import enviro.provisioning
+  # control never returns to here, provisioning takes over completely
+
+
+
+
+# all the other imports, so many shiny modules
+import machine, sys, os, ujson
+from machine import RTC, ADC
+import phew
+from pcf85063a import PCF85063A
+import enviro.helpers as helpers
+
+# read battery voltage - we have to toggle the wifi chip select
+# pin to take the reading - this is probably not ideal but doesn't
+# seem to cause issues. there is no obvious way to shut down the
+# wifi for a while properly to do this (wlan.disonnect() and
+# wlan.active(False) both seem to mess things up big style..)
+old_state = Pin(WIFI_CS_PIN).value()
+Pin(WIFI_CS_PIN, Pin.OUT, value=True)
+battery_voltage = round((ADC(29).read_u16() * 3.3 / 65535) * 3, 3)
+Pin(WIFI_CS_PIN).value(old_state)
+
+# set up the button, external trigger, and rtc alarm pins
+rtc_alarm_pin = Pin(RTC_ALARM_PIN, Pin.IN, Pin.PULL_DOWN)
+external_trigger_pin = Pin(EXTERNAL_INTERRUPT_PIN, Pin.IN, Pin.PULL_DOWN)
+
+# intialise the pcf85063a real time clock chip
+rtc = PCF85063A(i2c)
+i2c.writeto_mem(0x51, 0x00, b'\x00') # ensure rtc is running (this should be default?)
+t = rtc.datetime()
+RTC().datetime((t[0], t[1], t[2], t[6], t[3], t[4], t[5], 0)) # synch PR2040 rtc too
+
+# jazz up that console! toot toot!
+print("       ___            ___            ___          ___          ___            ___       ")
+print("      /  /\          /__/\          /__/\        /  /\        /  /\          /  /\      ")
+print("     /  /:/_         \  \:\         \  \:\      /  /:/       /  /::\        /  /::\     ")
+print("    /  /:/ /\         \  \:\         \  \:\    /  /:/       /  /:/\:\      /  /:/\:\    ")
+print("   /  /:/ /:/_    _____\__\:\    ___  \  \:\  /__/::\      /  /:/~/:/     /  /:/  \:\   ")
+print("  /__/:/ /:/ /\  /__/::::::::\  /___\  \__\:\ \__\/\:\__  /__/:/ /:/___  /__/:/ \__\:\  ")
+print("  \  \:\/:/ /:/  \  \:\~~~__\/  \  \:\ |  |:|    \  \:\/\ \  \:\/:::::/  \  \:\ /  /:/  ")
+print("   \  \::/ /:/    \  \:\         \  \:\|  |:|     \__\::/  \  \::/~~~`    \  \:\  /:/   ")
+print("    \  \:\/:/      \  \:\         \  \:\__|:|     /  /:/    \  \:\         \  \:\/:/    ")
+print("     \  \::/        \  \:\         \  \::::/     /__/:/      \  \:\         \  \::/     ")
+print("      \__\/          \__\/          `~~~~~`      \__\/        \__\/          \__\/      ")
+print("")
+print("    -  --  ---- -----=--==--===  hey enviro, let's go!  ===--==--=----- ----  --  -     ")
+print("")
+
+
+
+def connect_to_wifi():
+  if phew.is_connected_to_wifi():
+    logging.info(f"> already connected to wifi")
+    return True
+
+  wifi_ssid = config.wifi_ssid
+  wifi_password = config.wifi_password
+
+  logging.info(f"> connecting to wifi network '{wifi_ssid}'")
+  ip = phew.connect_to_wifi(wifi_ssid, wifi_password, timeout_seconds=30)
+
+  if not ip:
+    logging.error(f"! failed to connect to wireless network {wifi_ssid}")
+    return False
+
+  logging.info("  - ip address: ", ip)
+
+  return True
+
+# returns the reason we woke up
+def wake_reason():
+  reason = get_wake_reason()
+  return wake_reason_name(reason)
+
+# log the error, blink the warning led, and go back to sleep
+def halt(message):
+  logging.error(message)
+  warn_led(WARN_LED_BLINK)
+  sleep(config.reading_frequency)
+
+# returns True if we've used up 90% of the internal filesystem
+def low_disk_space():
+  if not phew.remote_mount: # os.statvfs doesn't exist on remote mounts
+    return (os.statvfs(".")[3] / os.statvfs(".")[2]) < 0.1   
+  return False
+
+# returns True if the rtc clock has been set
+def is_clock_set():
+  return rtc.datetime()[0] > 2020 # year greater than 2020? we're golden!
+
+# connect to wifi and attempt to fetch the current time from an ntp server
+def sync_clock_from_ntp():
+  from phew import ntp
+  if not connect_to_wifi():
+    return False
+  timestamp = ntp.fetch()
+  if not timestamp:
+    return False  
+  rtc.datetime(timestamp) # set the time on the rtc chip
+  return True
+
+# set the state of the warning led (off, on, blinking)
+def warn_led(state):
+  if state == WARN_LED_OFF:
+    rtc.set_clock_output(PCF85063A.CLOCK_OUT_OFF)
+  elif state == WARN_LED_ON:
+    rtc.set_clock_output(PCF85063A.CLOCK_OUT_1024HZ)
+  elif state == WARN_LED_BLINK:
+    rtc.set_clock_output(PCF85063A.CLOCK_OUT_1HZ)
+    
+# the pcf85063a defaults to 32KHz clock output so need to explicitly turn off
+warn_led(WARN_LED_OFF)
+
+
 # returns the reason the board woke up from deep sleep
 def get_wake_reason():
   wake_reason = None
@@ -177,23 +215,8 @@ def wake_reason_name(wake_reason):
   }
   return names[wake_reason] if wake_reason in names else None
 
-# guess board type based on devices on the i2c bus and pin state
-def detect_model():  
-  i2c_devices = i2c.scan()
-  result = None
-  if 56 in i2c_devices: # 56 = colour / light sensor and only present on Indoor
-    result = "indoor"
-  elif 35 in i2c_devices: # 35 = ltr-599 on grow & weather
-    pump1_pin = Pin(10, Pin.IN, Pin.PULL_UP)
-    result = "grow" if pump1_pin.value() == False else "weather"    
-    pump1_pin.init(pull=None) # disable the pull up (or weather stays awake)
-  else:    
-    result = "urban" # otherwise it's urban..
-  return result
-
 # return the module that implements this board type
 def get_board():
-  model = detect_model()
   if model == "indoor":
     import enviro.boards.indoor as board
   if model == "grow":
@@ -226,16 +249,16 @@ def save_reading(readings):
     f.write(",".join(row) + "\r\n")
 
   # is an upload destination set? if so cache this reading for upload too
-  if helpers.get_config("destination"):
+  if config.destination:
     cache_upload(readings)
 
 # save the provided readings into a cache file for future uploading
 def cache_upload(readings):
   payload = {
-    "nickname": helpers.get_config("nickname"),
+    "nickname": config.nickname,
     "timestamp": helpers.datetime_string(),
     "readings": readings,
-    "model": detect_model(),
+    "model": model,
     "uid": helpers.uid()
   }
   uploads_filename = f"uploads/{helpers.datetime_string()}.json"
@@ -248,14 +271,14 @@ def cached_upload_count():
 
 # returns True if we have more cached uploads than our config allows
 def is_upload_needed():
-  return cached_upload_count() >= helpers.get_config("upload_frequency")
+  return cached_upload_count() >= config.upload_frequency
 
 # upload cached readings to the configured destination
 def upload_readings():
-  if not helpers.connect_to_wifi():
+  if not connect_to_wifi():
     return False
 
-  destination = helpers.get_config("destination")
+  destination = config.destination
   exec(f"import enviro.destinations.{destination}")
   destination_module = sys.modules[f"enviro.destinations.{destination}"]
   for cache_file in os.ilistdir("uploads"):
@@ -282,16 +305,6 @@ def startup():
   # also immediately turn on the LED to indicate that we're doing something
   logging.debug("  - turn on activity led")
   pulse_activity_led(0.5)
-
-  # if button held for 3 seconds on startup then go into provisioning mode
-  user_requested_provisioning = button_held_for(3)
-
-  # if enviro isn't configured or the user requested provisioning then
-  # put the board into provisioning (setup) mode
-  if user_requested_provisioning or needs_provisioning():
-    logging.info("> entering provisioning mode")
-    provision()
-    # control never returns to here, provisioning takes over comp letely
 
   # ensure we have a directory to store reading and upload files
   helpers.mkdir_safe("readings")
@@ -321,7 +334,7 @@ def sleep(minutes = -1):
 
   # if running via mpremote/pyboard.py with a remote mount then we can't
   # reset the board so just exist
-  if remote_mount:
+  if phew.remote_mount:
     sys.exit()
 
   # we'll wait here until the rtc timer triggers and then reset the board
