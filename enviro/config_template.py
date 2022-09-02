@@ -34,3 +34,9 @@ mqtt_broker_password = None
 # adafruit ui settings
 adafruit_io_username = None
 adafruit_io_key = None
+
+# influxdb settings
+influxdb_org = None
+influxdb_url = None
+influxdb_token = None
+influxdb_bucket = None

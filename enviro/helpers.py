@@ -105,7 +105,7 @@ def get_values_from_file(filename, key = None, default = None):
   with open(filename, "r") as infile:
     result = {}  
     for line in infile.read().split("\n"):
-      parts = line.split("=")
+      parts = line.split("=", 1)
       if len(parts) > 1:
         read_key = parts[0].strip()
         read_value = eval(parts[1].strip())
