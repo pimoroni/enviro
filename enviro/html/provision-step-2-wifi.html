@@ -18,14 +18,15 @@
     
     <ul id="networks" class="picker">
     </ul>        
-    <input id="wifi_ssid" name="wifi_ssid" value="{{wifi_ssid}}" type="hidden" />
+
+    <input id="wifi_ssid" name="wifi_ssid" value="{{config.wifi_ssid}}" type="hidden" />
 
     <br>
 
     <h2>Enter your WiFi password so that we can <s>download pictures of cats</s> upload your data.</h2>
     <aside>If your device ever has a problem connecting to WiFi during startup then the alarm LED will blink red to let you know that something's wrong.</aside>
     <fieldset>
-      <input id="wifi_password" name="wifi_password" type="text" value="{{wifi_password}}" placeholder="e.g. Cats4lyfe&lt;3!" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" />
+      <input id="wifi_password" name="wifi_password" type="text" value="{{config.wifi_password}}" placeholder="e.g. Cats4lyfe&lt;3!" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" />
     </fieldset>
   </form>
 
@@ -37,7 +38,7 @@
 </section>
 
 <script>
-  var selectedNetwork = "{{wifi_ssid}}"
+  var selectedNetwork = "{{config.wifi_ssid}}"
 
   function loadNetworks() {
     document.getElementById("loading_networks_message").style.display = "block"
@@ -66,7 +67,7 @@
       }
 
       document.getElementById("loading_networks_message").style.display = "none"
-      document.getElementById("networks").style.display = "block"
+      document.getElementById("networks").style.display = "grid"
     })
   }
 

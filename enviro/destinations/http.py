@@ -1,32 +1,19 @@
-import enviro
-from enviro.helpers import get_config, connect_to_wifi
-from enviro import logging
-import urequests, ujson, os, network, machine
+import urequests
+import config
 
-def upload_readings():
-  url = get_config("custom_http_url")
-  logging.info(f"> uploading cached readings to {url}")
+def upload_reading(reading):
+  url = config.custom_http_url
 
   auth = None
-  if get_config("custom_http_username"):
-    auth = (get_config("custom_http_username"), get_config("custom_http_password"))
+  if config.custom_http_username:
+    auth = (config.custom_http_username, config.custom_http_password)
 
-  nickname = get_config("nickname")
+  try:
+    # post reading data to http endpoint
+    result = urequests.post(url, auth=auth, json=reading)
+    result.close()
+    return result.status_code in [200, 201, 202]
+  except:
+    pass      
 
-  for cache_file in os.ilistdir("uploads"):
-    cache_file = cache_file[0]
-    try:
-      with open(f"uploads/{cache_file}", "r") as f:
-        payload = ujson.load(f)
-        result = urequests.post(url, auth=auth, json=payload)
-        if result.status_code in [200, 201, 202]:
-          logging.info(f"  - uploaded {cache_file}")
-          os.remove(f"uploads/{cache_file}")
-        else:
-          logging.error(f"  - failed to upload '{cache_file}' ({result.status_code} {result.reason})", cache_file)
-        result.close()
-
-    except OSError as e:
-      logging.error(f"  - failed to upload '{cache_file}'")
-
-  return True
+  return False

@@ -32,7 +32,7 @@
         <span class="note">(best for long battery life)</span>
       </li>
     </ul>        
-    <input type="hidden" id="reading_frequency" name="reading_frequency" value="{{reading_frequency}}" />
+    <input type="hidden" id="reading_frequency" name="reading_frequency" value="{{config.reading_frequency}}" />
 
     <script>
       function selectReadingFrequency(reading_frequency) {
@@ -52,7 +52,7 @@
         })
       })
 
-      selectReadingFrequency("{{reading_frequency}}")
+      selectReadingFrequency("{{config.reading_frequency}}")
     </script>
 
     <aside class="note">
@@ -95,7 +95,7 @@
           <span class="note">(best for long battery life)</span>
         </li>
       </ul>        
-      <input type="hidden" id="upload_frequency" name="upload_frequency" value="{{upload_frequency}}" />
+      <input type="hidden" id="upload_frequency" name="upload_frequency" value="{{config.upload_frequency}}" />
 
       <script>
         function selectUploadFrequency(upload_frequency) {
@@ -115,7 +115,7 @@
           })
         })
   
-        selectUploadFrequency("{{upload_frequency}}")
+        selectUploadFrequency("{{config.upload_frequency}}")
       </script>
 
       <aside class="note">
