@@ -107,6 +107,8 @@ external_trigger_pin = Pin(EXTERNAL_INTERRUPT_PIN, Pin.IN, Pin.PULL_DOWN)
 # intialise the pcf85063a real time clock chip
 rtc = PCF85063A(i2c)
 i2c.writeto_mem(0x51, 0x00, b'\x00') # ensure rtc is running (this should be default?)
+rtc.enable_timer_interrupt(False)
+
 t = rtc.datetime()
 RTC().datetime((t[0], t[1], t[2], t[6], t[3], t[4], t[5], 0)) # synch PR2040 rtc too
 
@@ -156,7 +158,7 @@ def wake_reason():
 def halt(message):
   logging.error(message)
   warn_led(WARN_LED_BLINK)
-  sleep(config.reading_frequency)
+  sleep()
 
 # returns True if we've used up 90% of the internal filesystem
 def low_disk_space():
@@ -310,19 +312,32 @@ def startup():
   helpers.mkdir_safe("readings")
   helpers.mkdir_safe("uploads")
 
-def sleep(minutes = -1):
+def sleep():
   logging.info("> going to sleep")
 
   # make sure the rtc flags are cleared before going back to sleep
-  logging.debug("  - clearing rtc alarm flags")
-  rtc.clear_timer_flag()
+  logging.debug("  - clearing and disabling timer and alarm")
   rtc.clear_alarm_flag()
 
-  # if wake time supplied then set rtc timer
-  if minutes != -1:
-    logging.info(f"  - setting timer to wake in {minutes} minutes")
-    rtc.enable_timer_interrupt(True)
-    rtc.set_timer(minutes, PCF85063A.TIMER_TICK_1_OVER_60HZ)  
+  # set alarm to wake us up for next reading
+  dt = rtc.datetime()
+  hour, minute = dt[3:5]
+
+  # calculate how many minutes into the day we are
+  minute = math.floor(minute / config.reading_frequency) * config.reading_frequency
+  minute += config.reading_frequency
+  while minute >= 60:      
+    minute -= 60
+    hour += 1
+  if hour >= 24:
+    hour -= 24
+  ampm = "am" if hour < 12 else "pm"
+
+  logging.info(f"  - setting alarm to wake at {hour:02}:{minute:02}{ampm}")
+
+  # sleep until next scheduled reading
+  rtc.set_alarm(0, minute, hour)
+  rtc.enable_alarm_interrupt(True)
 
   # disable the vsys hold, causing us to turn off
   logging.info("  - shutting down")
@@ -339,7 +354,7 @@ def sleep(minutes = -1):
 
   # we'll wait here until the rtc timer triggers and then reset the board
   logging.debug("  - on usb power (so can't shutdown) halt and reset instead")
-  while not rtc.read_timer_flag():    
+  while not rtc.read_alarm_flag():    
     time.sleep(0.25)
 
     if button_pin.value(): # allow button to force reset

@@ -19,10 +19,10 @@
 #
 #   - the Pimoroni pirate crew
 
-# import enviro firmware
+# import enviro firmware, this will trigger provisioning if needed
 import enviro
 
-# initialise enviro, this will trigger provisioning if needed
+# initialise enviro
 enviro.startup()
 
 # now that we know the device is provisioned import the config
@@ -65,4 +65,4 @@ if enviro.is_upload_needed():
     enviro.halt("! reading upload failed")
 
 # go to sleep until our next scheduled reading
-enviro.sleep(config.reading_frequency)
+enviro.sleep()
