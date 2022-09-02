@@ -87,6 +87,10 @@ def provision_step_4_destination(request):
         "mqtt_broker_password",
         "adafruit_io_username", 
         "adafruit_io_key"
+        "influxdb_org", 
+        "influxdb_url", 
+        "influxdb_token", 
+        "influxdb_bucket"
       ], 
       request.form
     )

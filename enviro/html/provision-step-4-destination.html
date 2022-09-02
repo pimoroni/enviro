@@ -16,8 +16,8 @@
           A custom HTTP endpoint
           <p class="note">We'll make a request to your supplied URL with all of the data included.</p>
         </li>
-        <li data-destination="influx_db">
-          InfluxDB &ndash; coming soon!
+        <li data-destination="influxdb">
+          InfluxDB
           <p class="note">The Time Series Data Platform where developers build IoT, analytics, and cloud applications.</p>
         </li>
         <li data-destination="mqtt">
@@ -47,6 +47,32 @@
         <fieldset>
           <input type="text" name="mqtt_broker_username" value="{{mqtt_broker_username}}" placeholder="Username (e.g. data_junkie)" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" />
           <input type="text" name="mqtt_broker_password" value="{{mqtt_broker_password}}" placeholder="Password (e.g. ih3artd4ta)" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" />
+        </fieldset>
+      </div>
+
+      <div id="destination_influxdb">
+        <h2>Enter your InfluxDB org.</h2>
+        <aside>This is usually your e-mail address.</aside>
+        <fieldset>
+          <input type="text" name="influxdb_org" value="{{influxdb_org}}" placeholder="e.g. geoff@datalover.com" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" />
+        </fieldset>
+        <br>
+        <h2>Enter your InfluxDB URL.</h2>
+        <aside>You can find this under Organisation -> Settings in the InfluxDB dashboard.</aside>
+        <fieldset>
+          <input type="text" name="influxdb_url" value="{{influxdb_url}}" placeholder="e.g. https://eu-central-1-1.aws.cloud2.influxdata.com" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" />
+        </fieldset>
+        <br>
+        <h2>Enter your InfluxDB API Token.</h2>
+        <aside>You can create this under Load Data -> API Tokens in the InfluxDB dashboard.</aside>
+        <fieldset>
+          <input type="text" name="influxdb_token" value="{{influxdb_token}}" placeholder="It will be a long sequence of characters ending in '=='" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" />
+        </fieldset>
+        <br>
+        <h2>Enter your InfluxDB Bucket.</h2>
+        <aside>The name of the bucket you want to add your Enviro data to (must be created first).</aside>
+        <fieldset>
+          <input type="text" name="influxdb_bucket" value="{{influxdb_bucket}}" placeholder="e.g. enviro" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" />
         </fieldset>
       </div>
 
@@ -104,11 +130,9 @@
     }
 
     document.querySelectorAll("#destinations >li").forEach((listItem) => {
-      if(listItem.dataset.destination != "influx_db") {
-        listItem.addEventListener("click", function(e) {
-          selectDestination(listItem.dataset.destination)
-        })
-      }
+      listItem.addEventListener("click", function(e) {
+        selectDestination(listItem.dataset.destination)
+      })
     })
 
     selectDestination("{{destination}}")
