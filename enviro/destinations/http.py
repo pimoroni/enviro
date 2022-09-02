@@ -1,12 +1,12 @@
-from enviro.helpers import get_config
 import urequests
+import config
 
 def upload_reading(reading):
-  url = get_config("custom_http_url")
+  url = config.custom_http_url
 
   auth = None
-  if get_config("custom_http_username"):
-    auth = (get_config("custom_http_username"), get_config("custom_http_password"))
+  if config.custom_http_username:
+    auth = (config.custom_http_username, config.custom_http_password)
 
   try:
     # post reading data to http endpoint
