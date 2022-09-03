@@ -12,21 +12,22 @@ if not helpers.file_exists("config.py"):
 
 # write the current values in config to the config.py file
 def write_config():
-  lines = []
   with open("config.py", "r") as infile:
-    lines = infile.read().split("\n")
-
-  for i in range(0, len(lines)):
-    line = lines[i]
-    parts = line.split("=", 1)
-    if len(parts) == 2:
-      key = parts[0].strip()
-      if hasattr(config, key):
-        value = getattr(config, key)
-        lines[i] = f"{key} = {repr(value)}"
-
-  with open("config.py", "w") as outfile:
-    outfile.write("\n".join(lines))
+    with open("config.py.new", "w") as outfile:
+      for line in infile:
+        try:
+          key, value = line.split("=", 1)
+        except ValueError:
+          outfile.write(line)
+        else:
+          key = key.strip()
+          try:
+            value = getattr(config, key)
+          except AttributeError:
+            outfile.write(line)
+          else:
+            outfile.write(f"{key} = {repr(value)}\n")
+  os.rename("config.py.new", "config.py")
 
 import config
 
