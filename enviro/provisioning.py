@@ -25,8 +25,6 @@ def write_config():
         value = getattr(config, key)
         lines[i] = f"{key} = {repr(value)}"
 
-  os.remove("config.py")
-
   with open("config.py", "w") as outfile:
     outfile.write("\n".join(lines))
 
