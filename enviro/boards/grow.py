@@ -15,7 +15,7 @@ moisture_sensor_pins = [
   Pin(13, Pin.IN, Pin.PULL_DOWN)
 ]
 
-def moisture_readings(sample_time_ms=500):
+def moisture_readings():
   results = []
 
   for i in range(0, 3):
@@ -27,7 +27,7 @@ def moisture_readings(sample_time_ms=500):
     first = None
     last = None
     ticks = 0
-    while time.ticks_ms() - start <= sample_time_ms:
+    while ticks < 10 and time.ticks_ms() - start <= 1000:
       value = sensor.value()
       if last_value != value:
         if first == None:
@@ -42,12 +42,14 @@ def moisture_readings(sample_time_ms=500):
 
     # calculate the average tick between transitions in ms
     average = (last - first) / ticks
-
     # scale the result to a 0...100 range where 0 is very dry
     # and 100 is standing in water
     #
-    # dry = 20ms per transition, wet = 60ms per transition
-    scaled = (min(40, max(0, average - 20)) / 40) * 100
+    # dry = 10ms per transition, wet = 90ms per transition
+    min_ms = 20
+    max_ms = 80
+    average = max(min_ms, min(max_ms, average)) # clamp range
+    scaled = ((average - min_ms) / (max_ms - min_ms)) * 100
     results.append(round(scaled, 2))
 
   return results
@@ -61,7 +63,7 @@ def get_sensor_readings():
 
   ltr_data = ltr559.get_reading()
 
-  moisture_data = moisture_readings(2000)
+  moisture_data = moisture_readings()
 
   from ucollections import OrderedDict
 
