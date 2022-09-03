@@ -220,11 +220,11 @@ def wake_reason_name(wake_reason):
 def get_board():
   if model == "indoor":
     import enviro.boards.indoor as board
-  if model == "grow":
+  elif model == "grow":
     import enviro.boards.grow as board
-  if model == "weather":
+  elif model == "weather":
     import enviro.boards.weather as board
-  if model == "urban":
+  elif model == "urban":
     import enviro.boards.urban as board
   return board
 
