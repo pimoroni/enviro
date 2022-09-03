@@ -56,7 +56,11 @@ logging.info("> creating web server...")
 def wrong_host_redirect(request):
   # if the client requested a resource at the wrong host then present 
   # a meta redirect so that the captive portal browser can be sent to the correct location
-  body = "<!DOCTYPE html><head><meta http-equiv=\"refresh\" content=\"0;URL='http://" + DOMAIN + "/provision-welcome'\" /></head>"
+  body = f"""\
+<!DOCTYPE html>
+<head>
+<meta http-equiv="refresh" content="0;URL='http://{DOMAIN}/provision-welcome'" />
+</head>"""
   return body
 
 
@@ -71,7 +75,7 @@ def provision_step_1_nickname(request):
   if request.method == "POST":
     config.nickname = request.form["nickname"]
     write_config()
-    return redirect("http://" + DOMAIN + "/provision-step-2-wifi")
+    return redirect(f"http://{DOMAIN}/provision-step-2-wifi")
   else:
     return render_template("enviro/html/provision-step-1-nickname.html", board=model)
 
@@ -82,7 +86,7 @@ def provision_step_2_wifi(request):
     config.wifi_ssid = request.form["wifi_ssid"]
     config.wifi_password = request.form["wifi_password"]
     write_config()
-    return redirect("http://" + DOMAIN + "/provision-step-3-logging")
+    return redirect(f"http://{DOMAIN}/provision-step-3-logging")
   else:
     return render_template("enviro/html/provision-step-2-wifi.html", board=model)
   
@@ -93,7 +97,7 @@ def provision_step_3_logging(request):
     config.reading_frequency = int(request.form["reading_frequency"])
     config.upload_frequency = int(request.form["upload_frequency"]) if request.form["upload_frequency"] else None
     write_config()
-    return redirect("http://" + DOMAIN + "/provision-step-4-destination")
+    return redirect(f"http://{DOMAIN}/provision-step-4-destination")
   else:
     return render_template("enviro/html/provision-step-3-logging.html", board=model)
     
@@ -125,7 +129,7 @@ def provision_step_4_destination(request):
     
     write_config()
 
-    return redirect("http://" + DOMAIN + "/provision-step-5-done")
+    return redirect(f"http://{DOMAIN}/provision-step-5-done")
   else:
     return render_template("enviro/html/provision-step-4-destination.html", board=model)
     
@@ -159,10 +163,10 @@ def networks(request):
 def catchall(request):
   # requested domain was wrong
   if request.headers.get("host") != DOMAIN:
-    return redirect("http://" + DOMAIN + "/wrong-host-redirect")
+    return redirect(f"http://{DOMAIN}/wrong-host-redirect")
 
   # check if requested file exists
-  file = "enviro/html{}".format(request.path)
+  file = f"enviro/html{request.path}"
   if helpers.file_exists(file):
     return serve_file(file)
 
