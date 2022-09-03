@@ -67,13 +67,12 @@ while button_pin.value(): # button held for 3 seconds go into provisioning
     needs_provisioning = True
     break
 
+needs_provisioning = True
 try:
   import config # fails to import (missing/corrupt) go into provisioning
-  if not config.provisioned: # provisioned flag not set go into provisioning
-    needs_provisioning = True
-except ImportError as e:
+  needs_provisioning = not config.provisioned
+except (ImportError, NameError) as e:
   logging.error("> missing or corrupt config.py", e)
-  needs_provisioning = True
 
 if needs_provisioning:
   logging.info("> entering provisioning mode")
