@@ -214,7 +214,7 @@ def wake_reason_name(wake_reason):
     WAKE_REASON_EXTERNAL_TRIGGER: "external_trigger",
     WAKE_REASON_RAIN_TRIGGER: "rain_sensor"
   }
-  return names[wake_reason] if wake_reason in names else None
+  return names.get(wake_reason)
 
 # return the module that implements this board type
 def get_board():
