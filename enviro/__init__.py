@@ -238,6 +238,7 @@ def get_sensor_readings():
 # save the provided readings into a todays readings data file
 def save_reading(readings):
   # open todays reading file and save readings
+  helpers.mkdir_safe("readings")
   readings_filename = f"readings/{helpers.date_string()}.txt"
   new_file = not helpers.file_exists(readings_filename)
   with open(readings_filename, "a") as f:
@@ -250,9 +251,6 @@ def save_reading(readings):
       row.append(str(readings[key]))
     f.write(",".join(row) + "\r\n")
 
-  # is an upload destination set? if so cache this reading for upload too
-  if config.destination:
-    cache_upload(readings)
 
 # save the provided readings into a cache file for future uploading
 def cache_upload(readings):
@@ -264,6 +262,7 @@ def cache_upload(readings):
     "uid": helpers.uid()
   }
   uploads_filename = f"uploads/{helpers.datetime_string()}.json"
+  helpers.mkdir_safe("uploads")
   with open(uploads_filename, "w") as f:
     f.write(ujson.dumps(payload))
 
@@ -307,10 +306,6 @@ def startup():
   # also immediately turn on the LED to indicate that we're doing something
   logging.debug("  - turn on activity led")
   pulse_activity_led(0.5)
-
-  # ensure we have a directory to store reading and upload files
-  helpers.mkdir_safe("readings")
-  helpers.mkdir_safe("uploads")
 
 def sleep():
   logging.info("> going to sleep")
