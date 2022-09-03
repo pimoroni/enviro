@@ -83,7 +83,7 @@ if needs_provisioning:
 
 
 # all the other imports, so many shiny modules
-import machine, sys, os, ujson
+import machine, sys, os, json
 from machine import RTC, ADC
 import phew
 from pcf85063a import PCF85063A
@@ -263,7 +263,7 @@ def cache_upload(readings):
   uploads_filename = f"uploads/{helpers.datetime_string()}.json"
   helpers.mkdir_safe("uploads")
   with open(uploads_filename, "w") as f:
-    f.write(ujson.dumps(payload))
+    json.dump(payload, f)
 
 # return the number of cached results waiting to be uploaded
 def cached_upload_count():
@@ -283,7 +283,7 @@ def upload_readings():
   destination_module = sys.modules[f"enviro.destinations.{destination}"]
   for cache_file in os.ilistdir("uploads"):
     with open(f"uploads/{cache_file[0]}", "r") as f:
-      success = destination_module.upload_reading(ujson.load(f))
+      success = destination_module.upload_reading(json.load(f))
       if not success:
         logging.error(f"! failed to upload '{cache_file[0]}' to {destination}")
         return False
