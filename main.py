@@ -55,14 +55,19 @@ reading = enviro.get_sensor_readings()
 #
 #   readings["custom"] = my_reading()  # add my custom reading value
 
-# save the reading into the local reading files (look in "/readings")
-enviro.save_reading(reading)
+# is an upload destination set?
+if enviro.config.destination:
+  # if so cache this reading for upload later
+  enviro.cache_upload(reading)
 
-# if we have enough cached uploads...
-if enviro.is_upload_needed():
-  enviro.logging.info(f"> {enviro.cached_upload_count()} cache files need uploading")
-  if not enviro.upload_readings():
-    enviro.halt("! reading upload failed")
+  # if we have enough cached uploads...
+  if enviro.is_upload_needed():
+    enviro.logging.info(f"> {enviro.cached_upload_count()} cache files need uploading")
+    if not enviro.upload_readings():
+      enviro.halt("! reading upload failed")
+else:
+  # otherwise save reading to local csv file (look in "/readings")
+  enviro.save_reading(reading)
 
 # go to sleep until our next scheduled reading
 enviro.sleep()
