@@ -40,3 +40,9 @@ influxdb_org = None
 influxdb_url = None
 influxdb_token = None
 influxdb_bucket = None
+
+# grow specific settings
+auto_water = False
+moisture_target_1 = 50
+moisture_target_2 = 50
+moisture_target_3 = 50

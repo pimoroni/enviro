@@ -52,7 +52,7 @@ def moisture_readings():
     # scale the result to a 0...100 range where 0 is very dry
     # and 100 is standing in water
     #
-    # dry = 10ms per transition, wet = 90ms per transition
+    # dry = 10ms per transition, wet = 80ms per transition
     min_ms = 20
     max_ms = 80
     average = max(min_ms, min(max_ms, average)) # clamp range
@@ -60,6 +60,15 @@ def moisture_readings():
     results.append(round(scaled, 2))
 
   return results
+
+# make a semi convincing drip noise
+def drip_noise():
+  piezo_pwm.duty_u16(32768)
+  for i in range(0, 10):
+      f = i * 20
+      piezo_pwm.freq((f * f) + 1000)      
+      time.sleep(0.02)
+  piezo_pwm.duty_u16(0)
 
 def water(moisture_levels):
   from enviro import config
@@ -73,11 +82,16 @@ def water(moisture_levels):
     if moisture_levels[i] < targets[i]:
       # determine a duration to run the pump for
       duration = round((targets[i] - moisture_levels[i]) / 25, 1)
-      logging.info(f"> running pump {i} for {duration} second (currently at {int(moisture_levels[i])}, target {targets[i]})")
 
-      pump_pins[i].value(1)
-      time.sleep(duration)
-      pump_pins[i].value(0)
+      if config.auto_water:
+        logging.info(f"> running pump {i} for {duration} second (currently at {int(moisture_levels[i])}, target {targets[i]})")
+        pump_pins[i].value(1)
+        time.sleep(duration)
+        pump_pins[i].value(0)
+      else:
+        for j in range(0, i + 1):
+          drip_noise()
+        time.sleep(0.5)
 
 def get_sensor_readings():
   # bme280 returns the register contents immediately and then starts a new reading
