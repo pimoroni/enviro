@@ -1,7 +1,20 @@
 import urequests
 import config
+from phew import logging
+import time
 
 def upload_reading(reading):
+  completed = False
+  while not completed:
+    status_code = send_reading(reading)
+    if status_code == 429:
+      time.sleep(30)
+      completed = False
+    else:
+      completed = True
+  return status_code == 200
+
+def send_reading(reading):
   # create adafruit.io payload format
   payload = {
     "created_at": reading["timestamp"],
@@ -22,7 +35,8 @@ def upload_reading(reading):
   try:
     result = urequests.post(url, json=payload, headers=headers)
     result.close()
-    return result.status_code == 200
+    logging.info(f"{result.status_code}: {result.reason}")
+    return result.status_code
   except:
     pass
   
