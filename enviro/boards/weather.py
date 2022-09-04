@@ -42,7 +42,7 @@ def startup():
     # go immediately back to sleep, we'll wake up at next scheduled reading
     hold_vsys_en_pin.init(Pin.IN)
 
-def wind_speed(sample_time_ms=500):  
+def wind_speed(sample_time_ms=1000):  
   # get initial sensor state
   state = wind_speed_pin.value()
 
