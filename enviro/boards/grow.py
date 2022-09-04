@@ -3,6 +3,7 @@ from breakout_bme280 import BreakoutBME280
 from breakout_ltr559 import BreakoutLTR559
 from machine import Pin, PWM
 from enviro import i2c
+from phew import logging
 
 bme280 = BreakoutBME280(i2c, 0x77)
 ltr559 = BreakoutLTR559(i2c)
@@ -13,6 +14,12 @@ moisture_sensor_pins = [
   Pin(15, Pin.IN, Pin.PULL_DOWN),
   Pin(14, Pin.IN, Pin.PULL_DOWN),
   Pin(13, Pin.IN, Pin.PULL_DOWN)
+]
+
+pump_pins = [
+  Pin(12, Pin.OUT, value=0),
+  Pin(11, Pin.OUT, value=0),
+  Pin(10, Pin.OUT, value=0)
 ]
 
 def moisture_readings():
@@ -54,6 +61,24 @@ def moisture_readings():
 
   return results
 
+def water(moisture_levels):
+  from enviro import config
+  targets = [
+    config.moisture_target_1, 
+    config.moisture_target_2,
+    config.moisture_target_3
+  ]
+
+  for i in range(0, 3):
+    if moisture_levels[i] < targets[i]:
+      # determine a duration to run the pump for
+      duration = round((targets[i] - moisture_levels[i]) / 25, 1)
+      logging.info(f"> running pump {i} for {duration} second (currently at {int(moisture_levels[i])}, target {targets[i]})")
+
+      pump_pins[i].value(1)
+      time.sleep(duration)
+      pump_pins[i].value(0)
+
 def get_sensor_readings():
   # bme280 returns the register contents immediately and then starts a new reading
   # we want the current reading so do a dummy read to discard register contents first
@@ -63,7 +88,9 @@ def get_sensor_readings():
 
   ltr_data = ltr559.get_reading()
 
-  moisture_data = moisture_readings()
+  moisture_levels = moisture_readings()
+  
+  water(moisture_levels) # run pumps if needed
 
   from ucollections import OrderedDict
 
@@ -72,9 +99,9 @@ def get_sensor_readings():
     "humidity": round(bme280_data[2], 2),
     "pressure": round(bme280_data[1] / 100.0, 2),
     "luminance": round(ltr_data[BreakoutLTR559.LUX], 2),
-    "moisture_1": round(moisture_data[0], 2),
-    "moisture_2": round(moisture_data[1], 2),
-    "moisture_3": round(moisture_data[2], 2)
+    "moisture_1": round(moisture_levels[0], 2),
+    "moisture_2": round(moisture_levels[1], 2),
+    "moisture_3": round(moisture_levels[2], 2)
   })
   
 def play_tone(frequency = None):
