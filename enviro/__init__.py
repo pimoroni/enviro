@@ -89,7 +89,7 @@ try:
   import config # fails to import (missing/corrupt) go into provisioning
   if not config.provisioned: # provisioned flag not set go into provisioning
     needs_provisioning = True
-except:
+except Exception as e:
   logging.error("> missing or corrupt config.py", e)
   needs_provisioning = True
 
