@@ -89,7 +89,7 @@ try:
   import config # fails to import (missing/corrupt) go into provisioning
   if not config.provisioned: # provisioned flag not set go into provisioning
     needs_provisioning = True
-except ImportError as e:
+except:
   logging.error("> missing or corrupt config.py", e)
   needs_provisioning = True
 
@@ -99,7 +99,7 @@ if needs_provisioning:
   # control never returns to here, provisioning takes over completely
 
 # all the other imports, so many shiny modules
-import machine, sys, os, ujson
+import machine, sys, os, json
 from machine import RTC, ADC
 import phew
 from pcf85063a import PCF85063A
@@ -266,8 +266,8 @@ def cache_upload(readings):
   }
   uploads_filename = f"uploads/{helpers.datetime_string()}.json"
   helpers.mkdir_safe("uploads")
-  with open(uploads_filename, "w") as f:
-    f.write(ujson.dumps(payload))
+  with open(uploads_filename, "w") as upload_file:
+    json.dump(payload, upload_file)
 
 # return the number of cached results waiting to be uploaded
 def cached_upload_count():
@@ -286,8 +286,8 @@ def upload_readings():
   exec(f"import enviro.destinations.{destination}")
   destination_module = sys.modules[f"enviro.destinations.{destination}"]
   for cache_file in os.ilistdir("uploads"):
-    with open(f"uploads/{cache_file[0]}", "r") as f:
-      success = destination_module.upload_reading(ujson.load(f))
+    with open(f"uploads/{cache_file[0]}", "r") as upload_file:
+      success = destination_module.upload_reading(json.load(upload_file))
       if not success:
         logging.error(f"! failed to upload '{cache_file[0]}' to {destination}")
         return False
