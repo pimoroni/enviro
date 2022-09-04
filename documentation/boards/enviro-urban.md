@@ -15,6 +15,7 @@ Enviro Urban is an all in one board for checking up on all the airborne nasties 
 |PM1|`moisture_1`|micrograms per cubic metre|µg/m³|`9`|
 |PM2.5|`moisture_2`|micrograms per cubic metre|µg/m³|`4`|
 |PM10|`moisture_3`|micrograms per cubic metre|µg/m³|`2`|
+|Voltage|`voltage`|volts|V|`4.035`|
 
 ## On-board devices
 
