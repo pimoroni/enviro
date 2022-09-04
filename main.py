@@ -29,7 +29,7 @@ enviro.startup()
 try:
   import config
 except:
-  halt("! failed to load config.py")
+  enviro.halt("! failed to load config.py")
 
 # if the clock isn't set...
 if not enviro.is_clock_set():
