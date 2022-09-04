@@ -6,18 +6,6 @@ Enviro Urban is an all in one board for checking up on all the airborne nasties 
 
 ## Readings
 
-    "temperature": round(bme280_data[0], 2),
-    "humidity": round(bme280_data[2], 2),
-    "pressure": round(bme280_data[1] / 100.0, 2),
-    "noise": round(noise_vpp, 2),
-    "pm1": particulates(particulate_data, PM1_UGM3), 
-    "pm2_5": particulates(particulate_data, PM2_5_UGM3), 
-    "pm10": particulates(particulate_data, PM10_UGM3), 
-  })
-
-
-
-
 |Name|Parameter|Unit|Symbol|Example|
 |---|---|---|---|---|
 |Temperature|`temperature`|celcius|°C|`22.11`|
