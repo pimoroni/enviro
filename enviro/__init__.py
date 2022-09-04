@@ -19,6 +19,24 @@ elif 35 in i2c_devices: # 35 = ltr-599 on grow & weather
 else:    
   model = "urban" # otherwise it's urban..
 
+# return the module that implements this board type
+def get_board():
+  if model == "indoor":
+    import enviro.boards.indoor as board
+  if model == "grow":
+    import enviro.boards.grow as board
+  if model == "weather":
+    import enviro.boards.weather as board
+  if model == "urban":
+    import enviro.boards.urban as board
+  return board
+  
+# give each board a chance to perform any startup it needs
+# ===========================================================================
+board = get_board()
+if hasattr(board, "startup"):
+  board.startup()
+
 # set up the activity led
 # ===========================================================================
 from machine import PWM, Timer
@@ -79,9 +97,6 @@ if needs_provisioning:
   logging.info("> entering provisioning mode")
   import enviro.provisioning
   # control never returns to here, provisioning takes over completely
-
-
-
 
 # all the other imports, so many shiny modules
 import machine, sys, os, ujson
@@ -216,18 +231,6 @@ def wake_reason_name(wake_reason):
     WAKE_REASON_RAIN_TRIGGER: "rain_sensor"
   }
   return names[wake_reason] if wake_reason in names else None
-
-# return the module that implements this board type
-def get_board():
-  if model == "indoor":
-    import enviro.boards.indoor as board
-  if model == "grow":
-    import enviro.boards.grow as board
-  if model == "weather":
-    import enviro.boards.weather as board
-  if model == "urban":
-    import enviro.boards.urban as board
-  return board
 
 # get the readings from the on board sensors
 def get_sensor_readings():
