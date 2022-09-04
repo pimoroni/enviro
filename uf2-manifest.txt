@@ -1,0 +1,8 @@
+main.py
+enviro/*.py
+enviro/boards/*.py
+enviro/destinations/*.py
+enviro/html/*.html
+enviro/html/images/*
+phew/__init__.py
+phew/phew/*.py

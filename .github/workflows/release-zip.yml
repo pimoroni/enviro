@@ -33,7 +33,7 @@ jobs:
       run: |
         python3 -m pip install littlefs-python
         wget ${{env.FIRMWARE_URL}}/${{env.FIRMWARE_NAME}}.uf2
-        ./dir2uf2/dir2uf2 --append-to ${{env.FIRMWARE_NAME}}.uf2 --manifest dir2uf2/enviro.txt --filename ${{env.RELEASE_FILE}}.uf2 enviro/
+        ./dir2uf2/dir2uf2 --append-to ${{env.FIRMWARE_NAME}}.uf2 --manifest enviro/uf2-manifest.txt --filename ${{env.RELEASE_FILE}}.uf2 enviro/
         rm -rf enviro/.git*
         rm -rf enviro/phew/.git*
 
