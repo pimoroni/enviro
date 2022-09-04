@@ -3,7 +3,11 @@ from breakout_bme280 import BreakoutBME280
 from breakout_ltr559 import BreakoutLTR559
 from machine import Pin, PWM
 from pimoroni import Analog
-from enviro import i2c
+from enviro import i2c, hold_vsys_en_pin 
+import enviro.helpers
+from phew import logging
+
+RAIN_MM_PER_TICK = 0.2794
 
 bme280 = BreakoutBME280(i2c, 0x77)
 ltr559 = BreakoutLTR559(i2c)
@@ -12,7 +16,31 @@ piezo_pwm = PWM(Pin(28))
 
 wind_direction_pin = Analog(26)
 wind_speed_pin = Pin(9, Pin.IN, Pin.PULL_UP)
-rain_pin = Pin(10, Pin.IN, Pin.PULL_DOWN)
+
+def startup():
+  import wakeup  
+  # check if rain sensor triggered wake
+  rain_sensor_trigger = wakeup.get_gpio_state() & (1 << 10)
+  if rain_sensor_trigger:
+    # read the current rain entries
+    rain_entries = None
+    with open("rain.txt", "r") as rainfile:
+      rain_entries = rainfile.read().split("\n")
+
+    # add new entry
+    rain_entries.append(enviro.helpers.datetime_string())
+
+    # limit number of entries to 190 - each entry is 21 bytes including
+    # newline so this keeps the total rain.txt filesize just under one 
+    # filesystem block (4096 bytes)
+    rain_entries = rain_entries[-190:]
+
+    # write out adjusted rain log
+    with open("rain.txt", "w") as rainfile:
+      rainfile.write("\n".join(rain_entries))
+
+    # go immediately back to sleep, we'll wake up at next scheduled reading
+    hold_vsys_en_pin.init(Pin.IN)
 
 def wind_speed(sample_time_ms=500):  
   # get initial sensor state
@@ -81,6 +109,33 @@ def wind_direction():
 
   return closest_index * 45
 
+def timestamp(dt):
+  year = int(dt[0:4])
+  month = int(dt[5:7])
+  day = int(dt[8:10])
+  hour = int(dt[11:13])
+  minute = int(dt[14:16])
+  second = int(dt[17:19])
+  return time.mktime((year, month, day, hour, minute, second, 0, 0))
+  
+def rainfall():
+  if not enviro.helpers.file_exists("rain.txt"):
+    return 0
+
+  now = timestamp(enviro.helpers.datetime_string())
+  with open("rain.txt", "r") as rainfile:
+    rain_entries = rainfile.read().split("\n")
+
+  # count how many rain ticks in past hour
+  amount = 0
+  for entry in rain_entries:
+    if entry:
+      ts = timestamp(entry)
+      if now - ts < 60 * 60:
+        amount += RAIN_MM_PER_TICK
+
+  return amount
+
 def get_sensor_readings():
   # bme280 returns the register contents immediately and then starts a new reading
   # we want the current reading so do a dummy read to discard register contents first
@@ -97,7 +152,7 @@ def get_sensor_readings():
     "pressure": round(bme280_data[1] / 100.0, 2),
     "light": round(ltr_data[BreakoutLTR559.LUX], 2),
     "wind_speed": wind_speed(),
-    "rain": 0, #
+    "rain": rainfall(),
     "wind_direction": wind_direction()
   })
   
