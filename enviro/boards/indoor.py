@@ -1,3 +1,4 @@
+import math
 from breakout_bme68x import BreakoutBME68X
 from breakout_bh1745 import BreakoutBH1745
 
@@ -41,15 +42,26 @@ def colour_temperature_from_rgbc(r, g, b, c):
 
 def get_sensor_readings():
   data = bme688.read()
-  bh1745.measurement_time_ms(160)
 
+  temperature = round(data[0], 2)
+  pressure = round(data[1] / 100.0, 2)
+  humidity = round(data[2], 2)
+  gas_resistance = round(data[3])
+  # an approximate air quality calculation that accounts for the effect of
+  # humidity on the gas sensor
+  # https://forums.pimoroni.com/t/bme680-observed-gas-ohms-readings/6608/25
+  aqi = round(math.log(gas_resistance) + 0.04 * humidity, 1)
+
+  bh1745.measurement_time_ms(160)
   r, g, b, c = bh1745.rgbc_raw()
 
   from ucollections import OrderedDict
   return OrderedDict({
-    "temperature": round(data[0], 2),
-    "humidity": round(data[2], 2),
-    "pressure": round(data[1] / 100.0, 2),
+    "temperature": temperature,
+    "humidity": humidity,
+    "pressure": pressure,
+    "gas_resistance": gas_resistance,
+    "aqi": aqi,
     "luminance": lux_from_rgbc(r, g, b, c),
-    "color_temperature": colour_temperature_from_rgbc(r, g, b, c)
+    "color_temperature": colour_temperature_from_rgbc(r, g, b, c),
   })
