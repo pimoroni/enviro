@@ -71,7 +71,7 @@ def get_sensor_readings():
     "temperature": round(bme280_data[0], 2),
     "humidity": round(bme280_data[2], 2),
     "pressure": round(bme280_data[1] / 100.0, 2),
-    "light": round(ltr_data[BreakoutLTR559.LUX], 2),
+    "luminance": round(ltr_data[BreakoutLTR559.LUX], 2),
     "moisture_1": round(moisture_data[0], 2),
     "moisture_2": round(moisture_data[1], 2),
     "moisture_3": round(moisture_data[2], 2)

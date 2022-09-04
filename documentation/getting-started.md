@@ -9,9 +9,6 @@
   - [Reading frequency](#reading-frequency)
   - [Upload frequency](#upload-frequency)
   - [Upload destination](#upload-destination)
-    - [Adafruit IO](#adafruit-io)
-    - [MQTT](#mqtt)
-    - [Custom HTTP endpoint](#custom-http-endpoint)
   - [That's all folks!](#thats-all-folks)
 
 ## Board overview
@@ -59,7 +56,7 @@ To make managing multiple Enviro boards easier it's a good idea to give each boa
 
 The nickname can be anything you want but may only consist of lowercase letters (a-z), numbers (0-9), and the hyphen (-) symbol. Try to choose a name that identifies the purpose of this Enviro board (for example "main-bedroom", or "weather-station").
 
-Click **Wireless setup ➔** to continue.
+Click **Networking ➔** to continue.
 
 ### Wireless network details
 
@@ -103,59 +100,12 @@ Click **Uploads ➔** to continue.
 
 Once Enviro is taking readings you'll probably want it to upload them to somewhere that you can view and analyse them. We support a number of destinations for your data:
 
-- [**Adafruit IO**](#adafruit-io): A platform designed by our friends at Adafruit to store and display your data.
-- [**MQTT**](#mqtt): The most commonly used messaging protocol for the Internet of Things (IoT).
-- [**Custom HTTP endpoint**](#custom-http-endpoint): We'll make a request to your supplied URL with all of the data included.
+- [**Adafruit IO**](destinations/adafruit-io.md): A platform designed by our friends at Adafruit to store and display your data.
+- [**MQTT**](destinations/mqtt.md): The most commonly used messaging protocol for the Internet of Things (IoT).
+- [**InfluxDB**](destinations/influxdb.md): The most commonly used messaging protocol for the Internet of Things (IoT).
+- [**Custom HTTP endpoint**](destinations/custom-http-endpoint.md): We'll make a request to your supplied URL with all of the data included.
 
-#### Adafruit IO
-
-Adafruit IO is a super simple way of getting started storing your data in the cloud, which lets you get up and going in minutes. It's really easy to set up a simple dashboard for viewing your sensor data. Adafruit offer a completely free tier which allows up to 10 feeds (for unlimited feeds it is $10/month or $99/year).
-
-- [Adafruit IO](https://io.adafruit.com/)
-
-Create an Adafruit IO account and take a copy of your user and access key (once logged in, you can find these by clicking on the key icon in the top menu bar).
-
-> The access key is very long and you don't want to have to write it in by hand! We recommend you take a copy before you start the provisioning process so that you can copy and paste it into the field.
-
-In your account create a new group called "enviro". Each sensor reading on your Enviro will automatically appear as a different feed named "[nickname]-[reading name]" (e.g. "weather-station-temperature", or "kitchen-humidity").
-
-To set up a dashboard, with lovely graphs on it click on 'Dashboards' in the top menu bar and select 'Create new dashboard'. You can then click on the cog icon in the top right to create new blocks - we like line charts, but there's other options to choose from too! There's also an option to make your dashboard public if you want to share it with others.
-
-#### MQTT
-
-Want to post your data into a database or home automation system? MQTT is a commonly used protocol for doing that - to set it up you'll need the IP address or hostname of your MQTT broker, and a username and password.
-
-The default topic that your broker needs to listen to is `enviro/board-nickname`
-
-The default MQTT message will be a JSON dictionary that includes the timestamp of the reading, the device nickname and the reading values. Here's an example of what a received message looks like:
-
-![A received MQTT message](images/mqtt_message.png)
-
-#### Custom HTTP endpoint
-
-If you're tech-savvy then you can use this option to process the data from Enviro yourself (you can also use this functionality to integrate with [IFTTT](https://ifttt.com/) webhooks and similar). 
-
-Simply provide a URL (with optional username and password) and your board will `POST` the readings to that endpoint.
-
-The body of the `POST` will be a JSON dictionary that includes the timestamp of the reading, the nickname of the board, and the reading values. For example:
-
-```json
-{
-  "nickname": "kitchen",
-  "timestamp": "2022-08-02 15:32:10",
-  "readings": {
-    "temperature": 22.4,
-    "humidity": 48.9,
-    "pressure": 998.8,
-    "lux": 87.3,
-    "colour_temperature": 6840
-  }
-}
-```
-
-If your endpoint responds with a `200` status code then Enviro will delete it's local cached copy of these readings.
-
-See the [Developer Guide](developer-guide.md) for more details.
+Alternatively if you don't want to upload your readings you can choose to have them saved locally.
 
 Click **We're done! ➔** to continue.
 
