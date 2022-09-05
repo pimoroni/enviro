@@ -1,4 +1,6 @@
-**🚨 New firmware release!** 
+🪴 🌦️ 🚙 🛋️ 
+
+**New firmware release!** 
 
 This is an alpha release of what will become the official Enviro firmware next week.
 
