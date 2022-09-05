@@ -1,3 +1,35 @@
+**🚨 New firmware release!** 
+
+This is an alpha release of what will becomeo the official Enviro firmware next week.
+
+Key changes:
+
+- Provisioning
+  - much better performance, more snappy
+  - no longer hangs in some setups
+  - empty and duplicate network names hidden
+  - better handling of config file writing
+- Readings now synched to clock time rather than just relative to each other
+- Battery voltage reported as a reading
+- Poke button now works when plugged in via USB
+- Boards all work properly when plugged into USB (previous had to use a battery)
+- Enviro Weather
+  - rain sensor trigger fixed
+  - improved wind speed readings at low wind speeds
+- Enviro Indoor
+  - basic support for VOC sensor/air quality readings added
+- Enviro Grow
+  - auto watering / audio alert trigger support
+  - moisture sensor readings corrected
+
+There have also been many small bug fixes and improvemnts made - it is well worth upgrading!
+
+Please try it if you have the chance and let us know how it goes! 
+
+Download the firmware here: https://github.com/pimoroni/enviro/releases/tag/v0.0.8
+
+---
+
 # Enviro MicroPython firmware <!-- omit in toc -->
 
 - [About Enviro](#about-enviro)
