@@ -1,5 +1,3 @@
-🪴 🌦️ 🚙 🛋️ 
-
 **New firmware release!** 
 
 This is an alpha release of what will become the official Enviro firmware next week.
@@ -15,12 +13,12 @@ Key changes:
 - Battery voltage reported as a reading
 - Poke button now works when plugged in via USB
 - Boards all work properly when plugged into USB (previous had to use a battery)
-- Enviro Weather
+- Enviro Weather 🌦️
   - rain sensor trigger fixed
   - improved wind speed readings at low wind speeds
-- Enviro Indoor
+- Enviro Indoor 🛋️
   - basic support for VOC sensor/air quality readings added
-- Enviro Grow
+- Enviro Grow 🪴
   - auto watering / audio alert trigger support
   - moisture sensor readings corrected
 
