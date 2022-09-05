@@ -1,6 +1,6 @@
 **🚨 New firmware release!** 
 
-This is an alpha release of what will becomeo the official Enviro firmware next week.
+This is an alpha release of what will become the official Enviro firmware next week.
 
 Key changes:
 
