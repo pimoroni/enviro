@@ -13,9 +13,9 @@ model = None
 if 56 in i2c_devices: # 56 = colour / light sensor and only present on Indoor
   model = "indoor"
 elif 35 in i2c_devices: # 35 = ltr-599 on grow & weather
-  pump1_pin = Pin(10, Pin.IN, Pin.PULL_UP)
-  model = "grow" if pump1_pin.value() == False else "weather"    
-  pump1_pin.init(pull=None) # disable the pull up (or weather stays awake)
+  pump3_pin = Pin(12, Pin.IN, Pin.PULL_UP)
+  model = "grow" if pump3_pin.value() == False else "weather"    
+  pump3_pin.init(pull=None)
 else:    
   model = "urban" # otherwise it's urban..
 
@@ -31,12 +31,6 @@ def get_board():
     import enviro.boards.urban as board
   return board
   
-# give each board a chance to perform any startup it needs
-# ===========================================================================
-board = get_board()
-if hasattr(board, "startup"):
-  board.startup()
-
 # set up the activity led
 # ===========================================================================
 from machine import PWM, Timer
@@ -112,7 +106,12 @@ import enviro.helpers as helpers
 # wlan.active(False) both seem to mess things up big style..)
 old_state = Pin(WIFI_CS_PIN).value()
 Pin(WIFI_CS_PIN, Pin.OUT, value=True)
-battery_voltage = round((ADC(29).read_u16() * 3.3 / 65535) * 3, 3)
+sample_count = 50
+battery_voltage = 0
+for i in range(0, sample_count):
+  battery_voltage += (ADC(29).read_u16() * 3.3 / 65535) * 3
+battery_voltage /= sample_count
+battery_voltage = round(battery_voltage, 3)
 Pin(WIFI_CS_PIN).value(old_state)
 
 # set up the button, external trigger, and rtc alarm pins
@@ -302,6 +301,12 @@ def upload_readings():
 def startup():
   # write startup banner into log file
   logging.debug("> performing startup")
+
+  # give each board a chance to perform any startup it needs
+  # ===========================================================================
+  board = get_board()
+  if hasattr(board, "startup"):
+    board.startup()
 
   # log the wake reason
   logging.info("  - wake reason:", wake_reason())
