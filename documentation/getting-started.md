@@ -102,7 +102,7 @@ Once Enviro is taking readings you'll probably want it to upload them to somewhe
 
 - [**Adafruit IO**](destinations/adafruit-io.md): A platform designed by our friends at Adafruit to store and display your data.
 - [**MQTT**](destinations/mqtt.md): The most commonly used messaging protocol for the Internet of Things (IoT).
-- [**InfluxDB**](destinations/influxdb.md): The most commonly used messaging protocol for the Internet of Things (IoT).
+- [**InfluxDB**](destinations/influxdb.md): The Time Series Data Platform where developers build IoT, analytics, and cloud applications.
 - [**Custom HTTP endpoint**](destinations/custom-http-endpoint.md): We'll make a request to your supplied URL with all of the data included.
 
 Alternatively if you don't want to upload your readings you can choose to have them saved locally.
