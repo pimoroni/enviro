@@ -12,9 +12,9 @@ Enviro Urban is an all in one board for checking up on all the airborne nasties 
 |Humidity|`humidity`|percent|%|`55.42`|
 |Air Pressure|`pressure`|hectopascals|hPa|`997.16`|
 |Noise|`noise`|voltage|V|`0.87`|
-|PM1|`moisture_1`|micrograms per cubic metre|µg/m³|`9`|
-|PM2.5|`moisture_2`|micrograms per cubic metre|µg/m³|`4`|
-|PM10|`moisture_3`|micrograms per cubic metre|µg/m³|`2`|
+|PM1|`pm1`|micrograms per cubic metre|µg/m³|`9`|
+|PM2.5|`pm2_5`|micrograms per cubic metre|µg/m³|`4`|
+|PM10|`pm10`|micrograms per cubic metre|µg/m³|`2`|
 |Voltage|`voltage`|volts|V|`4.035`|
 
 ## On-board devices
@@ -25,6 +25,6 @@ Enviro Urban is an all in one board for checking up on all the airborne nasties 
 
 ## Power
 
-Can be powered by a 2 x AAA battery pack, which fits neatly behind the board.
+Can be powered by a 3 x AA battery pack, which fits neatly behind the board.
 
 Any battery pack that can supply between 2V and 5.5V will work though - 2 or 3 alkaline AA or AAA cells, 4 rechargeable NiMH cells or a single cell LiPo.
