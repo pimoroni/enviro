@@ -55,7 +55,7 @@ On top of their individual features the boards all share a common set of functio
 
 These common features mean that the modules can run off very little power for long periods of time. During sleep (when the RTC remains active) the boards only consume a few microamps of power meaning they can last for months on a small battery pack. The modules wake up at regular intervals (or on a fixed schedule) to take a reading, store it, and go back to sleep.
 
-As well as logging data locally the modules can also (if they have access to a wireless network) upload the data they capture to a [supported endpoint](#supported-endpoints). Wireless communications takes a lot of power so this should be done as infrequently as possible.
+As well as logging data locally Enviro boards can also use the Pico W's wireless functionality to upload the data they capture to a [supported endpoint](#supported-endpoints). Wireless communications take a lot of power so this should be done as infrequently as possible.
 
 ## Powering Enviro boards
 
