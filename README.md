@@ -33,8 +33,9 @@ Download the firmware here: https://github.com/pimoroni/enviro/releases/tag/v0.0
 # Enviro MicroPython firmware <!-- omit in toc -->
 
 - [About Enviro](#about-enviro)
-- [Supported products](#supported-products)
 - [Powering Enviro boards](#powering-enviro-boards)
+- [Supported products](#supported-products)
+- [Supported endpoints](#supported-endpoints)
 - [Documentation](#documentation)
 
 ## About Enviro
@@ -56,6 +57,12 @@ These common features mean that the modules can run off very little power for lo
 
 As well as logging data locally the modules can also (if they have access to a wireless network) upload the data they capture to a service like Adafruit.io. Wireless communications takes a lot of power so this should be done as infrequently as possible.
 
+## Powering Enviro boards
+
+Enviro boards are designed to run for months on a set of batteries so that you can install them wherever they can gather the best data - perhaps on that high shelf in the corner of the kitchen that you can't quite reach, under a Stevenson screen in the back garden, or tucked in the shed.
+
+You can use 3xAA or 3xAAA (either alkaline or NiMH), a single cell LiPo battery, or a USB cable to power Enviro boards.
+
 ## Supported products
 
 - Enviro Indoor ([store link](https://shop.pimoroni.com/products/enviro-indoor))
@@ -64,14 +71,16 @@ As well as logging data locally the modules can also (if they have access to a w
 - Enviro Urban ([store link](https://shop.pimoroni.com/products/enviro-urban))
 - Enviro Camera ([store link](https://shop.pimoroni.com/products/enviro-camera)) - coming soon!
 
-## Powering Enviro boards
-
-Enviro boards are designed to run for months on a set of batteries so that you can install them wherever they can gather the best data - perhaps on that high shelf in the corner of the kitchen that you can't quite reach, under a Stevenson screen in the back garden, or tucked in the shed.
-
-You can use 3xAA or 3xAAA (either alkaline or NiMH), a single cell LiPo battery, or a USB cable to power Enviro boards.
+## Supported endpoints
+- [Adafruit IO](documentation/destinations/adafruit-io.md)
+- [InfluxDB](documentation/destinations/influxdb.md)
+- [MQTT](documentation/destinations/mqtt.md)
+- [Custom HTTP endpoint](documentation/destinations/custom-http-endpoint.md)
 
 ## Documentation
 
-- [Getting started guide](documentation/getting-started.md)
+- [Learn - Getting Started with Enviro](https://learn.pimoroni.com/article/getting-started-with-enviro) - beginner-friendly!
+- [Quickstart guide](documentation/getting-started.md)
 - [Troubleshooting your Enviro board](documentation/troubleshooting.md)
 - [Upgrading firmware](documentation/upgrading-firmware.md)
+- Sensor info: [Indoor](documentation/boards/enviro-indoor.md) / [Grow](documentation/boards/enviro-grow.md) / [Weather](documentation/boards/enviro-weather.md) / [Urban](documentation/boards/enviro-urban.md)

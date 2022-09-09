@@ -26,7 +26,7 @@ Some options worth looking at:
 
 EMQ also provide a public MQTT broker for IoT testing https://www.emqx.com/en/mqtt/public-mqtt5-broker which can be useful just to check things are working while you're setting them up.
 
-## Topic name and message foramt
+## Topic name and message format
 
 Enviro boards will publish to a topic called `enviro/[nickname]` where `[nickname]` is the nickname you gave your board during provisioning.
 
