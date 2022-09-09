@@ -22,7 +22,7 @@ Key changes:
   - auto watering / audio alert trigger support
   - moisture sensor readings corrected
 
-There have also been many small bug fixes and improvemnts made - it is well worth upgrading!
+There have also been many small bug fixes and improvements made - it is well worth upgrading!
 
 Please try it if you have the chance and let us know how it goes! 
 
@@ -55,7 +55,7 @@ On top of their individual features the boards all share a common set of functio
 
 These common features mean that the modules can run off very little power for long periods of time. During sleep (when the RTC remains active) the boards only consume a few microamps of power meaning they can last for months on a small battery pack. The modules wake up at regular intervals (or on a fixed schedule) to take a reading, store it, and go back to sleep.
 
-As well as logging data locally the modules can also (if they have access to a wireless network) upload the data they capture to a service like Adafruit.io. Wireless communications takes a lot of power so this should be done as infrequently as possible.
+As well as logging data locally the modules can also (if they have access to a wireless network) upload the data they capture to a [supported endpoint](#supported-endpoints). Wireless communications takes a lot of power so this should be done as infrequently as possible.
 
 ## Powering Enviro boards
 
@@ -79,7 +79,7 @@ You can use 3xAA or 3xAAA (either alkaline or NiMH), a single cell LiPo battery,
 
 ## Documentation
 
-- [Learn - Getting Started with Enviro](https://learn.pimoroni.com/article/getting-started-with-enviro) - beginner-friendly!
+- Getting Started with Enviro ([Learn link](https://learn.pimoroni.com/article/getting-started-with-enviro))
 - [Quickstart guide](documentation/getting-started.md)
 - [Troubleshooting your Enviro board](documentation/troubleshooting.md)
 - [Upgrading firmware](documentation/upgrading-firmware.md)
