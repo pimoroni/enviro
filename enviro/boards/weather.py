@@ -10,7 +10,7 @@ from phew import logging
 # amount of rain required for the bucket to tip in mm
 RAIN_MM_PER_TICK = 0.2794
 
-# distance from the centre of the anenometer to the centre 
+# distance from the centre of the anemometer to the centre 
 # of one of the cups in cm
 WIND_CM_RADIUS = 7.0
 # scaling factor for wind speed in m/s
