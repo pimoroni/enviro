@@ -3,11 +3,18 @@ from breakout_bme280 import BreakoutBME280
 from breakout_ltr559 import BreakoutLTR559
 from machine import Pin, PWM
 from pimoroni import Analog
-from enviro import i2c, hold_vsys_en_pin 
+from enviro import i2c, hold_vsys_en_pin
 import enviro.helpers as helpers
 from phew import logging
 
+# amount of rain required for the bucket to tip in mm
 RAIN_MM_PER_TICK = 0.2794
+
+# distance from the centre of the anenometer to the centre 
+# of one of the cups in cm
+WIND_CM_RADIUS = 7.0
+# scaling factor for wind speed in m/s
+WIND_FACTOR = 0.0218
 
 bme280 = BreakoutBME280(i2c, 0x77)
 ltr559 = BreakoutLTR559(i2c)
@@ -16,11 +23,11 @@ wind_direction_pin = Analog(26)
 wind_speed_pin = Pin(9, Pin.IN, Pin.PULL_UP)
 
 def startup():
-  import wakeup  
+  import wakeup
 
   # check if rain sensor triggered wake
   rain_sensor_trigger = wakeup.get_gpio_state() & (1 << 10)
-  
+
   if rain_sensor_trigger:
     # read the current rain entries
     rain_entries = []
@@ -33,7 +40,7 @@ def startup():
     rain_entries.append(helpers.datetime_string())
 
     # limit number of entries to 190 - each entry is 21 bytes including
-    # newline so this keeps the total rain.txt filesize just under one 
+    # newline so this keeps the total rain.txt filesize just under one
     # filesystem block (4096 bytes)
     rain_entries = rain_entries[-190:]
 
@@ -44,14 +51,14 @@ def startup():
     # go immediately back to sleep, we'll wake up at next scheduled reading
     hold_vsys_en_pin.init(Pin.IN)
 
-def wind_speed(sample_time_ms=1000):  
+def wind_speed(sample_time_ms=1000):
   # get initial sensor state
   state = wind_speed_pin.value()
 
   # create an array for each sensor to log the times when the sensor state changed
   # then we can use those values to calculate an average tick time for each sensor
   ticks = []
-  
+
   start = time.ticks_ms()
   while time.ticks_ms() - start <= sample_time_ms:
     now = wind_speed_pin.value()
@@ -71,10 +78,8 @@ def wind_speed(sample_time_ms=1000):
   rotation_hz = (1000 / average_tick_ms) / 2
 
   # calculate the wind speed in metres per second
-  radius = 7.0
-  circumference = radius * 2.0 * math.pi
-  factor = 0.0218  # scaling factor for wind speed in m/s
-  wind_m_s = rotation_hz * circumference * factor
+  circumference = WIND_CM_RADIUS * 2.0 * math.pi
+  wind_m_s = rotation_hz * circumference * WIND_FACTOR
 
   return wind_m_s
 
@@ -106,7 +111,7 @@ def wind_direction():
 
     if last_index == closest_index:
       break
-      
+
     last_index = closest_index
 
   return closest_index * 45
@@ -119,7 +124,7 @@ def timestamp(dt):
   minute = int(dt[14:16])
   second = int(dt[17:19])
   return time.mktime((year, month, day, hour, minute, second, 0, 0))
-  
+
 def rainfall():
   if not helpers.file_exists("rain.txt"):
     return 0
@@ -157,4 +162,4 @@ def get_sensor_readings():
     "rain": rainfall(),
     "wind_direction": wind_direction()
   })
-  
+
