@@ -10,7 +10,7 @@ def upload_reading(reading):
 
   try:
     # attempt to publish reading
-    mqtt_client = MQTTClient(reading["uid"], server, user=username, password=password)
+    mqtt_client = MQTTClient(reading["uid"], server, user=username, password=password, keepalive=10)
     mqtt_client.connect()
     mqtt_client.publish(f"enviro/{nickname}", ujson.dumps(reading), retain=True)
     mqtt_client.disconnect()
