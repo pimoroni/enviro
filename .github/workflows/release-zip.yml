@@ -28,25 +28,32 @@ jobs:
         ref: v0.0.1
         path: dir2uf2
 
-    - name: Prepare repository
+    - name: Install dependencies
       shell: bash
       run: |
         python3 -m pip install littlefs-python
+
+    - name: Pack filesystem into .uf2
+      shell: bash
+      run: |      
         wget ${{env.FIRMWARE_URL}}/${{env.FIRMWARE_NAME}}.uf2
         ./dir2uf2/dir2uf2 --append-to ${{env.FIRMWARE_NAME}}.uf2 --manifest enviro/uf2-manifest.txt --filename ${{env.RELEASE_FILE}}.uf2 enviro/
-        rm -rf enviro/.git*
-        rm -rf enviro/phew/.git*
 
-    - uses: vimtor/action-zip@v1
-      with:
-        files: enviro/
-        dest: ${{env.RELEASE_FILE}}.zip
+    - name: Pack filesystem into .zip
+      shell: bash
+      working-directory: enviro
+      run: |
+        cat uf2-manifest.txt | xargs -I % bash -c "ls -1 %" > zip-manifest.txt
+        echo "README.md" >> zip-manifest.txt
+        echo "LICENSE" >> zip-manifest.txt
+        echo "install-on-device-fs" >> zip-manifest.txt
+        zip ../{{env.RELEASE_FILE}}.zip -@ < /usr/bin/cat zip-manifest.txt
 
     - name: Store .zip as artifact
       uses: actions/upload-artifact@v2
       with:
         name: ${{env.RELEASE_FILE}}
-        path: enviro/
+        path: ${{env.RELEASE_FILE}}.zip
 
     - name: Store filesystem .uf2 as artifact
       uses: actions/upload-artifact@v2
