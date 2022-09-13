@@ -79,8 +79,10 @@ You can use 3xAA or 3xAAA (either alkaline or NiMH), a single cell LiPo battery,
 
 ## Documentation
 
-- Getting Started with Enviro ([Learn link](https://learn.pimoroni.com/article/getting-started-with-enviro))
 - [Quickstart guide](documentation/getting-started.md)
 - [Troubleshooting your Enviro board](documentation/troubleshooting.md)
 - [Upgrading firmware](documentation/upgrading-firmware.md)
 - Sensor info: [Indoor](documentation/boards/enviro-indoor.md) / [Grow](documentation/boards/enviro-grow.md) / [Weather](documentation/boards/enviro-weather.md) / [Urban](documentation/boards/enviro-urban.md)
+
+- Getting Started with Enviro ([Learn link](https://learn.pimoroni.com/article/getting-started-with-enviro))
+- Enviro and InfluxDB ([Learn link](https://learn.pimoroni.com/article/enviro-and-influxdb))
