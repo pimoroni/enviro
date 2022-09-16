@@ -1,6 +1,15 @@
-**New firmware release!** 
+# Enviro MicroPython firmware <!-- omit in toc -->
 
-This is an alpha release of what will become the official Enviro firmware next week.
+- [New firmware!](#new-firmware)
+- [About Enviro](#about-enviro)
+- [Powering Enviro boards](#powering-enviro-boards)
+- [Supported products](#supported-products)
+- [Supported endpoints](#supported-endpoints)
+- [Documentation](#documentation)
+
+## New firmware!
+
+v.0.0.8 is an **alpha** release of the firmware which may contain bugs and other instabilities. Thanks for your continued feedback and bug reports - we'll get it fixed up as soon as we can :)
 
 Key changes:
 
@@ -22,21 +31,11 @@ Key changes:
   - auto watering / audio alert trigger support
   - moisture sensor readings corrected
 
-There have also been many small bug fixes and improvements made - it is well worth upgrading!
+(and lots of other small bug fixes and improvements) 
 
-Please try it if you have the chance and let us know how it goes! 
+Download the alpha firmware here: https://github.com/pimoroni/enviro/releases/tag/v0.0.8
 
-Download the firmware here: https://github.com/pimoroni/enviro/releases/tag/v0.0.8
-
----
-
-# Enviro MicroPython firmware <!-- omit in toc -->
-
-- [About Enviro](#about-enviro)
-- [Powering Enviro boards](#powering-enviro-boards)
-- [Supported products](#supported-products)
-- [Supported endpoints](#supported-endpoints)
-- [Documentation](#documentation)
+If you want to return to the shipping firmware you can re-flash your Enviro with v.0.0.2: https://github.com/pimoroni/enviro/releases/tag/v0.0.2
 
 ## About Enviro
 
