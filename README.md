@@ -85,3 +85,4 @@ You can use 3xAA or 3xAAA (either alkaline or NiMH), a single cell LiPo battery,
 
 - Getting Started with Enviro ([Learn link](https://learn.pimoroni.com/article/getting-started-with-enviro))
 - Enviro and InfluxDB ([Learn link](https://learn.pimoroni.com/article/enviro-and-influxdb))
+- Plant Monitoring with Enviro Grow ([Learn link](https://learn.pimoroni.com/article/plant-monitoring-with-enviro-grow))
