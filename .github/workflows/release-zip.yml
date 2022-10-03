@@ -45,13 +45,13 @@ jobs:
     - name: Store .zip as artifact
       uses: actions/upload-artifact@v2
       with:
-        name: ${{env.RELEASE_FILE}}
+        name: ${{env.RELEASE_FILE}}-source.zip
         path: enviro/
 
     - name: Store filesystem .uf2 as artifact
       uses: actions/upload-artifact@v2
       with:
-        name: ${{env.RELEASE_FILE}}-filesystem-only
+        name: ${{env.RELEASE_FILE}}-filesystem-only.uf2
         path: ${{env.RELEASE_FILE}}.uf2
 
     - name: Store full .uf2 as artifact
@@ -59,28 +59,6 @@ jobs:
       with:
         name: ${{env.FIRMWARE_NAME}}-${{env.RELEASE_FILE}}.uf2
         path: ${{env.FIRMWARE_NAME}}-${{env.RELEASE_FILE}}.uf2
-
-    - name: Upload source .zip
-      if: github.event_name == 'release'
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-      with:
-        asset_path: ${{env.RELEASE_FILE}}.zip
-        upload_url: ${{github.event.release.upload_url}}
-        asset_name: ${{env.RELEASE_FILE}}.zip
-        asset_content_type: application/octet-stream
-
-    - name: Upload filesystem .uf2
-      if: github.event_name == 'release'
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-      with:
-        asset_path: ${{env.RELEASE_FILE}}.uf2
-        upload_url: ${{github.event.release.upload_url}}
-        asset_name: ${{env.RELEASE_FILE}}-filesystem-only.uf2
-        asset_content_type: application/octet-stream
 
     - name: Upload full firmware .uf2
       if: github.event_name == 'release'
@@ -90,5 +68,5 @@ jobs:
       with:
         asset_path: ${{env.FIRMWARE_NAME}}-${{env.RELEASE_FILE}}.uf2
         upload_url: ${{github.event.release.upload_url}}
-        asset_name: ${{env.FIRMWARE_NAME}}-${{env.RELEASE_FILE}}.uf2
+        asset_name: ${{env.RELEASE_FILE}}.uf2
         asset_content_type: application/octet-stream
