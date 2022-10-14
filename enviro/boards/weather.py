@@ -53,7 +53,7 @@ def wind_speed(sample_time_ms=1000):
   ticks = []
   
   start = time.ticks_ms()
-  while time.ticks_ms() - start <= sample_time_ms:
+  while time.ticks_diff(time.ticks_ms(), start) <= sample_time_ms:
     now = wind_speed_pin.value()
     if now != state: # sensor output changed
       # record the time of the change and update the state
@@ -65,7 +65,7 @@ def wind_speed(sample_time_ms=1000):
     return 0
 
   # calculate the average tick between transitions in ms
-  average_tick_ms = (ticks[-1] - ticks[0]) / (len(ticks) - 1)
+  average_tick_ms = (time.ticks_diff(ticks[-1], ticks[0])) / (len(ticks) - 1)
 
   if average_tick_ms == 0:
     return 0
