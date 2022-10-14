@@ -67,6 +67,8 @@ def wind_speed(sample_time_ms=1000):
   # calculate the average tick between transitions in ms
   average_tick_ms = (ticks[-1] - ticks[0]) / (len(ticks) - 1)
 
+  if average_tick_ms == 0:
+    return 0
   # work out rotation speed in hz (two ticks per rotation)
   rotation_hz = (1000 / average_tick_ms) / 2
 
