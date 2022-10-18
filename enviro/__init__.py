@@ -99,6 +99,9 @@ import phew
 from pcf85063a import PCF85063A
 import enviro.helpers as helpers
 
+# read the state of vsys to know if we were woken up by USB
+vsys_present = Pin("WL_GPIO2", Pin.IN).value()
+
 # read battery voltage - we have to toggle the wifi chip select
 # pin to take the reading - this is probably not ideal but doesn't
 # seem to cause issues. there is no obvious way to shut down the
@@ -217,6 +220,8 @@ def get_wake_reason():
     wake_reason = WAKE_REASON_RTC_ALARM
   elif not external_trigger_pin.value():
     wake_reason = WAKE_REASON_EXTERNAL_TRIGGER
+  elif vsys_present:
+    wake_reason = WAKE_REASON_USB_POWERED
   return wake_reason
 
 # convert a wake reason into it's name
@@ -227,7 +232,8 @@ def wake_reason_name(wake_reason):
     WAKE_REASON_BUTTON_PRESS: "button",
     WAKE_REASON_RTC_ALARM: "rtc_alarm",
     WAKE_REASON_EXTERNAL_TRIGGER: "external_trigger",
-    WAKE_REASON_RAIN_TRIGGER: "rain_sensor"
+    WAKE_REASON_RAIN_TRIGGER: "rain_sensor",
+    WAKE_REASON_USB_POWERED: "usb_powered"
   }
   return names.get(wake_reason)
 
