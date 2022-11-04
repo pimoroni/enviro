@@ -63,5 +63,5 @@ def get_sensor_readings():
     "gas_resistance": gas_resistance,
     "aqi": aqi,
     "luminance": lux_from_rgbc(r, g, b, c),
-    "color_temperature": colour_temperature_from_rgbc(r, g, b, c),
+    "color_temperature": colour_temperature_from_rgbc(r, g, b, c)
   })

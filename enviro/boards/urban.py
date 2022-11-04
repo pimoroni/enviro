@@ -2,7 +2,7 @@ import time, math
 from machine import Pin, ADC
 from breakout_bme280 import BreakoutBME280
 from pimoroni_i2c import PimoroniI2C
-from phew import logging
+from enviro import logging
 from enviro import i2c
 
 sensor_reset_pin = Pin(9, Pin.OUT, value=True)
@@ -71,6 +71,6 @@ def get_sensor_readings():
     "noise": round(noise_vpp, 2),
     "pm1": particulates(particulate_data, PM1_UGM3), 
     "pm2_5": particulates(particulate_data, PM2_5_UGM3), 
-    "pm10": particulates(particulate_data, PM10_UGM3), 
+    "pm10": particulates(particulate_data, PM10_UGM3)
   })
 

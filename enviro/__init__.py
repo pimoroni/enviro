@@ -93,7 +93,7 @@ if needs_provisioning:
   # control never returns to here, provisioning takes over completely
 
 # all the other imports, so many shiny modules
-import machine, sys, os, json
+import machine, sys, os, ujson
 from machine import RTC, ADC
 import phew
 from pcf85063a import PCF85063A
@@ -102,6 +102,8 @@ import enviro.helpers as helpers
 # read the state of vsys to know if we were woken up by USB
 vsys_present = Pin("WL_GPIO2", Pin.IN).value()
 
+#BUG Temporarily disabling battery reading, as it seems to cause issues when connected to Thonny
+"""
 # read battery voltage - we have to toggle the wifi chip select
 # pin to take the reading - this is probably not ideal but doesn't
 # seem to cause issues. there is no obvious way to shut down the
@@ -116,10 +118,12 @@ for i in range(0, sample_count):
 battery_voltage /= sample_count
 battery_voltage = round(battery_voltage, 3)
 Pin(WIFI_CS_PIN).value(old_state)
+"""
 
 # set up the button, external trigger, and rtc alarm pins
 rtc_alarm_pin = Pin(RTC_ALARM_PIN, Pin.IN, Pin.PULL_DOWN)
-external_trigger_pin = Pin(EXTERNAL_INTERRUPT_PIN, Pin.IN, Pin.PULL_DOWN)
+# BUG This should only be set up for Enviro Camera
+# external_trigger_pin = Pin(EXTERNAL_INTERRUPT_PIN, Pin.IN, Pin.PULL_DOWN)
 
 # intialise the pcf85063a real time clock chip
 rtc = PCF85063A(i2c)
@@ -127,6 +131,7 @@ i2c.writeto_mem(0x51, 0x00, b'\x00') # ensure rtc is running (this should be def
 rtc.enable_timer_interrupt(False)
 
 t = rtc.datetime()
+# BUG ERRNO 22, EINVAL, when date read from RTC is invalid for the pico's RTC.
 RTC().datetime((t[0], t[1], t[2], t[6], t[3], t[4], t[5], 0)) # synch PR2040 rtc too
 
 # jazz up that console! toot toot!
@@ -146,30 +151,39 @@ print("    -  --  ---- -----=--==--===  hey enviro, let's go!  ===--==--=----- -
 print("")
 
 
-
+import network
 def connect_to_wifi():
-  if phew.is_connected_to_wifi():
-    logging.info(f"> already connected to wifi")
-    return True
 
   wifi_ssid = config.wifi_ssid
   wifi_password = config.wifi_password
 
   logging.info(f"> connecting to wifi network '{wifi_ssid}'")
-  ip = phew.connect_to_wifi(wifi_ssid, wifi_password, timeout_seconds=30)
 
-  if not ip:
+  wlan = network.WLAN(network.STA_IF)
+  wlan.active(True)
+  wlan.connect(wifi_ssid, wifi_password)
+
+  start = time.ticks_ms()
+  while (time.ticks_ms() - start) < 30000:
+    if wlan.status() < 0 or wlan.status() >= 3:
+      break
+    time.sleep(0.5)
+
+  seconds_to_connect = int((time.ticks_ms() - start) / 1000)
+
+  if wlan.status() != 3:
     logging.error(f"! failed to connect to wireless network {wifi_ssid}")
     return False
 
-  logging.info("  - ip address: ", ip)
+  # a slow connection time will drain the battery faster and may
+  # indicate a poor quality connection
+  if seconds_to_connect > 5:
+    logging.warn("  - took", seconds_to_connect, "seconds to connect to wifi")
+
+  ip_address = wlan.ifconfig()[0]
+  logging.info("  - ip address: ", ip_address)
 
   return True
-
-# returns the reason we woke up
-def wake_reason():
-  reason = get_wake_reason()
-  return wake_reason_name(reason)
 
 # log the error, blink the warning led, and go back to sleep
 def halt(message):
@@ -192,10 +206,13 @@ def sync_clock_from_ntp():
   from phew import ntp
   if not connect_to_wifi():
     return False
+  #TODO Fetch only does one attempt. Can also optionally set Pico RTC (do we want this?)
   timestamp = ntp.fetch()
   if not timestamp:
+    logging.error("  - failed to fetch time from ntp server")
     return False  
   rtc.datetime(timestamp) # set the time on the rtc chip
+  logging.info("  - rtc synched")
   return True
 
 # set the state of the warning led (off, on, blinking)
@@ -213,13 +230,16 @@ warn_led(WARN_LED_OFF)
 
 # returns the reason the board woke up from deep sleep
 def get_wake_reason():
+  import wakeup
+  
   wake_reason = None
-  if button_pin.value():
+  if wakeup.get_gpio_state() & (1 << BUTTON_PIN):
     wake_reason = WAKE_REASON_BUTTON_PRESS
-  elif rtc_alarm_pin.value():
+  elif wakeup.get_gpio_state() & (1 << RTC_ALARM_PIN):
     wake_reason = WAKE_REASON_RTC_ALARM
-  elif not external_trigger_pin.value():
-    wake_reason = WAKE_REASON_EXTERNAL_TRIGGER
+  # TODO Temporarily removing this as false reporting on non-camera boards
+  #elif not external_trigger_pin.value():
+  #  wake_reason = WAKE_REASON_EXTERNAL_TRIGGER
   elif vsys_present:
     wake_reason = WAKE_REASON_USB_POWERED
   return wake_reason
@@ -240,7 +260,7 @@ def wake_reason_name(wake_reason):
 # get the readings from the on board sensors
 def get_sensor_readings():
   readings = get_board().get_sensor_readings()
-  readings["voltage"] = battery_voltage
+  readings["voltage"] = 0.0 # battery_voltage #Temporarily removed until issue is fixed
   return readings
 
 # save the provided readings into a todays readings data file
@@ -252,7 +272,8 @@ def save_reading(readings):
   with open(readings_filename, "a") as f:
     if new_file:
       # new readings file so write out column headings first
-      f.write("timestamp," + ",".join(readings.keys()) + "\r\n")
+      f.write("time," + ",".join(readings.keys()) + "\r\n")
+
     # write sensor data
     row = [helpers.datetime_string()]
     for key in readings.keys():
@@ -262,17 +283,10 @@ def save_reading(readings):
 
 # save the provided readings into a cache file for future uploading
 def cache_upload(readings):
-  payload = {
-    "nickname": config.nickname,
-    "timestamp": helpers.datetime_string(),
-    "readings": readings,
-    "model": model,
-    "uid": helpers.uid()
-  }
   uploads_filename = f"uploads/{helpers.datetime_string()}.json"
   helpers.mkdir_safe("uploads")
   with open(uploads_filename, "w") as upload_file:
-    json.dump(payload, upload_file)
+    upload_file.write(ujson.dumps(readings))
 
 # return the number of cached results waiting to be uploaded
 def cached_upload_count():
@@ -285,37 +299,37 @@ def is_upload_needed():
 # upload cached readings to the configured destination
 def upload_readings():
   if not connect_to_wifi():
+    logging.error(f"  - cannot upload readings, wifi connection failed")
     return False
 
   destination = config.destination
   exec(f"import enviro.destinations.{destination}")
   destination_module = sys.modules[f"enviro.destinations.{destination}"]
-  for cache_file in os.ilistdir("uploads"):
-    with open(f"uploads/{cache_file[0]}", "r") as upload_file:
-      success = destination_module.upload_reading(json.load(upload_file))
-      if not success:
-        logging.error(f"! failed to upload '{cache_file[0]}' to {destination}")
-        return False
 
-      # remove the cache file now uploaded
-      logging.info(f"  - uploaded {cache_file[0]} to {destination}")
-    
-    os.remove(f"uploads/{cache_file[0]}")
-        
+  destination_module.upload_readings()
+
   return True
 
 def startup():
   # write startup banner into log file
   logging.debug("> performing startup")
 
+  # get the reason we were woken up
+  reason = get_wake_reason()
+
   # give each board a chance to perform any startup it needs
   # ===========================================================================
   board = get_board()
   if hasattr(board, "startup"):
-    board.startup()
+    continue_startup = board.startup(reason)
+    # put the board back to sleep if the startup doesn't need to continue
+    # and the RTC has not triggered since we were awoken
+    if not continue_startup and not rtc.read_alarm_flag():
+      logging.debug("  - wake reason: trigger")
+      sleep()
 
   # log the wake reason
-  logging.info("  - wake reason:", wake_reason())
+  logging.info("  - wake reason:", wake_reason_name(reason))
 
   # also immediately turn on the LED to indicate that we're doing something
   logging.debug("  - turn on activity led")
@@ -325,7 +339,8 @@ def sleep():
   logging.info("> going to sleep")
 
   # make sure the rtc flags are cleared before going back to sleep
-  logging.debug("  - clearing and disabling timer and alarm")
+  logging.debug("  - clearing and disabling previous alarm")
+  rtc.clear_timer_flag()
   rtc.clear_alarm_flag()
 
   # set alarm to wake us up for next reading
@@ -362,9 +377,13 @@ def sleep():
     sys.exit()
 
   # we'll wait here until the rtc timer triggers and then reset the board
-  logging.debug("  - on usb power (so can't shutdown) halt and reset instead")
-  while not rtc.read_alarm_flag():    
-    time.sleep(0.25)
+  logging.debug("  - on usb power (so can't shutdown). Halt and wait for alarm or user reset instead")
+  board = get_board()
+  while not rtc.read_alarm_flag():
+    if hasattr(board, "check_trigger"):
+      board.check_trigger()
+
+    #time.sleep(0.25)
 
     if button_pin.value(): # allow button to force reset
       break
@@ -373,3 +392,4 @@ def sleep():
 
   # reset the board
   machine.reset()
+  

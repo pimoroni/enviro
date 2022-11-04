@@ -6,6 +6,8 @@ from phew import logging, server, redirect, serve_file, render_template, access_
 
 DOMAIN = "pico.wireless"
 
+# BUG Issues with page loading when running provisioning a while after a board reset (where other things have been run before)
+
 # create fresh config file if missing
 if not helpers.file_exists("config.py"):
   helpers.copy_file("enviro/config_template.py", "config.py")
@@ -50,7 +52,7 @@ dns.run_catchall(ap.ifconfig()[0])
 
 logging.info("> creating web server...")
 
-
+# TODO This did not seem to work for me...
 @server.route("/wrong-host-redirect", methods=["GET"])
 def wrong_host_redirect(request):
   # if the client requested a resource at the wrong host then present 

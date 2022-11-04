@@ -37,6 +37,35 @@ def mkdir_safe(path):
       raise
     pass # directory already exists, this is fine
 
+# Keeping the below around for later comparisons with PHEW
+"""
+import machine, os, time, network, usocket, struct
+from phew import logging
+def update_rtc_from_ntp(max_attempts = 5):
+  logging.info("> fetching date and time from ntp server")
+  ntp_host = "pool.ntp.org"
+  attempt = 1
+  while attempt < max_attempts:
+    try:
+      logging.info("  - synching rtc attempt", attempt)
+      query = bytearray(48)
+      query[0] = 0x1b
+      address = usocket.getaddrinfo(ntp_host, 123)[0][-1]
+      socket = usocket.socket(usocket.AF_INET, usocket.SOCK_DGRAM)
+      socket.settimeout(30)
+      socket.sendto(query, address)
+      data = socket.recv(48)
+      socket.close()
+      local_epoch = 2208988800  # selected by Chris, by experiment. blame him. :-D
+      timestamp = struct.unpack("!I", data[40:44])[0] - local_epoch
+      t = time.gmtime(timestamp)
+      return t      
+    except Exception as e:
+      logging.error(e)
+
+    attempt += 1
+  return False
+"""
 def copy_file(source, target):
   with open(source, "rb") as infile:
     with open(target, "wb") as outfile:

@@ -3,9 +3,10 @@ from breakout_bme280 import BreakoutBME280
 from breakout_ltr559 import BreakoutLTR559
 from machine import Pin, PWM
 from pimoroni import Analog
-from enviro import i2c, hold_vsys_en_pin 
+from enviro import i2c, activity_led
 import enviro.helpers as helpers
 from phew import logging
+from enviro.constants import WAKE_REASON_RTC_ALARM, WAKE_REASON_BUTTON_PRESS
 
 RAIN_MM_PER_TICK = 0.2794
 
@@ -14,9 +15,10 @@ ltr559 = BreakoutLTR559(i2c)
 
 wind_direction_pin = Analog(26)
 wind_speed_pin = Pin(9, Pin.IN, Pin.PULL_UP)
+rain_pin = Pin(10, Pin.IN, Pin.PULL_DOWN)
 
-def startup():
-  import wakeup  
+def startup(reason):
+  import wakeup
 
   # check if rain sensor triggered wake
   rain_sensor_trigger = wakeup.get_gpio_state() & (1 << 10)
@@ -41,8 +43,39 @@ def startup():
     with open("rain.txt", "w") as rainfile:
       rainfile.write("\n".join(rain_entries))
 
-    # go immediately back to sleep, we'll wake up at next scheduled reading
-    hold_vsys_en_pin.init(Pin.IN)
+    # if we were woken by the RTC or a Poke continue with the startup
+    return (reason is WAKE_REASON_RTC_ALARM 
+      or reason is WAKE_REASON_BUTTON_PRESS)
+
+  # there was no rain trigger so continue with the startup
+  return True
+
+def check_trigger():
+  rain_sensor_trigger = rain_pin.value()
+
+  if rain_sensor_trigger:
+    activity_led(100)
+    time.sleep(0.05)
+    activity_led(0)
+
+    # read the current rain entries
+    rain_entries = []
+    if helpers.file_exists("rain.txt"):
+      with open("rain.txt", "r") as rainfile:
+        rain_entries = rainfile.read().split("\n")
+
+    # add new entry
+    logging.info("> add new rain trigger at {helpers.datetime_string()}")
+    rain_entries.append(helpers.datetime_string())
+
+    # limit number of entries to 190 - each entry is 21 bytes including
+    # newline so this keeps the total rain.txt filesize just under one 
+    # filesystem block (4096 bytes)
+    rain_entries = rain_entries[-190:]
+
+    # write out adjusted rain log
+    with open("rain.txt", "w") as rainfile:
+      rainfile.write("\n".join(rain_entries))
 
 def wind_speed(sample_time_ms=1000):  
   # get initial sensor state
@@ -86,28 +119,15 @@ def wind_direction():
   # to determine the heading
   ADC_TO_DEGREES = (0.9, 2.0, 3.0, 2.8, 2.5, 1.5, 0.3, 0.6)
 
+  value = wind_direction_pin.read_voltage()
   closest_index = -1
-  last_index = None
+  closest_value = float('inf')
 
-  # ensure we have two readings that match in a row as otherwise if
-  # you read during transition between two values it can glitch
-  # fixes https://github.com/pimoroni/enviro/issues/20
-  while True:
-    value = wind_direction_pin.read_voltage()
-
-    closest_index = -1
-    closest_value = float('inf')
-
-    for i in range(8):
+  for i in range(8):
       distance = abs(ADC_TO_DEGREES[i] - value)
       if distance < closest_value:
         closest_value = distance
         closest_index = i
-
-    if last_index == closest_index:
-      break
-      
-    last_index = closest_index
 
   return closest_index * 45
 
@@ -119,7 +139,7 @@ def timestamp(dt):
   minute = int(dt[14:16])
   second = int(dt[17:19])
   return time.mktime((year, month, day, hour, minute, second, 0, 0))
-  
+
 def rainfall():
   if not helpers.file_exists("rain.txt"):
     return 0
@@ -157,4 +177,3 @@ def get_sensor_readings():
     "rain": rainfall(),
     "wind_direction": wind_direction()
   })
-  
