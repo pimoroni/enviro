@@ -1,3 +1,6 @@
+import time
+start_time = time.ticks_ms()
+
 # keep the power rail alive by holding VSYS_EN high as early as possible
 # ===========================================================================
 from enviro.constants import *
@@ -70,7 +73,6 @@ def stop_activity_led():
 # check whether device needs provisioning
 # ===========================================================================
 import time
-from phew import logging
 button_pin = Pin(BUTTON_PIN, Pin.IN, Pin.PULL_DOWN)
 needs_provisioning = False
 start = time.time()
@@ -84,10 +86,12 @@ try:
   if not config.provisioned: # provisioned flag not set go into provisioning
     needs_provisioning = True
 except Exception as e:
+  from phew import logging
   logging.error("> missing or corrupt config.py", e)
   needs_provisioning = True
 
 if needs_provisioning:
+  from phew import logging
   logging.info("> entering provisioning mode")
   import enviro.provisioning
   # control never returns to here, provisioning takes over completely
@@ -95,9 +99,10 @@ if needs_provisioning:
 # all the other imports, so many shiny modules
 import machine, sys, os, ujson
 from machine import RTC, ADC
-import phew
 from pcf85063a import PCF85063A
 import enviro.helpers as helpers
+
+post_imports = time.ticks_ms()
 
 # read the state of vsys to know if we were woken up by USB
 vsys_present = Pin("WL_GPIO2", Pin.IN).value()
@@ -153,6 +158,7 @@ print("")
 
 import network
 def connect_to_wifi():
+  from phew import logging
 
   wifi_ssid = config.wifi_ssid
   wifi_password = config.wifi_password
@@ -187,13 +193,15 @@ def connect_to_wifi():
 
 # log the error, blink the warning led, and go back to sleep
 def halt(message):
+  from phew import logging
   logging.error(message)
   warn_led(WARN_LED_BLINK)
   sleep()
 
 # returns True if we've used up 90% of the internal filesystem
 def low_disk_space():
-  if not phew.remote_mount: # os.statvfs doesn't exist on remote mounts
+  from phew import remote_mount
+  if not remote_mount: # os.statvfs doesn't exist on remote mounts
     return (os.statvfs(".")[3] / os.statvfs(".")[2]) < 0.1   
   return False
 
@@ -203,7 +211,7 @@ def is_clock_set():
 
 # connect to wifi and attempt to fetch the current time from an ntp server
 def sync_clock_from_ntp():
-  from phew import ntp
+  from phew import ntp, logging
   if not connect_to_wifi():
     return False
   #TODO Fetch only does one attempt. Can also optionally set Pico RTC (do we want this?)
@@ -299,6 +307,7 @@ def is_upload_needed():
 # upload cached readings to the configured destination
 def upload_readings():
   if not connect_to_wifi():
+    from phew import logging
     logging.error(f"  - cannot upload readings, wifi connection failed")
     return False
 
@@ -311,6 +320,10 @@ def upload_readings():
   return True
 
 def startup():
+  from phew import logging
+  logging.debug(f"Tms0 = {start_time}")
+  logging.debug(f"Tms (post imports) = {post_imports}")
+
   # write startup banner into log file
   logging.debug("> performing startup")
 
@@ -336,6 +349,7 @@ def startup():
   pulse_activity_led(0.5)
 
 def sleep():
+  from phew import logging
   logging.info("> going to sleep")
 
   # make sure the rtc flags are cleared before going back to sleep
@@ -373,7 +387,8 @@ def sleep():
 
   # if running via mpremote/pyboard.py with a remote mount then we can't
   # reset the board so just exist
-  if phew.remote_mount:
+  from phew import remote_mount
+  if remote_mount:
     sys.exit()
 
   # we'll wait here until the rtc timer triggers and then reset the board
@@ -392,4 +407,3 @@ def sleep():
 
   # reset the board
   machine.reset()
-  
