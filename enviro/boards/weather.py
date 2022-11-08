@@ -31,7 +31,7 @@ def startup(reason):
         rain_entries = rainfile.read().split("\n")
 
     # add new entry
-    logging.info("> add new rain trigger at {helpers.datetime_string()}")
+    logging.info(f"> add new rain trigger at {helpers.datetime_string()}")
     rain_entries.append(helpers.datetime_string())
 
     # limit number of entries to 190 - each entry is 21 bytes including
@@ -65,7 +65,7 @@ def check_trigger():
         rain_entries = rainfile.read().split("\n")
 
     # add new entry
-    logging.info("> add new rain trigger at {helpers.datetime_string()}")
+    logging.info(f"> add new rain trigger at {helpers.datetime_string()}")
     rain_entries.append(helpers.datetime_string())
 
     # limit number of entries to 190 - each entry is 21 bytes including
@@ -118,6 +118,30 @@ def wind_direction():
   # we find the closest matching value in the array and use the index
   # to determine the heading
   ADC_TO_DEGREES = (0.9, 2.0, 3.0, 2.8, 2.5, 1.5, 0.3, 0.6)
+  """ TODO new wind code from 0.0.8
+  closest_index = -1
+  last_index = None
+
+  # ensure we have two readings that match in a row as otherwise if
+  # you read during transition between two values it can glitch
+  # fixes https://github.com/pimoroni/enviro/issues/20
+  while True:
+    value = wind_direction_pin.read_voltage()
+
+    closest_index = -1
+    closest_value = float('inf')
+
+    for i in range(8):
+      distance = abs(ADC_TO_DEGREES[i] - value)
+      if distance < closest_value:
+        closest_value = distance
+        closest_index = i
+
+    if last_index == closest_index:
+      break
+      
+    last_index = closest_index
+  """
 
   value = wind_direction_pin.read_voltage()
   closest_index = -1
@@ -141,20 +165,38 @@ def timestamp(dt):
   return time.mktime((year, month, day, hour, minute, second, 0, 0))
 
 def rainfall():
-  if not helpers.file_exists("rain.txt"):
-    return 0
-
-  now = timestamp(helpers.datetime_string())
-  with open("rain.txt", "r") as rainfile:
-    rain_entries = rainfile.read().split("\n")
-
-  # count how many rain ticks in past hour
   amount = 0
-  for entry in rain_entries:
-    if entry:
-      ts = timestamp(entry)
-      if now - ts < 60 * 60:
-        amount += RAIN_MM_PER_TICK
+  now_str = helpers.datetime_string()
+  if helpers.file_exists("last_time.txt"):
+    now = timestamp(now_str)
+
+    time_entries = []
+    with open("last_time.txt", "r") as timefile:
+      time_entries = timefile.read().split("\n")
+
+    # read the first line from the time file
+    last = now
+    for entry in time_entries:
+      if entry:
+        last = timestamp(entry)
+        break
+
+    logging.info(f"  - seconds since last reading: {now - last}")
+
+    if helpers.file_exists("rain.txt"):
+      with open("rain.txt", "r") as rainfile:
+        rain_entries = rainfile.read().split("\n")
+
+      # count how many rain ticks since the last reading
+      for entry in rain_entries:
+        if entry:
+          ts = timestamp(entry)
+          if now - ts < now - last:
+            amount += RAIN_MM_PER_TICK
+
+  # write out adjusted rain log
+  with open("last_time.txt", "w") as timefile:
+    timefile.write(now_str)  
 
   return amount
 
