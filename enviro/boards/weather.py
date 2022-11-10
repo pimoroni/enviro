@@ -118,7 +118,7 @@ def wind_direction():
   # we find the closest matching value in the array and use the index
   # to determine the heading
   ADC_TO_DEGREES = (0.9, 2.0, 3.0, 2.8, 2.5, 1.5, 0.3, 0.6)
-  """ TODO new wind code from 0.0.8
+
   closest_index = -1
   last_index = None
 
@@ -141,17 +141,6 @@ def wind_direction():
       break
       
     last_index = closest_index
-  """
-
-  value = wind_direction_pin.read_voltage()
-  closest_index = -1
-  closest_value = float('inf')
-
-  for i in range(8):
-      distance = abs(ADC_TO_DEGREES[i] - value)
-      if distance < closest_value:
-        closest_value = distance
-        closest_index = i
 
   return closest_index * 45
 
