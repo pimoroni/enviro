@@ -8,6 +8,10 @@ def datetime_string():
   dt = machine.RTC().datetime()
   return "{0:04d}-{1:02d}-{2:02d}T{4:02d}:{5:02d}:{6:02d}Z".format(*dt)
 
+def datetime_file_string():
+  dt = machine.RTC().datetime()
+  return "{0:04d}-{1:02d}-{2:02d}T{4:02d}_{5:02d}_{6:02d}Z".format(*dt)
+
 def date_string():
   dt = machine.RTC().datetime()
   return "{0:04d}-{1:02d}-{2:02d}".format(*dt)

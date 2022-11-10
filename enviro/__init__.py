@@ -305,7 +305,7 @@ def get_sensor_readings():
 def save_reading(readings):
   # open todays reading file and save readings
   helpers.mkdir_safe("readings")
-  readings_filename = f"readings/{helpers.date_string()}.txt"
+  readings_filename = f"readings/{helpers.datetime_file_string()}.txt"
   new_file = not helpers.file_exists(readings_filename)
   with open(readings_filename, "a") as f:
     if new_file:
@@ -331,7 +331,7 @@ def cache_upload(readings):
     "uid": helpers.uid()
   }
   """
-  uploads_filename = f"uploads/{helpers.datetime_string()}.json"
+  uploads_filename = f"uploads/{helpers.datetime_file_string()}.json"
   helpers.mkdir_safe("uploads")
   with open(uploads_filename, "w") as upload_file:
     #json.dump(payload, upload_file) # TODO what it was changed to
