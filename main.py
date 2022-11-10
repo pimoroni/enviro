@@ -64,7 +64,8 @@ if enviro.config.destination:
   # if we have enough cached uploads...
   if enviro.is_upload_needed():
     enviro.logging.info(f"> {enviro.cached_upload_count()} cache file(s) need uploading")
-    enviro.upload_readings()
+    if not enviro.upload_readings():
+      enviro.halt("! reading upload failed")
   else:
     enviro.logging.info(f"> {enviro.cached_upload_count()} cache file(s) not being uploaded. Waiting until there are {enviro.config.upload_frequency} file(s)")
 else:

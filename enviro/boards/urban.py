@@ -2,7 +2,7 @@ import time, math
 from machine import Pin, ADC
 from breakout_bme280 import BreakoutBME280
 from pimoroni_i2c import PimoroniI2C
-from enviro import logging
+from phew import logging
 from enviro import i2c
 
 sensor_reset_pin = Pin(9, Pin.OUT, value=True)
@@ -31,7 +31,7 @@ def particulates(particulate_data, measure):
   multiplier = 10 if measure >= PM0_3_PER_LITRE else 1
   return ((particulate_data[measure * 2] << 8) | particulate_data[measure * 2 + 1]) * multiplier
 
-def get_sensor_readings():
+def get_sensor_readings(seconds_since_last):
   # bme280 returns the register contents immediately and then starts a new reading
   # we want the current reading so do a dummy read to discard register contents first
   bme280.read()

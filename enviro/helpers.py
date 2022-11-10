@@ -1,6 +1,6 @@
 from enviro.constants import *
 
-import machine, os
+import machine, os, time
 
 # miscellany
 # ===========================================================================
@@ -11,6 +11,15 @@ def datetime_string():
 def date_string():
   dt = machine.RTC().datetime()
   return "{0:04d}-{1:02d}-{2:02d}".format(*dt)
+
+def timestamp(dt):
+  year = int(dt[0:4])
+  month = int(dt[5:7])
+  day = int(dt[8:10])
+  hour = int(dt[11:13])
+  minute = int(dt[14:16])
+  second = int(dt[17:19])
+  return time.mktime((year, month, day, hour, minute, second, 0, 0))
 
 def uid():
   return "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}".format(*machine.unique_id())
@@ -37,7 +46,7 @@ def mkdir_safe(path):
       raise
     pass # directory already exists, this is fine
 
-# Keeping the below around for later comparisons with PHEW
+# TODO Keeping the below around for later comparisons with PHEW
 """
 import machine, os, time, network, usocket, struct
 from phew import logging

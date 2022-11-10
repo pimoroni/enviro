@@ -151,14 +151,27 @@ print("    -  --  ---- -----=--==--===  hey enviro, let's go!  ===--==--=----- -
 print("")
 
 
-import network
+import network # TODO this was removed from 0.0.8
 def connect_to_wifi():
+  """ TODO what it was changed to
+  if phew.is_connected_to_wifi():
+    logging.info(f"> already connected to wifi")
+    return True
+  """
 
   wifi_ssid = config.wifi_ssid
   wifi_password = config.wifi_password
 
   logging.info(f"> connecting to wifi network '{wifi_ssid}'")
+  """ TODO what it was changed to
+  ip = phew.connect_to_wifi(wifi_ssid, wifi_password, timeout_seconds=30)
 
+  if not ip:
+    logging.error(f"! failed to connect to wireless network {wifi_ssid}")
+    return False
+
+  logging.info("  - ip address: ", ip)
+  """
   wlan = network.WLAN(network.STA_IF)
   wlan.active(True)
   wlan.connect(wifi_ssid, wifi_password)
@@ -259,8 +272,33 @@ def wake_reason_name(wake_reason):
 
 # get the readings from the on board sensors
 def get_sensor_readings():
-  readings = get_board().get_sensor_readings()
+  seconds_since_last = 0
+  now_str = helpers.datetime_string()
+  if helpers.file_exists("last_time.txt"):
+    now = helpers.timestamp(now_str)
+
+    time_entries = []
+    with open("last_time.txt", "r") as timefile:
+      time_entries = timefile.read().split("\n")
+
+    # read the first line from the time file
+    last = now
+    for entry in time_entries:
+      if entry:
+        last = helpers.timestamp(entry)
+        break
+
+    seconds_since_last = now - last
+    logging.info(f"  - seconds since last reading: {seconds_since_last}")
+
+
+  readings = get_board().get_sensor_readings(seconds_since_last)
   readings["voltage"] = 0.0 # battery_voltage #Temporarily removed until issue is fixed
+
+  # write out the last time log
+  with open("last_time.txt", "w") as timefile:
+    timefile.write(now_str)  
+
   return readings
 
 # save the provided readings into a todays readings data file
@@ -272,6 +310,7 @@ def save_reading(readings):
   with open(readings_filename, "a") as f:
     if new_file:
       # new readings file so write out column headings first
+      #f.write("timestamp," + ",".join(readings.keys()) + "\r\n") # TODO what it was changed to
       f.write("time," + ",".join(readings.keys()) + "\r\n")
 
     # write sensor data
@@ -283,9 +322,19 @@ def save_reading(readings):
 
 # save the provided readings into a cache file for future uploading
 def cache_upload(readings):
+  """ TODO what it was changed to
+  payload = {
+    "nickname": config.nickname,
+    "timestamp": helpers.datetime_string(),
+    "readings": readings,
+    "model": model,
+    "uid": helpers.uid()
+  }
+  """
   uploads_filename = f"uploads/{helpers.datetime_string()}.json"
   helpers.mkdir_safe("uploads")
   with open(uploads_filename, "w") as upload_file:
+    #json.dump(payload, upload_file) # TODO what it was changed to
     upload_file.write(ujson.dumps(readings))
 
 # return the number of cached results waiting to be uploaded
@@ -305,7 +354,19 @@ def upload_readings():
   destination = config.destination
   exec(f"import enviro.destinations.{destination}")
   destination_module = sys.modules[f"enviro.destinations.{destination}"]
+  """ TODO what it was changed to
+  for cache_file in os.ilistdir("uploads"):
+    with open(f"uploads/{cache_file[0]}", "r") as upload_file:
+      success = destination_module.upload_reading(json.load(upload_file))
+      if not success:
+        logging.error(f"! failed to upload '{cache_file[0]}' to {destination}")
+        return False
 
+      # remove the cache file now uploaded
+      logging.info(f"  - uploaded {cache_file[0]} to {destination}")
+
+    os.remove(f"uploads/{cache_file[0]}")
+    """
   destination_module.upload_readings()
 
   return True
@@ -340,7 +401,7 @@ def sleep():
 
   # make sure the rtc flags are cleared before going back to sleep
   logging.debug("  - clearing and disabling previous alarm")
-  rtc.clear_timer_flag()
+  rtc.clear_timer_flag() # TODO this was removed from 0.0.8
   rtc.clear_alarm_flag()
 
   # set alarm to wake us up for next reading
@@ -392,4 +453,3 @@ def sleep():
 
   # reset the board
   machine.reset()
-  

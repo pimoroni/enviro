@@ -144,52 +144,32 @@ def wind_direction():
 
   return closest_index * 45
 
-def timestamp(dt):
-  year = int(dt[0:4])
-  month = int(dt[5:7])
-  day = int(dt[8:10])
-  hour = int(dt[11:13])
-  minute = int(dt[14:16])
-  second = int(dt[17:19])
-  return time.mktime((year, month, day, hour, minute, second, 0, 0))
-
-def rainfall():
+def rainfall(seconds_since_last):
   amount = 0
-  now_str = helpers.datetime_string()
-  if helpers.file_exists("last_time.txt"):
-    now = timestamp(now_str)
+  now = helpers.timestamp(helpers.datetime_string())
 
-    time_entries = []
-    with open("last_time.txt", "r") as timefile:
-      time_entries = timefile.read().split("\n")
+  if helpers.file_exists("rain.txt"):
+    with open("rain.txt", "r") as rainfile:
+      rain_entries = rainfile.read().split("\n")
 
-    # read the first line from the time file
-    last = now
-    for entry in time_entries:
+    # count how many rain ticks since the last reading
+    for entry in rain_entries:
       if entry:
-        last = timestamp(entry)
-        break
+        ts = helpers.timestamp(entry)
+        if now - ts < seconds_since_last:
+          amount += RAIN_MM_PER_TICK
+  
+  per_second = 0
+  if seconds_since_last > 0:
+    per_second = amount / seconds_since_last
 
-    logging.info(f"  - seconds since last reading: {now - last}")
+  # clear the rain log by overwriting it
+  with open("rain.txt", "w") as rainfile:
+    rainfile.write("")
 
-    if helpers.file_exists("rain.txt"):
-      with open("rain.txt", "r") as rainfile:
-        rain_entries = rainfile.read().split("\n")
+  return amount, per_second
 
-      # count how many rain ticks since the last reading
-      for entry in rain_entries:
-        if entry:
-          ts = timestamp(entry)
-          if now - ts < now - last:
-            amount += RAIN_MM_PER_TICK
-
-  # write out adjusted rain log
-  with open("last_time.txt", "w") as timefile:
-    timefile.write(now_str)  
-
-  return amount
-
-def get_sensor_readings():
+def get_sensor_readings(seconds_since_last):
   # bme280 returns the register contents immediately and then starts a new reading
   # we want the current reading so do a dummy read to discard register contents first
   bme280.read()
@@ -197,6 +177,7 @@ def get_sensor_readings():
   bme280_data = bme280.read()
 
   ltr_data = ltr559.get_reading()
+  rain, rain_per_second = rainfall(seconds_since_last)
 
   from ucollections import OrderedDict
   return OrderedDict({
@@ -205,6 +186,7 @@ def get_sensor_readings():
     "pressure": round(bme280_data[1] / 100.0, 2),
     "light": round(ltr_data[BreakoutLTR559.LUX], 2),
     "wind_speed": wind_speed(),
-    "rain": rainfall(),
+    "rain": rain,
+    "rain_per_second": rain_per_second,
     "wind_direction": wind_direction()
   })
