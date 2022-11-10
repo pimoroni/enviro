@@ -1,4 +1,4 @@
-import time, math
+import time, math, os
 from breakout_bme280 import BreakoutBME280
 from breakout_ltr559 import BreakoutLTR559
 from machine import Pin, PWM
@@ -158,14 +158,12 @@ def rainfall(seconds_since_last):
         ts = helpers.timestamp(entry)
         if now - ts < seconds_since_last:
           amount += RAIN_MM_PER_TICK
+
+    os.remove("rain.txt")
   
   per_second = 0
   if seconds_since_last > 0:
     per_second = amount / seconds_since_last
-
-  # clear the rain log by overwriting it
-  with open("rain.txt", "w") as rainfile:
-    rainfile.write("")
 
   return amount, per_second
 
