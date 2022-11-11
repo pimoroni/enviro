@@ -8,7 +8,14 @@ import enviro.helpers as helpers
 from phew import logging
 from enviro.constants import WAKE_REASON_RTC_ALARM, WAKE_REASON_BUTTON_PRESS
 
+# amount of rain required for the bucket to tip in mm
 RAIN_MM_PER_TICK = 0.2794
+
+# distance from the centre of the anemometer to the centre 
+# of one of the cups in cm
+WIND_CM_RADIUS = 7.0
+# scaling factor for wind speed in m/s
+WIND_FACTOR = 0.0218
 
 bme280 = BreakoutBME280(i2c, 0x77)
 ltr559 = BreakoutLTR559(i2c)
@@ -22,7 +29,7 @@ def startup(reason):
 
   # check if rain sensor triggered wake
   rain_sensor_trigger = wakeup.get_gpio_state() & (1 << 10)
-  
+
   if rain_sensor_trigger:
     # read the current rain entries
     rain_entries = []
@@ -35,7 +42,7 @@ def startup(reason):
     rain_entries.append(helpers.datetime_string())
 
     # limit number of entries to 190 - each entry is 21 bytes including
-    # newline so this keeps the total rain.txt filesize just under one 
+    # newline so this keeps the total rain.txt filesize just under one
     # filesystem block (4096 bytes)
     rain_entries = rain_entries[-190:]
 
@@ -77,16 +84,16 @@ def check_trigger():
     with open("rain.txt", "w") as rainfile:
       rainfile.write("\n".join(rain_entries))
 
-def wind_speed(sample_time_ms=1000):  
+def wind_speed(sample_time_ms=1000):
   # get initial sensor state
   state = wind_speed_pin.value()
 
   # create an array for each sensor to log the times when the sensor state changed
   # then we can use those values to calculate an average tick time for each sensor
   ticks = []
-  
+
   start = time.ticks_ms()
-  while time.ticks_ms() - start <= sample_time_ms:
+  while time.ticks_diff(time.ticks_ms(), start) <= sample_time_ms:
     now = wind_speed_pin.value()
     if now != state: # sensor output changed
       # record the time of the change and update the state
@@ -98,16 +105,16 @@ def wind_speed(sample_time_ms=1000):
     return 0
 
   # calculate the average tick between transitions in ms
-  average_tick_ms = (ticks[-1] - ticks[0]) / (len(ticks) - 1)
+  average_tick_ms = (time.ticks_diff(ticks[-1], ticks[0])) / (len(ticks) - 1)
 
+  if average_tick_ms == 0:
+    return 0
   # work out rotation speed in hz (two ticks per rotation)
   rotation_hz = (1000 / average_tick_ms) / 2
 
   # calculate the wind speed in metres per second
-  radius = 7.0
-  circumference = radius * 2.0 * math.pi
-  factor = 0.0218  # scaling factor for wind speed in m/s
-  wind_m_s = rotation_hz * circumference * factor
+  circumference = WIND_CM_RADIUS * 2.0 * math.pi
+  wind_m_s = rotation_hz * circumference * WIND_FACTOR
 
   return wind_m_s
 
@@ -139,7 +146,7 @@ def wind_direction():
 
     if last_index == closest_index:
       break
-      
+
     last_index = closest_index
 
   return closest_index * 45
@@ -147,7 +154,6 @@ def wind_direction():
 def rainfall(seconds_since_last):
   amount = 0
   now = helpers.timestamp(helpers.datetime_string())
-
   if helpers.file_exists("rain.txt"):
     with open("rain.txt", "r") as rainfile:
       rain_entries = rainfile.read().split("\n")
