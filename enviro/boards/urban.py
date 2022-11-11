@@ -57,18 +57,18 @@ def get_sensor_readings(seconds_since_last):
   min_value = 1.65
   max_value = 1.65
   while time.ticks_diff(time.ticks_ms(), start) < sample_time_ms:
-    value = noise_adc.read_u16() / (3.3 * 65535)
+    value = (noise_adc.read_u16() * 3.3) / 65535
     min_value = min(min_value, value)
     max_value = max(max_value, value)
   
-  noise_vpp = round((max_value - min_value), 3)
+  noise_vpp = max_value - min_value
 
   from ucollections import OrderedDict
   return OrderedDict({
     "temperature": round(bme280_data[0], 2),
     "humidity": round(bme280_data[2], 2),
     "pressure": round(bme280_data[1] / 100.0, 2),
-    "noise": round(noise_vpp, 2),
+    "noise": round(noise_vpp, 3),
     "pm1": particulates(particulate_data, PM1_UGM3), 
     "pm2_5": particulates(particulate_data, PM2_5_UGM3), 
     "pm10": particulates(particulate_data, PM10_UGM3)
