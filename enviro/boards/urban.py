@@ -5,6 +5,9 @@ from pimoroni_i2c import PimoroniI2C
 from phew import logging
 from enviro import i2c
 
+# how long to capture the microphone signal for when taking a reading, in milliseconds
+MIC_SAMPLE_TIME_MS = 500
+
 sensor_reset_pin = Pin(9, Pin.OUT, value=True)
 sensor_enable_pin = Pin(10, Pin.OUT, value=False)
 boost_enable_pin = Pin(11, Pin.OUT, value=False)
@@ -52,11 +55,11 @@ def get_sensor_readings(seconds_since_last):
   sensor_enable_pin.value(False)
   boost_enable_pin.value(False)
 
-  sample_time_ms = 500
+  logging.debug("  - taking microphone reading")
   start = time.ticks_ms()
   min_value = 1.65
   max_value = 1.65
-  while time.ticks_diff(time.ticks_ms(), start) < sample_time_ms:
+  while time.ticks_diff(time.ticks_ms(), start) < MIC_SAMPLE_TIME_MS:
     value = (noise_adc.read_u16() * 3.3) / 65535
     min_value = min(min_value, value)
     max_value = max(max_value, value)
