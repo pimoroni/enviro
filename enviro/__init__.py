@@ -177,12 +177,12 @@ def connect_to_wifi():
   wlan.connect(wifi_ssid, wifi_password)
 
   start = time.ticks_ms()
-  while (time.ticks_ms() - start) < 30000:
+  while time.ticks_diff(time.ticks_ms(), start) < 30000:
     if wlan.status() < 0 or wlan.status() >= 3:
       break
     time.sleep(0.5)
 
-  seconds_to_connect = int((time.ticks_ms() - start) / 1000)
+  seconds_to_connect = int(time.ticks_diff(time.ticks_ms(), start) / 1000)
 
   if wlan.status() != 3:
     logging.error(f"! failed to connect to wireless network {wifi_ssid}")

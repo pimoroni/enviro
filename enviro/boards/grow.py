@@ -25,7 +25,7 @@ def moisture_readings(sample_time_ms=500):
   changes = [[], [], []]
   
   start = time.ticks_ms()
-  while time.ticks_ms() - start <= sample_time_ms:
+  while time.ticks_diff(time.ticks_ms(), start) <= sample_time_ms:
     for i in range(0, len(state)):
       now = moisture_sensor_pins[i].value()
       if now != state[i]: # sensor output changed
@@ -42,7 +42,7 @@ def moisture_readings(sample_time_ms=500):
       continue
 
     # calculate the average tick between transitions in ms
-    average = (changes[i][-1] - changes[i][0]) / (len(changes[i]) - 1)
+    average = time.ticks_diff(changes[i][-1], changes[i][0]) / (len(changes[i]) - 1)
 
     # scale the result to a 0...100 range where 0 is very dry
     # and 100 is standing in water
@@ -94,7 +94,7 @@ def moisture_readings():
     first = None
     last = None
     ticks = 0
-    while ticks < 10 and time.ticks_ms() - start <= 1000:
+    while ticks < 10 and time.ticks_diff(time.ticks_ms(), start) <= 1000:
       value = sensor.value()
       if last_value != value:
         if first == None:
@@ -108,7 +108,7 @@ def moisture_readings():
       continue
 
     # calculate the average tick between transitions in ms
-    average = (last - first) / ticks
+    average = time.ticks_diff(last, first) / ticks
     # scale the result to a 0...100 range where 0 is very dry
     # and 100 is standing in water
     #
