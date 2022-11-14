@@ -15,7 +15,7 @@ wifi_password = None
 # how often to wake up and take a reading (in minutes)
 reading_frequency = 15
 
-# where to upload to ("web_hook", "mqtt", "adafruitio")
+# where to upload to ("http", "mqtt", "adafruit_io", "influxdb")
 destination = None
 
 # how often to upload data (number of cached readings)

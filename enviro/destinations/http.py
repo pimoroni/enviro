@@ -1,33 +1,27 @@
 from enviro import logging
-import urequests, ujson, os
+from enviro.constants import UPLOAD_SUCCESS, UPLOAD_FAILED
+import urequests
 import config
 
-def upload_readings():
+def log_destination():
+  logging.info(f"> uploading cached readings to url: {config.custom_http_url}")
+
+def upload_reading(reading):
   url = config.custom_http_url
-  logging.info(f"> uploading cached readings to {url}")
 
   auth = None
   if config.custom_http_username:
     auth = (config.custom_http_username, config.custom_http_password)
 
-  nickname = config.nickname
+  try:
+    result = urequests.post(url, auth=auth, json=reading)
+    result.close()
 
-  for cache_file in os.ilistdir("uploads"):
-    cache_file = cache_file[0]
-    try:
-      with open(f"uploads/{cache_file}", "r") as f:
-        timestamp = cache_file.split(".")[0]
-        payload = {
-          "nickname": nickname,
-          "timestamp": timestamp,
-          "readings": ujson.load(f)
-        }
-        result = urequests.post(url, auth=auth, json=payload)
-        if result.status_code != 200:
-          logging.error(f"  - failed to upload '{cache_file}' ({result.status_code} {result.reason})", cache_file)
-        else:
-          logging.info(f"  - uploaded {cache_file}")
-        os.remove(f"uploads/{cache_file}")
+    if result.status_code in [200, 201, 202]:
+      return UPLOAD_SUCCESS
 
-    except OSError as e:
-      logging.error(f"  - failed to upload '{cache_file}'")
+    logging.debug(f"  - upload issue ({result.status_code} {result.reason})")
+  except:
+    logging.debug(f"  - an exception occurred when uploading")
+
+  return UPLOAD_FAILED

@@ -310,8 +310,7 @@ def save_reading(readings):
   with open(readings_filename, "a") as f:
     if new_file:
       # new readings file so write out column headings first
-      #f.write("timestamp," + ",".join(readings.keys()) + "\r\n") # TODO what it was changed to
-      f.write("time," + ",".join(readings.keys()) + "\r\n")
+      f.write("timestamp," + ",".join(readings.keys()) + "\r\n")
 
     # write sensor data
     row = [helpers.datetime_string()]
@@ -322,7 +321,6 @@ def save_reading(readings):
 
 # save the provided readings into a cache file for future uploading
 def cache_upload(readings):
-  """ TODO what it was changed to
   payload = {
     "nickname": config.nickname,
     "timestamp": helpers.datetime_string(),
@@ -330,12 +328,12 @@ def cache_upload(readings):
     "model": model,
     "uid": helpers.uid()
   }
-  """
+
   uploads_filename = f"uploads/{helpers.datetime_file_string()}.json"
   helpers.mkdir_safe("uploads")
   with open(uploads_filename, "w") as upload_file:
     #json.dump(payload, upload_file) # TODO what it was changed to
-    upload_file.write(ujson.dumps(readings))
+    upload_file.write(ujson.dumps(payload))
 
 # return the number of cached results waiting to be uploaded
 def cached_upload_count():
@@ -352,22 +350,35 @@ def upload_readings():
     return False
 
   destination = config.destination
-  exec(f"import enviro.destinations.{destination}")
-  destination_module = sys.modules[f"enviro.destinations.{destination}"]
-  """ TODO what it was changed to
-  for cache_file in os.ilistdir("uploads"):
-    with open(f"uploads/{cache_file[0]}", "r") as upload_file:
-      success = destination_module.upload_reading(json.load(upload_file))
-      if not success:
-        logging.error(f"! failed to upload '{cache_file[0]}' to {destination}")
+  try:
+    exec(f"import enviro.destinations.{destination}")
+    destination_module = sys.modules[f"enviro.destinations.{destination}"]
+    destination_module.log_destination()
+
+    for cache_file in os.ilistdir("uploads"):
+      try:
+        with open(f"uploads/{cache_file[0]}", "r") as upload_file:
+          status = destination_module.upload_reading(ujson.load(upload_file))
+          if status == UPLOAD_SUCCESS:
+            os.remove(f"uploads/{cache_file[0]}")
+            logging.info(f"  - uploaded {cache_file[0]}")
+          elif status == UPLOAD_RATE_LIMITED:
+            # write out that we want to attempt a reupload
+            with open("reattempt_upload.txt", "w") as attemptfile:
+              attemptfile.write("")
+
+            logging.info(f"  - rate limited, going to sleep for 1 minute")
+            sleep(1)
+          else:
+            logging.error(f"  ! failed to upload '{cache_file[0]}' to {destination}")
+            return False
+
+      except OSError:
+        logging.error(f"  ! failed to open '{cache_file[0]}' to {destination}")
         return False
-
-      # remove the cache file now uploaded
-      logging.info(f"  - uploaded {cache_file[0]} to {destination}")
-
-    os.remove(f"uploads/{cache_file[0]}")
-    """
-  destination_module.upload_readings()
+  except ImportError:
+    logging.error(f"! cannot find destination {destination}")
+    return False
 
   return True
 
@@ -396,7 +407,21 @@ def startup():
   logging.debug("  - turn on activity led")
   pulse_activity_led(0.5)
 
-def sleep():
+  # see if we were woken to attempt a reupload
+  if helpers.file_exists("reattempt_upload.txt"):
+    os.remove("reattempt_upload.txt")
+
+    logging.info(f"> {cached_upload_count()} cache file(s) still to upload")
+    if not upload_readings():
+      halt("! reading upload failed")
+
+    # if it was the RTC that woke us, go to sleep until our next scheduled reading
+    # otherwise continue with taking new readings etc
+    # Note, this *may* result in a missed reading
+    if reason == WAKE_REASON_RTC_ALARM:
+      sleep()
+
+def sleep(time_override=None):
   logging.info("> going to sleep")
 
   # make sure the rtc flags are cleared before going back to sleep
@@ -409,8 +434,12 @@ def sleep():
   hour, minute = dt[3:5]
 
   # calculate how many minutes into the day we are
-  minute = math.floor(minute / config.reading_frequency) * config.reading_frequency
-  minute += config.reading_frequency
+  if time_override is not None:
+    minute += time_override
+  else:
+    minute = math.floor(minute / config.reading_frequency) * config.reading_frequency
+    minute += config.reading_frequency
+
   while minute >= 60:      
     minute -= 60
     hour += 1
