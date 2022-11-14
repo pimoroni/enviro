@@ -374,8 +374,12 @@ def upload_readings():
             return False
 
       except OSError:
-        logging.error(f"  ! failed to open '{cache_file[0]}' to {destination}")
+        logging.error(f"  ! failed to open '{cache_file[0]}'")
         return False
+
+      except KeyError:
+        logging.error(f"  ! skipping '{cache_file[0]}' as it is missing data. It was likely created by an older version of the enviro firmware")
+        
   except ImportError:
     logging.error(f"! cannot find destination {destination}")
     return False
