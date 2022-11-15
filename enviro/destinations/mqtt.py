@@ -11,16 +11,12 @@ def upload_reading(reading):
   server = config.mqtt_broker_address
   username = config.mqtt_broker_username
   password = config.mqtt_broker_password
-  nickname = config.nickname
+  nickname = reading["nickname"]
 
   try:
+    # attempt to publish reading
     mqtt_client = MQTTClient(reading["uid"], server, user=username, password=password, keepalive=60)
     mqtt_client.connect()
-
-    # by default the MQTT messages will be published with the retain flag
-    # set, so that if a consumer is not subscribed, the most recent set
-    # of readings can still be read by another subscriber later. Change
-    # retain to False (or drop from the method call) below to change this
     mqtt_client.publish(f"enviro/{nickname}", ujson.dumps(reading), retain=True)
     mqtt_client.disconnect()
     return UPLOAD_SUCCESS

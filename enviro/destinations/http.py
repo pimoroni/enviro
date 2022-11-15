@@ -14,6 +14,7 @@ def upload_reading(reading):
     auth = (config.custom_http_username, config.custom_http_password)
 
   try:
+    # post reading data to http endpoint
     result = urequests.post(url, auth=auth, json=reading)
     result.close()
 
