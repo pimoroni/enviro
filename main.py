@@ -21,7 +21,7 @@
 
 # uncomment the below two lines to change the amount of logging enviro will do
 # from phew import logging
-# logging.set_logging_types(logging.LOG_ERROR | logging.LOG_WARNING | logging.LOG_INFO)
+# logging.disable_logging_types(logging.LOG_DEBUG)
 
 # import enviro firmware, this will trigger provisioning if needed
 import enviro

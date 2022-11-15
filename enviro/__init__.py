@@ -209,7 +209,9 @@ def exception(exc):
   import sys, io
   buf = io.StringIO()
   sys.print_exception(exc, buf)
-  halt("! " + buf.getvalue())
+  logging.exception("! " + buf.getvalue())
+  warn_led(WARN_LED_BLINK)
+  sleep()
 
 # returns True if we've used up 90% of the internal filesystem
 def low_disk_space():
