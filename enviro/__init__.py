@@ -204,6 +204,13 @@ def halt(message):
   warn_led(WARN_LED_BLINK)
   sleep()
 
+# log the exception, blink the warning led, and go back to sleep
+def exception(exc):
+  import sys, io
+  buf = io.StringIO()
+  sys.print_exception(exc, buf)
+  halt("! " + buf.getvalue())
+
 # returns True if we've used up 90% of the internal filesystem
 def low_disk_space():
   if not phew.remote_mount: # os.statvfs doesn't exist on remote mounts
