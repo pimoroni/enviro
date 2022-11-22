@@ -23,8 +23,10 @@ ltr559 = BreakoutLTR559(i2c)
 wind_direction_pin = Analog(26)
 wind_speed_pin = Pin(9, Pin.IN, Pin.PULL_UP)
 rain_pin = Pin(10, Pin.IN, Pin.PULL_DOWN)
+last_rain_trigger = False
 
 def startup(reason):
+  global last_rain_trigger
   import wakeup
 
   # check if rain sensor triggered wake
@@ -50,6 +52,8 @@ def startup(reason):
     with open("rain.txt", "w") as rainfile:
       rainfile.write("\n".join(rain_entries))
 
+    last_rain_trigger = True
+
     # if we were woken by the RTC or a Poke continue with the startup
     return (reason is WAKE_REASON_RTC_ALARM 
       or reason is WAKE_REASON_BUTTON_PRESS)
@@ -58,9 +62,10 @@ def startup(reason):
   return True
 
 def check_trigger():
+  global last_rain_trigger
   rain_sensor_trigger = rain_pin.value()
 
-  if rain_sensor_trigger:
+  if rain_sensor_trigger and not last_rain_trigger:
     activity_led(100)
     time.sleep(0.05)
     activity_led(0)
@@ -83,6 +88,8 @@ def check_trigger():
     # write out adjusted rain log
     with open("rain.txt", "w") as rainfile:
       rainfile.write("\n".join(rain_entries))
+
+  last_rain_trigger = rain_sensor_trigger
 
 def wind_speed(sample_time_ms=1000):
   # get initial sensor state
