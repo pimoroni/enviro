@@ -99,8 +99,8 @@ import phew
 from pcf85063a import PCF85063A
 import enviro.helpers as helpers
 
-# read the state of vsys to know if we were woken up by USB
-vsys_present = Pin("WL_GPIO2", Pin.IN).value()
+# read the state of vbus to know if we were woken up by USB
+vbus_present = Pin("WL_GPIO2", Pin.IN).value()
 
 #BUG Temporarily disabling battery reading, as it seems to cause issues when connected to Thonny
 """
@@ -262,7 +262,7 @@ def get_wake_reason():
   # TODO Temporarily removing this as false reporting on non-camera boards
   #elif not external_trigger_pin.value():
   #  wake_reason = WAKE_REASON_EXTERNAL_TRIGGER
-  elif vsys_present:
+  elif vbus_present:
     wake_reason = WAKE_REASON_USB_POWERED
   return wake_reason
 
