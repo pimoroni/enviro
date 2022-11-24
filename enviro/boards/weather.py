@@ -195,7 +195,7 @@ def get_sensor_readings(seconds_since_last):
     "temperature": round(bme280_data[0], 2),
     "humidity": round(bme280_data[2], 2),
     "pressure": round(bme280_data[1] / 100.0, 2),
-    "light": round(ltr_data[BreakoutLTR559.LUX], 2),
+    "luminance": round(ltr_data[BreakoutLTR559.LUX], 2),
     "wind_speed": wind_speed(),
     "rain": rain,
     "rain_per_second": rain_per_second,
