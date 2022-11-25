@@ -5,6 +5,8 @@ from machine import Pin, PWM
 from enviro import i2c
 from phew import logging
 
+CHANNEL_NAMES = ['A', 'B', 'C']
+
 bme280 = BreakoutBME280(i2c, 0x77)
 ltr559 = BreakoutLTR559(i2c)
 
@@ -83,12 +85,15 @@ def water(moisture_levels):
       # determine a duration to run the pump for
       duration = round((targets[i] - moisture_levels[i]) / 25, 1)
 
+      logging.info(f"> sensor {CHANNEL_NAMES[i]} below moisture target {targets[i]} (currently at {int(moisture_levels[i])}).")
+
       if config.auto_water:
-        logging.info(f"> running pump {i} for {duration} second (currently at {int(moisture_levels[i])}, target {targets[i]})")
+        logging.info(f"  - running pump {CHANNEL_NAMES[i]} for {duration} second(s)")
         pump_pins[i].value(1)
         time.sleep(duration)
         pump_pins[i].value(0)
       else:
+        logging.info(f"  - playing beep")
         for j in range(0, i + 1):
           drip_noise()
         time.sleep(0.5)
