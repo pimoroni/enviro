@@ -9,31 +9,9 @@
 
 ## New firmware!
 
-v.0.0.8 is an **alpha** release of the firmware which may contain bugs and other instabilities. Thanks for your continued feedback and bug reports - we'll get it fixed up as soon as we can :)
+v.0.0.9 is an **alpha** release of the firmware which may contain bugs and other instabilities. Thanks for your continued feedback and bug reports - we'll get it fixed up as soon as we can :)
 
-Key changes:
-
-- Provisioning
-  - much better performance, more snappy
-  - no longer hangs in some setups
-  - empty and duplicate network names hidden
-  - better handling of config file writing
-- Readings now synched to clock time rather than just relative to each other
-- Battery voltage reported as a reading
-- Poke button now works when plugged in via USB
-- Boards all work properly when plugged into USB (previous had to use a battery)
-- Enviro Weather 🌦️
-  - rain sensor trigger fixed
-  - improved wind speed readings at low wind speeds
-- Enviro Indoor 🛋️
-  - basic support for VOC sensor/air quality readings added
-- Enviro Grow 🪴
-  - auto watering / audio alert trigger support
-  - moisture sensor readings corrected
-
-(and lots of other small bug fixes and improvements) 
-
-Download the alpha firmware here: https://github.com/pimoroni/enviro/releases/tag/v0.0.8
+Download the alpha firmware here: https://github.com/pimoroni/enviro/releases/tag/v0.0.9
 
 If you want to return to the shipping firmware you can re-flash your Enviro with v.0.0.2: https://github.com/pimoroni/enviro/releases/tag/v0.0.2
 

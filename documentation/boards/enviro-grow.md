@@ -12,9 +12,9 @@ Enviro Grow comes with three capacitive moisture sensors to monitor up to three 
 |Humidity|`humidity`|percent|%|`55.42`|
 |Air Pressure|`pressure`|hectopascals|hPa|`997.16`|
 |Luminance|`luminance`|lux|lx|`35`|
-|Moisture Sensor 1|`moisture_1`|percent|%|`17`|
-|Moisture Sensor 2|`moisture_2`|percent|%|`45`|
-|Moisture Sensor 3|`moisture_3`|percent|%|`76`|
+|Moisture Sensor A|`moisture_a`|percent|%|`17`|
+|Moisture Sensor B|`moisture_b`|percent|%|`45`|
+|Moisture Sensor C|`moisture_c`|percent|%|`76`|
 |Voltage|`voltage`|volts|V|`4.035`|
 
 ## On-board devices

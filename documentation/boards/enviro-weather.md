@@ -12,7 +12,8 @@ Enviro Weather is a super slimline all in one board for keeping a (weather) eye 
 |Humidity|`humidity`|percent|%|`55.42`|
 |Air Pressure|`pressure`|hectopascals|hPa|`997.16`|
 |Luminance|`luminance`|lux|lx|`35`|
-|Rainfall|`rain`|millimetres per hour|mm/ph|`1.674`|
+|Rainfall|`rain`|millimetres|mm|`1.674`|
+|Rainfall Average|`rain_per_second`|millimetres per second|mm/s|`1.674`|
 |Wind Direction|`wind_direction`|angle|°|`45`|
 |Wind Speed|`wind_speed`|metres per second|m/s|`0.45`|
 |Voltage|`voltage`|volts|V|`4.035`|
