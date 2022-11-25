@@ -62,9 +62,10 @@ class MQTTClient:
         self.lw_qos = qos
         self.lw_retain = retain
 
-    def connect(self, clean_session=True, timeout=30):
+    def connect(self, clean_session=True):
+    #def connect(self, clean_session=True, timeout=30): # TODO this was added to 0.0.8
         self.sock = socket.socket()
-        self.sock.settimeout(timeout)
+        #self.sock.settimeout(timeout) # TODO this was added to 0.0.8
         addr = socket.getaddrinfo(self.server, self.port)[0][-1]
         self.sock.connect(addr)
         if self.ssl:

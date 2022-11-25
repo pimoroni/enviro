@@ -5,6 +5,9 @@ from pimoroni_i2c import PimoroniI2C
 from phew import logging
 from enviro import i2c
 
+# how long to capture the microphone signal for when taking a reading, in milliseconds
+MIC_SAMPLE_TIME_MS = 500
+
 sensor_reset_pin = Pin(9, Pin.OUT, value=True)
 sensor_enable_pin = Pin(10, Pin.OUT, value=False)
 boost_enable_pin = Pin(11, Pin.OUT, value=False)
@@ -31,7 +34,7 @@ def particulates(particulate_data, measure):
   multiplier = 10 if measure >= PM0_3_PER_LITRE else 1
   return ((particulate_data[measure * 2] << 8) | particulate_data[measure * 2 + 1]) * multiplier
 
-def get_sensor_readings():
+def get_sensor_readings(seconds_since_last):
   # bme280 returns the register contents immediately and then starts a new reading
   # we want the current reading so do a dummy read to discard register contents first
   bme280.read()
@@ -52,25 +55,25 @@ def get_sensor_readings():
   sensor_enable_pin.value(False)
   boost_enable_pin.value(False)
 
-  sample_time_ms = 500
+  logging.debug("  - taking microphone reading")
   start = time.ticks_ms()
   min_value = 1.65
   max_value = 1.65
-  while time.ticks_ms() - start < sample_time_ms:
-    value = noise_adc.read_u16() / (3.3 * 65535)
+  while time.ticks_diff(time.ticks_ms(), start) < MIC_SAMPLE_TIME_MS:
+    value = (noise_adc.read_u16() * 3.3) / 65535
     min_value = min(min_value, value)
     max_value = max(max_value, value)
   
-  noise_vpp = round((max_value - min_value), 3)
+  noise_vpp = max_value - min_value
 
   from ucollections import OrderedDict
   return OrderedDict({
     "temperature": round(bme280_data[0], 2),
     "humidity": round(bme280_data[2], 2),
     "pressure": round(bme280_data[1] / 100.0, 2),
-    "noise": round(noise_vpp, 2),
+    "noise": round(noise_vpp, 3),
     "pm1": particulates(particulate_data, PM1_UGM3), 
     "pm2_5": particulates(particulate_data, PM2_5_UGM3), 
-    "pm10": particulates(particulate_data, PM10_UGM3), 
+    "pm10": particulates(particulate_data, PM10_UGM3)
   })
 

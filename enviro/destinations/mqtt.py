@@ -1,6 +1,11 @@
+from enviro import logging
+from enviro.constants import UPLOAD_SUCCESS, UPLOAD_FAILED
 from enviro.mqttsimple import MQTTClient
 import ujson
 import config
+
+def log_destination():
+  logging.info(f"> uploading cached readings to MQTT broker: {config.mqtt_broker_address}")
 
 def upload_reading(reading):
   server = config.mqtt_broker_address
@@ -10,12 +15,12 @@ def upload_reading(reading):
 
   try:
     # attempt to publish reading
-    mqtt_client = MQTTClient(reading["uid"], server, user=username, password=password)
+    mqtt_client = MQTTClient(reading["uid"], server, user=username, password=password, keepalive=60)
     mqtt_client.connect()
     mqtt_client.publish(f"enviro/{nickname}", ujson.dumps(reading), retain=True)
     mqtt_client.disconnect()
-    return True
+    return UPLOAD_SUCCESS
   except:
-    pass
+    logging.debug(f"  - an exception occurred when uploading")
 
-  return False
+  return UPLOAD_FAILED

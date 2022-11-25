@@ -40,7 +40,7 @@ def colour_temperature_from_rgbc(r, g, b, c):
       ct = 10000
   return round(ct)
 
-def get_sensor_readings():
+def get_sensor_readings(seconds_since_last):
   data = bme688.read()
 
   temperature = round(data[0], 2)
@@ -63,5 +63,5 @@ def get_sensor_readings():
     "gas_resistance": gas_resistance,
     "aqi": aqi,
     "luminance": lux_from_rgbc(r, g, b, c),
-    "color_temperature": colour_temperature_from_rgbc(r, g, b, c),
+    "color_temperature": colour_temperature_from_rgbc(r, g, b, c)
   })

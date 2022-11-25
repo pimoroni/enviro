@@ -1,0 +1,90 @@
+{{render_template("enviro/html/header.html")}}
+
+{{render_template("enviro/html/header-mini.html", board=board)}}
+
+<section>
+  <form id="main" action="/provision-step-grow-sensors" method="post">
+    <h2>Let's set up your moisture sensors.</h2>
+    <p>Every plant likes a different amount of moisture in its soil! We've provided some default percentage values below to start you off, but later on you might want to come back and adjust these levels.</p>
+    <p>When the soil moisture level gets below the target, Grow will chirp at you with three unique tones to let you know which plant needs watering.</p>
+    <aside class="note">
+      If you want to turn these audio alerts off (or if you're not using all three channels), set the appropriate channels to 0.
+    </aside>
+
+    <br />
+
+    <h3>Channel A moisture target.</h3>
+    <fieldset>
+      <input id="moisture_target_a" name="moisture_target_a" type="number" min="0" max="100" placeholder="e.g. 50" value="{{config.moisture_target_a}}" />
+    </fieldset>
+
+    <h3>Channel B moisture target.</h3>
+    <fieldset>
+      <input id="moisture_target_b" name="moisture_target_b" type="number" min="0" max="100" placeholder="e.g. 50" value="{{config.moisture_target_b}}" />
+    </fieldset>
+
+    <h3>Channel C moisture target.</h3>
+    <fieldset>
+      <input id="moisture_target_c" name="moisture_target_c" type="number" min="0" max="100" placeholder="e.g. 50" value="{{config.moisture_target_c}}" />
+    </fieldset>
+
+    <br />
+
+    <h2>Do you want to Auto Water your plants?</h2>
+    <p>If you have pumps connected to your Enviro Grow, you can enable and disable auto-watering below. Grow will automatically water your pots until the soil reaches the target moisture level set in the previous step.</p>
+
+    <ul id="auto_watering" class="picker">
+      <li data-auto-water="True"> 
+        Yes
+      </li>
+      <li data-auto-water="False" > 
+        No
+      </li>
+    </ul>        
+    <input type="hidden" id="auto_water" name="auto_water" value="{{config.auto_water}}" />
+
+    <script>
+      function clampTarget(target) {
+        document.getElementById(target).addEventListener("input", function(e) {
+          let caretPos = this.selectionStart
+          let value = document.getElementById(target).value
+          let clamped = Math.min(Math.max(parseInt(value), 0), 100)
+          if(clamped != value) {
+            caretPos -= 1
+          }
+          document.getElementById(target).value = clamped
+          this.selectionStart = this.selectionEnd = caretPos 
+        })
+      }
+
+      function selectAutoWater(auto_water) {
+        document.querySelectorAll("#auto_watering >li").forEach((listItem) => {          
+          if(listItem.dataset.autoWater == auto_water) {
+            listItem.classList.add("active")
+          }else{
+            listItem.classList.remove("active")
+          }
+        })
+        document.getElementById("auto_water").value = auto_water
+      }
+
+      document.querySelectorAll("#auto_watering >li").forEach((listItem) => {
+        listItem.addEventListener("click", function(e) {
+          selectAutoWater(listItem.dataset.autoWater)
+        })
+      })
+
+      clampTarget("moisture_target_a")
+      clampTarget("moisture_target_b")
+      clampTarget("moisture_target_c")
+      selectAutoWater("{{config.auto_water}}")
+    </script>
+  </form>
+
+  <nav>
+    <button class="back" onclick="document.location = '/provision-step-4-destination'"><span>➔</span></button>
+    <button type="submit" form="main">We're done! ➔</button>
+  </nav>
+</section>
+
+{{render_template("enviro/html/footer.html")}}

@@ -5,6 +5,8 @@ from machine import Pin, PWM
 from enviro import i2c
 from phew import logging
 
+CHANNEL_NAMES = ['A', 'B', 'C']
+
 bme280 = BreakoutBME280(i2c, 0x77)
 ltr559 = BreakoutLTR559(i2c)
 
@@ -34,7 +36,7 @@ def moisture_readings():
     first = None
     last = None
     ticks = 0
-    while ticks < 10 and time.ticks_ms() - start <= 1000:
+    while ticks < 10 and time.ticks_diff(time.ticks_ms(), start) <= 1000:
       value = sensor.value()
       if last_value != value:
         if first == None:
@@ -48,7 +50,7 @@ def moisture_readings():
       continue
 
     # calculate the average tick between transitions in ms
-    average = (last - first) / ticks
+    average = time.ticks_diff(last, first) / ticks
     # scale the result to a 0...100 range where 0 is very dry
     # and 100 is standing in water
     #
@@ -73,9 +75,9 @@ def drip_noise():
 def water(moisture_levels):
   from enviro import config
   targets = [
-    config.moisture_target_1, 
-    config.moisture_target_2,
-    config.moisture_target_3
+    config.moisture_target_a, 
+    config.moisture_target_b,
+    config.moisture_target_c
   ]
 
   for i in range(0, 3):
@@ -83,17 +85,20 @@ def water(moisture_levels):
       # determine a duration to run the pump for
       duration = round((targets[i] - moisture_levels[i]) / 25, 1)
 
+      logging.info(f"> sensor {CHANNEL_NAMES[i]} below moisture target {targets[i]} (currently at {int(moisture_levels[i])}).")
+
       if config.auto_water:
-        logging.info(f"> running pump {i} for {duration} second (currently at {int(moisture_levels[i])}, target {targets[i]})")
+        logging.info(f"  - running pump {CHANNEL_NAMES[i]} for {duration} second(s)")
         pump_pins[i].value(1)
         time.sleep(duration)
         pump_pins[i].value(0)
       else:
+        logging.info(f"  - playing beep")
         for j in range(0, i + 1):
           drip_noise()
         time.sleep(0.5)
 
-def get_sensor_readings():
+def get_sensor_readings(seconds_since_last):
   # bme280 returns the register contents immediately and then starts a new reading
   # we want the current reading so do a dummy read to discard register contents first
   bme280.read()
@@ -103,11 +108,10 @@ def get_sensor_readings():
   ltr_data = ltr559.get_reading()
 
   moisture_levels = moisture_readings()
-  
+
   water(moisture_levels) # run pumps if needed
 
   from ucollections import OrderedDict
-
   return OrderedDict({
     "temperature": round(bme280_data[0], 2),
     "humidity": round(bme280_data[2], 2),

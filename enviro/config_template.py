@@ -15,7 +15,7 @@ wifi_password = None
 # how often to wake up and take a reading (in minutes)
 reading_frequency = 15
 
-# where to upload to ("web_hook", "mqtt", "adafruitio")
+# where to upload to ("http", "mqtt", "adafruit_io", "influxdb")
 destination = None
 
 # how often to upload data (number of cached readings)
@@ -43,6 +43,6 @@ influxdb_bucket = None
 
 # grow specific settings
 auto_water = False
-moisture_target_1 = 50
-moisture_target_2 = 50
-moisture_target_3 = 50
+moisture_target_a = 50
+moisture_target_b = 50
+moisture_target_c = 50

@@ -1,3 +1,5 @@
+from enviro import logging
+from enviro.constants import UPLOAD_SUCCESS, UPLOAD_FAILED
 import urequests, time
 import config
 
@@ -12,6 +14,9 @@ def url_encode(t):
     else:
       result += f"%{ord(c):02X}"
   return result
+
+def log_destination():
+  logging.info(f"> uploading cached readings to Influxdb bucket: {config.influxdb_bucket}")
 
 def upload_reading(reading):  
   bucket = config.influxdb_bucket
@@ -46,8 +51,12 @@ def upload_reading(reading):
     # post reading data to http endpoint
     result = urequests.post(url, headers=headers, data=payload)
     result.close()
-    return result.status_code == 204 # why 204? we'll never know...
-  except:
-    pass      
+    
+    if result.status_code == 204:  # why 204? we'll never know...
+      return UPLOAD_SUCCESS
 
-  return False
+    logging.debug(f"  - upload issue ({result.status_code} {result.reason})")
+  except:
+    logging.debug(f"  - an exception occurred when uploading")
+
+  return UPLOAD_FAILED

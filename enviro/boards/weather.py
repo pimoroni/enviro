@@ -1,11 +1,12 @@
-import time, math
+import time, math, os
 from breakout_bme280 import BreakoutBME280
 from breakout_ltr559 import BreakoutLTR559
 from machine import Pin, PWM
 from pimoroni import Analog
-from enviro import i2c, hold_vsys_en_pin
+from enviro import i2c, activity_led
 import enviro.helpers as helpers
 from phew import logging
+from enviro.constants import WAKE_REASON_RTC_ALARM, WAKE_REASON_BUTTON_PRESS
 
 # amount of rain required for the bucket to tip in mm
 RAIN_MM_PER_TICK = 0.2794
@@ -21,8 +22,11 @@ ltr559 = BreakoutLTR559(i2c)
 
 wind_direction_pin = Analog(26)
 wind_speed_pin = Pin(9, Pin.IN, Pin.PULL_UP)
+rain_pin = Pin(10, Pin.IN, Pin.PULL_DOWN)
+last_rain_trigger = False
 
-def startup():
+def startup(reason):
+  global last_rain_trigger
   import wakeup
 
   # check if rain sensor triggered wake
@@ -36,7 +40,7 @@ def startup():
         rain_entries = rainfile.read().split("\n")
 
     # add new entry
-    logging.info("> add new rain trigger at {helpers.datetime_string()}")
+    logging.info(f"> add new rain trigger at {helpers.datetime_string()}")
     rain_entries.append(helpers.datetime_string())
 
     # limit number of entries to 190 - each entry is 21 bytes including
@@ -48,8 +52,44 @@ def startup():
     with open("rain.txt", "w") as rainfile:
       rainfile.write("\n".join(rain_entries))
 
-    # go immediately back to sleep, we'll wake up at next scheduled reading
-    hold_vsys_en_pin.init(Pin.IN)
+    last_rain_trigger = True
+
+    # if we were woken by the RTC or a Poke continue with the startup
+    return (reason is WAKE_REASON_RTC_ALARM 
+      or reason is WAKE_REASON_BUTTON_PRESS)
+
+  # there was no rain trigger so continue with the startup
+  return True
+
+def check_trigger():
+  global last_rain_trigger
+  rain_sensor_trigger = rain_pin.value()
+
+  if rain_sensor_trigger and not last_rain_trigger:
+    activity_led(100)
+    time.sleep(0.05)
+    activity_led(0)
+
+    # read the current rain entries
+    rain_entries = []
+    if helpers.file_exists("rain.txt"):
+      with open("rain.txt", "r") as rainfile:
+        rain_entries = rainfile.read().split("\n")
+
+    # add new entry
+    logging.info(f"> add new rain trigger at {helpers.datetime_string()}")
+    rain_entries.append(helpers.datetime_string())
+
+    # limit number of entries to 190 - each entry is 21 bytes including
+    # newline so this keeps the total rain.txt filesize just under one 
+    # filesystem block (4096 bytes)
+    rain_entries = rain_entries[-190:]
+
+    # write out adjusted rain log
+    with open("rain.txt", "w") as rainfile:
+      rainfile.write("\n".join(rain_entries))
+
+  last_rain_trigger = rain_sensor_trigger
 
 def wind_speed(sample_time_ms=1000):
   # get initial sensor state
@@ -118,34 +158,29 @@ def wind_direction():
 
   return closest_index * 45
 
-def timestamp(dt):
-  year = int(dt[0:4])
-  month = int(dt[5:7])
-  day = int(dt[8:10])
-  hour = int(dt[11:13])
-  minute = int(dt[14:16])
-  second = int(dt[17:19])
-  return time.mktime((year, month, day, hour, minute, second, 0, 0))
-
-def rainfall():
-  if not helpers.file_exists("rain.txt"):
-    return 0
-
-  now = timestamp(helpers.datetime_string())
-  with open("rain.txt", "r") as rainfile:
-    rain_entries = rainfile.read().split("\n")
-
-  # count how many rain ticks in past hour
+def rainfall(seconds_since_last):
   amount = 0
-  for entry in rain_entries:
-    if entry:
-      ts = timestamp(entry)
-      if now - ts < 60 * 60:
-        amount += RAIN_MM_PER_TICK
+  now = helpers.timestamp(helpers.datetime_string())
+  if helpers.file_exists("rain.txt"):
+    with open("rain.txt", "r") as rainfile:
+      rain_entries = rainfile.read().split("\n")
 
-  return amount
+    # count how many rain ticks since the last reading
+    for entry in rain_entries:
+      if entry:
+        ts = helpers.timestamp(entry)
+        if now - ts < seconds_since_last:
+          amount += RAIN_MM_PER_TICK
 
-def get_sensor_readings():
+    os.remove("rain.txt")
+  
+  per_second = 0
+  if seconds_since_last > 0:
+    per_second = amount / seconds_since_last
+
+  return amount, per_second
+
+def get_sensor_readings(seconds_since_last):
   # bme280 returns the register contents immediately and then starts a new reading
   # we want the current reading so do a dummy read to discard register contents first
   bme280.read()
@@ -153,15 +188,16 @@ def get_sensor_readings():
   bme280_data = bme280.read()
 
   ltr_data = ltr559.get_reading()
+  rain, rain_per_second = rainfall(seconds_since_last)
 
   from ucollections import OrderedDict
   return OrderedDict({
     "temperature": round(bme280_data[0], 2),
     "humidity": round(bme280_data[2], 2),
     "pressure": round(bme280_data[1] / 100.0, 2),
-    "light": round(ltr_data[BreakoutLTR559.LUX], 2),
+    "luminance": round(ltr_data[BreakoutLTR559.LUX], 2),
     "wind_speed": wind_speed(),
-    "rain": rainfall(),
+    "rain": rain,
+    "rain_per_second": rain_per_second,
     "wind_direction": wind_direction()
   })
-

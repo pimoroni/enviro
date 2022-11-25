@@ -140,7 +140,7 @@
 
   <nav>
     <button class="back" onclick="document.location = '/provision-step-3-logging'"><span>➔</span></button>
-    <button type="submit" form="main">We're done! ➔</button>
+    <button type="submit" form="main">{{"Sensors ➔" if board == "grow" else "We're done! ➔"}}</button>
   </nav>
 
 </section>

@@ -1,5 +1,10 @@
+from enviro import logging
+from enviro.constants import UPLOAD_SUCCESS, UPLOAD_FAILED, UPLOAD_RATE_LIMITED
 import urequests
 import config
+
+def log_destination():
+  logging.info(f"> uploading cached readings to Adafruit.io: {config.adafruit_io_username}")
 
 def upload_reading(reading):
   # create adafruit.io payload format
@@ -12,7 +17,10 @@ def upload_reading(reading):
   nickname = config.nickname
   for key, value in reading["readings"].items():
     key = key.replace("_", "-")
-    payload["feeds"].append({"key": f"{nickname}-{key}", "value": value})
+    payload["feeds"].append({
+      "key": f"{nickname}-{key}",
+      "value": value
+    })
 
   # send the payload
   username = config.adafruit_io_username
@@ -22,8 +30,14 @@ def upload_reading(reading):
   try:
     result = urequests.post(url, json=payload, headers=headers)
     result.close()
-    return result.status_code == 200
+    if result.status_code == 429:
+      return UPLOAD_RATE_LIMITED
+
+    if result.status_code == 200:
+      return UPLOAD_SUCCESS
+
+    logging.debug(f"  - upload issue ({result.status_code} {result.reason})")
   except:
-    pass
-  
-  return False
+    logging.debug(f"  - an exception occurred when uploading")
+
+  return UPLOAD_FAILED

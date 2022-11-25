@@ -1,6 +1,5 @@
 from enviro.constants import *
-
-import machine, os
+import machine, os, time
 
 # miscellany
 # ===========================================================================
@@ -8,9 +7,22 @@ def datetime_string():
   dt = machine.RTC().datetime()
   return "{0:04d}-{1:02d}-{2:02d}T{4:02d}:{5:02d}:{6:02d}Z".format(*dt)
 
+def datetime_file_string():
+  dt = machine.RTC().datetime()
+  return "{0:04d}-{1:02d}-{2:02d}T{4:02d}_{5:02d}_{6:02d}Z".format(*dt)
+
 def date_string():
   dt = machine.RTC().datetime()
   return "{0:04d}-{1:02d}-{2:02d}".format(*dt)
+
+def timestamp(dt):
+  year = int(dt[0:4])
+  month = int(dt[5:7])
+  day = int(dt[8:10])
+  hour = int(dt[11:13])
+  minute = int(dt[14:16])
+  second = int(dt[17:19])
+  return time.mktime((year, month, day, hour, minute, second, 0, 0))
 
 def uid():
   return "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}".format(*machine.unique_id())

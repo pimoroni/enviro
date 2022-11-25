@@ -19,55 +19,68 @@
 #
 #   - the Pimoroni pirate crew
 
+# uncomment the below two lines to change the amount of logging enviro will do
+# from phew import logging
+# logging.disable_logging_types(logging.LOG_DEBUG)
+
 # import enviro firmware, this will trigger provisioning if needed
 import enviro
+import os
 
-# initialise enviro
-enviro.startup()
-
-# now that we know the device is provisioned import the config
 try:
-  import config
-except:
-  enviro.halt("! failed to load config.py")
+  # initialise enviro
+  enviro.startup()
 
-# if the clock isn't set...
-if not enviro.is_clock_set():
-  enviro.logging.info("> clock not set, synchronise from ntp server")
-  if not enviro.sync_clock_from_ntp():
-    # failed to talk to ntp server go back to sleep for another cycle
-    enviro.halt("! failed to synchronise clock")
-  enviro.logging.info("  - rtc synched")      
+  # if the clock isn't set...
+  if not enviro.is_clock_set():
+    enviro.logging.info("> clock not set, synchronise from ntp server")
+    if not enviro.sync_clock_from_ntp():
+      # failed to talk to ntp server go back to sleep for another cycle
+      enviro.halt("! failed to synchronise clock")  
 
-# check disk space...
-if enviro.low_disk_space():
-  # less than 10% of diskspace left, this probably means cached results
-  # are not getting uploaded so warn the user and halt with an error
-  enviro.halt("! low disk space")
+  # check disk space...
+  if enviro.low_disk_space():
+    # less than 10% of diskspace left, this probably means cached results
+    # are not getting uploaded so warn the user and halt with an error
+    enviro.halt("! low disk space")
 
-# take a reading from the onboard sensors
-reading = enviro.get_sensor_readings()
+  # TODO this seems to be useful to keep around?
+  filesystem_stats = os.statvfs(".")
+  enviro.logging.debug(f"> {filesystem_stats[3]} blocks free out of {filesystem_stats[2]}")
 
-# here you can customise the sensor readings by adding extra information
-# or removing readings that you don't want, for example:
-# 
-#   del readings["temperature"]        # remove the temperature reading
-#
-#   readings["custom"] = my_reading()  # add my custom reading value
+  # TODO should the board auto take a reading when the timer has been set, or wait for the time?
+  # take a reading from the onboard sensors
+  enviro.logging.debug(f"> taking new reading")
+  reading = enviro.get_sensor_readings()
 
-# is an upload destination set?
-if enviro.config.destination:
-  # if so cache this reading for upload later
-  enviro.cache_upload(reading)
+  # here you can customise the sensor readings by adding extra information
+  # or removing readings that you don't want, for example:
+  # 
+  #   del readings["temperature"]        # remove the temperature reading
+  #
+  #   readings["custom"] = my_reading()  # add my custom reading value
 
-  # if we have enough cached uploads...
-  if enviro.is_upload_needed():
-    enviro.logging.info(f"> {enviro.cached_upload_count()} cache files need uploading")
-    if not enviro.upload_readings():
-      enviro.halt("! reading upload failed")
-else:
-  # otherwise save reading to local csv file (look in "/readings")
-  enviro.save_reading(reading)
+  # is an upload destination set?
+  if enviro.config.destination:
+    # if so cache this reading for upload later
+    enviro.logging.debug(f"> caching reading for upload")
+    enviro.cache_upload(reading)
 
-# go to sleep until our next scheduled reading
-enviro.sleep()
+    # if we have enough cached uploads...
+    if enviro.is_upload_needed():
+      enviro.logging.info(f"> {enviro.cached_upload_count()} cache file(s) need uploading")
+      if not enviro.upload_readings():
+        enviro.halt("! reading upload failed")
+    else:
+      enviro.logging.info(f"> {enviro.cached_upload_count()} cache file(s) not being uploaded. Waiting until there are {enviro.config.upload_frequency} file(s)")
+  else:
+    # otherwise save reading to local csv file (look in "/readings")
+    enviro.logging.debug(f"> saving reading locally")
+    enviro.save_reading(reading)
+
+  # go to sleep until our next scheduled reading
+  enviro.sleep()
+
+# handle any unexpected exception that has occurred
+except Exception as exc:
+  enviro.exception(exc)
