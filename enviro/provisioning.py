@@ -126,10 +126,39 @@ def provision_step_4_destination(request):
     
     write_config()
 
-    return redirect(f"http://{DOMAIN}/provision-step-5-done")
+    if model == "grow":
+      return redirect(f"http://{DOMAIN}/provision-step-grow-sensors")
+    else:
+      return redirect(f"http://{DOMAIN}/provision-step-5-done")
   else:
     return render_template("enviro/html/provision-step-4-destination.html", board=model)
     
+
+@server.route("/provision-step-grow-sensors", methods=["GET", "POST"])
+def provision_step_grow_sensors(request):
+  if request.method == "POST":
+    config.auto_water = (request.form["auto_water"] == 'True')
+    try:
+      config.moisture_target_a = int(request.form["moisture_target_a"])
+    except ValueError:
+      pass
+
+    try:
+      config.moisture_target_b = int(request.form["moisture_target_b"])
+    except ValueError:
+      pass
+
+    try:
+      config.moisture_target_c = int(request.form["moisture_target_c"])
+    except ValueError:
+      pass
+    
+    write_config()
+
+    return redirect(f"http://{DOMAIN}/provision-step-5-done")
+  else:
+    return render_template("enviro/html/provision-step-grow-sensors.html", board=model)
+
 
 @server.route("/provision-step-5-done", methods=["GET", "POST"])
 def provision_step_5_done(request):

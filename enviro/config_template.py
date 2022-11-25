@@ -43,6 +43,6 @@ influxdb_bucket = None
 
 # grow specific settings
 auto_water = False
-moisture_target_1 = 50
-moisture_target_2 = 50
-moisture_target_3 = 50
+moisture_target_a = 50
+moisture_target_b = 50
+moisture_target_c = 50
