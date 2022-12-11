@@ -36,6 +36,19 @@ def upload_reading(reading):
     mqtt_client.disconnect()
     return UPLOAD_SUCCESS
 
+  # Try disconneting to see if it prevents hangs on this typew of errors recevied so far
+  except (OSError, IndexError) as exc:
+    try:
+      buf = io.StringIO()
+      sys.print_exception(exc, buf)
+      logging.debug(f"  - an exception occurred when uploading.", buf.getvalue())
+      mqtt_client.disconnect()
+    except Exception as exc:
+      import sys, io
+      buf = io.StringIO()
+      sys.print_exception(exc, buf)
+      logging.debug(f"  - an exception occurred when disconnecting mqtt client.", buf.getvalue())
+
   except Exception as exc:
     import sys, io
     buf = io.StringIO()
