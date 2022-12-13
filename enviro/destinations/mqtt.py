@@ -39,6 +39,7 @@ def upload_reading(reading):
   # Try disconneting to see if it prevents hangs on this typew of errors recevied so far
   except (OSError, IndexError) as exc:
     try:
+      import sys, io
       buf = io.StringIO()
       sys.print_exception(exc, buf)
       logging.debug(f"  - an exception occurred when uploading.", buf.getvalue())
