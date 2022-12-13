@@ -14,6 +14,14 @@ We recommend [Mosquitto](https://mosquitto.org/) which is an open source and lig
 
 Steve's Internet Guide has instructions for installing Mosquitto on both [Windows](http://www.steves-internet-guide.com/install-mosquitto-broker/) and [Linux](http://www.steves-internet-guide.com/install-mosquitto-linux/) which are worth checking out.
 
+## Support for local SSL with MQTT Broker
+
+1 > Upload the certificate file to your pico for example a file called ca.crt 
+
+2 > Update the config.py file and add the line `mqtt_broker_ca_file = 'ca.crt'` replacing ca.crt with the path to the file
+
+The mqtt.py destination file will attempt top use SSL if the `mqtt_broker_ca_file` is not none. 
+
 ## Using a cloud hosted MQTT broker
 
 Alternatively you can avoid any software setup and having to manage your own server by using one of the many hosted MQTT broker services. These generally come with a small monthly fee (£3-5) or have very limited capabilities.

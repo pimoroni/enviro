@@ -30,6 +30,8 @@ custom_http_password = None
 mqtt_broker_address = None
 mqtt_broker_username = None
 mqtt_broker_password = None
+# mqtt broker if using local SSL
+mqtt_broker_ca_file = None
 
 # adafruit ui settings
 adafruit_io_username = None
