@@ -1,5 +1,5 @@
 from enviro import logging
-from enviro.constants import UPLOAD_SUCCESS, UPLOAD_FAILED, UPLOAD_RATE_LIMITED
+from enviro.constants import UPLOAD_SUCCESS, UPLOAD_FAILED, UPLOAD_RATE_LIMITED, UPLOAD_SKIP_FILE
 import urequests
 import config
 
@@ -29,6 +29,13 @@ def upload_reading(reading):
 
   try:
     result = urequests.post(url, json=payload, headers=headers)
+
+    error_message = ""    
+    try:
+      error_message = result.json()['error']
+    except (TypeError, KeyError):
+      pass
+
     result.close()
     if result.status_code == 429:
       return UPLOAD_RATE_LIMITED
@@ -36,8 +43,15 @@ def upload_reading(reading):
     if result.status_code == 200:
       return UPLOAD_SUCCESS
 
-    logging.debug(f"  - upload issue ({result.status_code} {result.reason})")
-  except:
-    logging.debug(f"  - an exception occurred when uploading")
+    logging.debug(f"  - upload issue '{error_message}' ({result.status_code} - {result.reason.decode('utf-8')})")
+    if result.status_code == 422:
+      logging.debug("    - you may have run out of feeds to upload data to")
+      return UPLOAD_SKIP_FILE
+
+  except Exception as exc:
+    import sys, io
+    buf = io.StringIO()
+    sys.print_exception(exc, buf)
+    logging.debug(f"  - an exception occurred when uploading.", buf.getvalue())
 
   return UPLOAD_FAILED

@@ -172,6 +172,8 @@ def connect_to_wifi():
 
   logging.info("  - ip address: ", ip)
   """
+  import rp2
+  rp2.country("GB") 
   wlan = network.WLAN(network.STA_IF)
   wlan.active(True)
   wlan.connect(wifi_ssid, wifi_password)
@@ -205,7 +207,7 @@ def halt(message):
   sleep()
 
 # log the exception, blink the warning led, and go back to sleep
-def exception(exc):
+def exception(exc, dont_halt=False):
   import sys, io
   buf = io.StringIO()
   sys.print_exception(exc, buf)
@@ -213,15 +215,45 @@ def exception(exc):
   warn_led(WARN_LED_BLINK)
   sleep()
 
+  #import sys, io
+  #buf = io.StringIO()
+  #sys.print_exception(exc, buf)
+  #logging.debug(f"  - an exception occurred when uploading.", buf.getvalue())
+
 # returns True if we've used up 90% of the internal filesystem
 def low_disk_space():
   if not phew.remote_mount: # os.statvfs doesn't exist on remote mounts
     return (os.statvfs(".")[3] / os.statvfs(".")[2]) < 0.1   
   return False
 
-# returns True if the rtc clock has been set
+# returns True if the rtc clock has been set recently 
 def is_clock_set():
-  return rtc.datetime()[0] > 2020 # year greater than 2020? we're golden!
+  # is the year on or before 2020?
+  if rtc.datetime()[0] <= 2020:
+    return False
+
+  if helpers.file_exists("sync_time.txt"):
+    now_str = helpers.datetime_string()
+    now = helpers.timestamp(now_str)
+
+    time_entries = []
+    with open("sync_time.txt", "r") as timefile:
+      time_entries = timefile.read().split("\n")
+
+    # read the first line from the time file
+    sync = now
+    for entry in time_entries:
+      if entry:
+        sync = helpers.timestamp(entry)
+        break
+
+    seconds_since_sync = now - sync
+    if seconds_since_sync < 172800:
+      return True
+
+    logging.info(f"  - rtc has not been synched for {48} hours")
+
+  return False
 
 # connect to wifi and attempt to fetch the current time from an ntp server
 def sync_clock_from_ntp():
@@ -235,6 +267,11 @@ def sync_clock_from_ntp():
     return False  
   rtc.datetime(timestamp) # set the time on the rtc chip
   logging.info("  - rtc synched")
+  
+  # write out the sync time log
+  with open("sync_time.txt", "w") as syncfile:
+    syncfile.write("{0:04d}-{1:02d}-{2:02d}T{4:02d}:{5:02d}:{6:02d}Z".format(*timestamp))  
+
   return True
 
 # set the state of the warning led (off, on, blinking)
@@ -302,7 +339,7 @@ def get_sensor_readings():
 
 
   readings = get_board().get_sensor_readings(seconds_since_last)
-  readings["voltage"] = 0.0 # battery_voltage #Temporarily removed until issue is fixed
+  # readings["voltage"] = 0.0 # battery_voltage #Temporarily removed until issue is fixed
 
   # write out the last time log
   with open("last_time.txt", "w") as timefile:
@@ -378,6 +415,10 @@ def upload_readings():
 
             logging.info(f"  - rate limited, going to sleep for 1 minute")
             sleep(1)
+          elif status == UPLOAD_SKIP_FILE:
+            logging.error(f"  ! cannot upload '{cache_file[0]}' to {destination}. Skipping file")
+            warn_led(WARN_LED_BLINK)
+            continue
           else:
             logging.error(f"  ! failed to upload '{cache_file[0]}' to {destination}")
             return False
