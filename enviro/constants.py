@@ -1,3 +1,6 @@
+# version
+ENVIRO_VERSION = "0.0.9" 
+ 
 # modules
 ENVIRO_UNKNOWN                = None
 ENVIRO_INDOOR                 = 1
