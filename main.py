@@ -23,14 +23,9 @@
 # from phew import logging
 # logging.disable_logging_types(logging.LOG_DEBUG)
 
-# Issue #117 where neeed to sleep on startup otherwis emight not boot
-from time import sleep
-sleep(0.5)
-
 # import enviro firmware, this will trigger provisioning if needed
 import enviro
 import os
-
 
 try:
   # initialise enviro
@@ -47,19 +42,7 @@ try:
   if enviro.low_disk_space():
     # less than 10% of diskspace left, this probably means cached results
     # are not getting uploaded so warn the user and halt with an error
-    
-    # Issue #126 to try and upload if disk space is low
-    # is an upload destination set?
-    if enviro.config.destination:
-      enviro.logging.error("! low disk space. Attempting to upload file(s)")
-
-      # if we have enough cached uploads...
-      enviro.logging.info(f"> {enviro.cached_upload_count()} cache file(s) need uploading")
-      if not enviro.upload_readings():
-        enviro.halt("! reading upload failed")
-    else:
-      # no destination so go to sleep
-      enviro.halt("! low disk space")
+    enviro.halt("! low disk space")
 
   # TODO this seems to be useful to keep around?
   filesystem_stats = os.statvfs(".")
