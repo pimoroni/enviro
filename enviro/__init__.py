@@ -248,10 +248,14 @@ def is_clock_set():
         break
 
     seconds_since_sync = now - sync
-    if seconds_since_sync < 172800:
-      return True
+    if seconds_since_sync >= 0:  # there's the rare chance of having a newer sync time than what the RTC reports
+      try:
+        if seconds_since_sync < (config.resync_frequency * 60 * 60):
+          return True
 
-    logging.info(f"  - rtc has not been synched for {48} hours")
+        logging.info(f"  - rtc has not been synched for {config.resync_frequency} hour(s)")
+      except AttributeError:
+        return True
 
   return False
 
@@ -383,7 +387,10 @@ def cache_upload(readings):
 
 # return the number of cached results waiting to be uploaded
 def cached_upload_count():
-  return len(os.listdir("uploads"))
+  try:
+    return len(os.listdir("uploads"))
+  except OSError:
+    return 0
 
 # returns True if we have more cached uploads than our config allows
 def is_upload_needed():
@@ -413,7 +420,18 @@ def upload_readings():
             with open("reattempt_upload.txt", "w") as attemptfile:
               attemptfile.write("")
 
-            logging.info(f"  - rate limited, going to sleep for 1 minute")
+            logging.info(f"  - cannot upload '{cache_file[0]}' - rate limited")
+            sleep(1)
+          elif status == UPLOAD_LOST_SYNC:
+            # remove the sync time file to trigger a resync on next boot
+            if helpers.file_exists("sync_time.txt"):
+              os.remove("sync_time.txt")
+             
+            # write out that we want to attempt a reupload
+            with open("reattempt_upload.txt", "w") as attemptfile:
+              attemptfile.write("")
+
+            logging.info(f"  - cannot upload '{cache_file[0]}' - rtc has become out of sync")
             sleep(1)
           elif status == UPLOAD_SKIP_FILE:
             logging.error(f"  ! cannot upload '{cache_file[0]}' to {destination}. Skipping file")
@@ -466,11 +484,16 @@ def startup():
 
   # see if we were woken to attempt a reupload
   if helpers.file_exists("reattempt_upload.txt"):
-    os.remove("reattempt_upload.txt")
+    upload_count = cached_upload_count()
+    if upload_count == 0:
+      os.remove("reattempt_upload.txt")
+      return
 
-    logging.info(f"> {cached_upload_count()} cache file(s) still to upload")
+    logging.info(f"> {upload_count} cache file(s) still to upload")
     if not upload_readings():
       halt("! reading upload failed")
+
+    os.remove("reattempt_upload.txt")
 
     # if it was the RTC that woke us, go to sleep until our next scheduled reading
     # otherwise continue with taking new readings etc
@@ -479,7 +502,10 @@ def startup():
       sleep()
 
 def sleep(time_override=None):
-  logging.info("> going to sleep")
+  if time_override is not None:
+    logging.info(f"> going to sleep for {time_override} minute(s)")
+  else:
+    logging.info("> going to sleep")
 
   # make sure the rtc flags are cleared before going back to sleep
   logging.debug("  - clearing and disabling previous alarm")

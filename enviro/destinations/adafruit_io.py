@@ -1,5 +1,5 @@
 from enviro import logging
-from enviro.constants import UPLOAD_SUCCESS, UPLOAD_FAILED, UPLOAD_RATE_LIMITED, UPLOAD_SKIP_FILE
+from enviro.constants import *
 import urequests
 import config
 
@@ -43,10 +43,14 @@ def upload_reading(reading):
     if result.status_code == 200:
       return UPLOAD_SUCCESS
 
-    logging.debug(f"  - upload issue '{error_message}' ({result.status_code} - {result.reason.decode('utf-8')})")
     if result.status_code == 422:
-      logging.debug("    - you may have run out of feeds to upload data to")
+      if error_message.find("data created_at may not be in the future") == 0:
+        return UPLOAD_LOST_SYNC
+
+      logging.debug(f"  - upload issue '{error_message}' - You may have run out of feeds to upload data to")
       return UPLOAD_SKIP_FILE
+
+    logging.debug(f"  - upload issue '{error_message}' ({result.status_code} - {result.reason.decode('utf-8')})")      
 
   except Exception as exc:
     import sys, io
