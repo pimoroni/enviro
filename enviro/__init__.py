@@ -127,12 +127,6 @@ rtc_alarm_pin = Pin(RTC_ALARM_PIN, Pin.IN, Pin.PULL_DOWN)
 
 # intialise the pcf85063a real time clock chip
 rtc = PCF85063A(i2c)
-i2c.writeto_mem(0x51, 0x00, b'\x00') # ensure rtc is running (this should be default?)
-rtc.enable_timer_interrupt(False)
-
-t = rtc.datetime()
-# BUG ERRNO 22, EINVAL, when date read from RTC is invalid for the pico's RTC.
-RTC().datetime((t[0], t[1], t[2], t[6], t[3], t[4], t[5], 0)) # synch PR2040 rtc too
 
 # jazz up that console! toot toot!
 print("       ___            ___            ___          ___          ___            ___       ")
@@ -236,6 +230,19 @@ def sync_clock_from_ntp():
   rtc.datetime(timestamp) # set the time on the rtc chip
   logging.info("  - rtc synched")
   return True
+
+def init_rtc():
+  i2c.writeto_mem(0x51, 0x00, b'\x00') # ensure rtc is running (this should be default?)
+  rtc.enable_timer_interrupt(False)
+
+  if not is_clock_set():
+    sync_clock_from_ntp()
+
+  t = rtc.datetime()
+  RTC().datetime((t[0], t[1], t[2], t[6], t[3], t[4], t[5], 0)) # synch PR2040 rtc too
+
+
+init_rtc()
 
 # set the state of the warning led (off, on, blinking)
 def warn_led(state):
@@ -498,3 +505,4 @@ def sleep(time_override=None):
 
   # reset the board
   machine.reset()
+
