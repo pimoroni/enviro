@@ -269,12 +269,26 @@ def sync_clock_from_ntp():
   if not timestamp:
     logging.error("  - failed to fetch time from ntp server")
     return False  
+
+  # fixes an issue where sometimes the RTC would not pick up the new time
+  i2c.writeto_mem(0x51, 0x00, b'\x10') # reset the rtc so we can change the time
   rtc.datetime(timestamp) # set the time on the rtc chip
+  i2c.writeto_mem(0x51, 0x00, b'\x00') # ensure rtc is running
+  rtc.enable_timer_interrupt(False)
+
+  # read back the RTC time to confirm it was updated successfully
+  dt = rtc.datetime()
+  if dt != timestamp[0:7]:
+    logging.error("  - failed to update rtc")
+    if helpers.file_exists("sync_time.txt"):
+      os.remove("sync_time.txt")
+    return False
+
   logging.info("  - rtc synched")
   
   # write out the sync time log
   with open("sync_time.txt", "w") as syncfile:
-    syncfile.write("{0:04d}-{1:02d}-{2:02d}T{4:02d}:{5:02d}:{6:02d}Z".format(*timestamp))  
+    syncfile.write("{0:04d}-{1:02d}-{2:02d}T{3:02d}:{4:02d}:{5:02d}Z".format(*timestamp))  
 
   return True
 
