@@ -528,12 +528,16 @@ def sleep(time_override=None):
 
   # set alarm to wake us up for next reading
   dt = rtc.datetime()
-  hour, minute = dt[3:5]
+  hour, minute, second = dt[3:6]
 
   # calculate how many minutes into the day we are
   if time_override is not None:
     minute += time_override
   else:
+    # if the time is very close to the end of the minute, advance to the next minute
+    # this aims to fix the edge case where the board goes to sleep right as the RTC triggers, thus never waking up
+    if second > 55:
+        minute += 1
     minute = math.floor(minute / config.reading_frequency) * config.reading_frequency
     minute += config.reading_frequency
 
