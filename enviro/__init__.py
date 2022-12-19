@@ -537,7 +537,7 @@ def sleep(time_override=None):
     # if the time is very close to the end of the minute, advance to the next minute
     # this aims to fix the edge case where the board goes to sleep right as the RTC triggers, thus never waking up
     if second > 55:
-        minute += 1
+      minute += 1
     minute = math.floor(minute / config.reading_frequency) * config.reading_frequency
     minute += config.reading_frequency
 
