@@ -93,6 +93,7 @@ def provision_step_3_logging(request):
   if request.method == "POST":
     config.reading_frequency = int(request.form["reading_frequency"])
     config.upload_frequency = int(request.form["upload_frequency"]) if request.form["upload_frequency"] else None
+    config.readings_per_file = int(request.form["readings_per_file"])
     write_config()
     return redirect(f"http://{DOMAIN}/provision-step-4-destination")
   else:

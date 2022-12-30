@@ -97,11 +97,53 @@
       </ul>        
       <input type="hidden" id="upload_frequency" name="upload_frequency" value="{{config.upload_frequency}}" />
 
+      <aside class="note">
+        We'd recommend not uploading readings more often than once an hour. WiFi communication is a battery hungry process and should be done as little as possible to ensure long run times.
+      </aside>
+    </div>
+
+    <br>
+
+    <div id="readings_settings">
+      <h2>How many readings do you want to save per file?</h2>
+      <p>
+        When Enviro wakes up to take a reading and uploading is disabled, readings are instead saved to local files.
+        How many readings should be stored in each file?
+      </p>
+
+      <ul id="readings_per_files" class="picker">
+        <li data-readings-per-file="8"> 
+          Eight readings per file
+        </li>
+        <li data-readings-per-file="24"> 
+          Twenty-four readings per file
+        </li>
+        <li data-readings-per-file="48"> 
+          Fourty-eight readings per file
+        </li>
+        <li data-readings-per-file="96">
+          Ninety-six readings per file
+          <span class="note">(1 file per day at 15 readings per minute, recommended)</span>
+        </li>
+        <li data-readings-per-file="144"> 
+          144 readings per file
+        </li>
+        <li data-readings-per-file="288"> 
+          288 readings per file
+        </li>
+      </ul>        
+      <input type="hidden" id="readings_per_file" name="readings_per_file" value="{{config.readings_per_file}}" />
+
       <script>
         function selectUploadFrequency(upload_frequency) {
           document.querySelectorAll("#upload_frequencies >li").forEach((listItem) => {          
             if(listItem.dataset.uploadFrequency == upload_frequency) {
               listItem.classList.add("active")
+              if (upload_frequency == "") {
+                document.getElementById("readings_settings").style.display = "block"
+              }else{
+                document.getElementById("readings_settings").style.display = "none"
+              }
             }else{
               listItem.classList.remove("active")
             }
@@ -116,11 +158,27 @@
         })
   
         selectUploadFrequency("{{config.upload_frequency}}")
+
+        function selectReadingsPerFile(readings_per_file) {
+          document.querySelectorAll("#readings_per_files >li").forEach((listItem) => {          
+            if(listItem.dataset.readingsPerFile == readings_per_file) {
+              listItem.classList.add("active")
+            }else{
+              listItem.classList.remove("active")
+            }
+          })
+          document.getElementById("readings_per_file").value = readings_per_file
+        }
+  
+        document.querySelectorAll("#readings_per_files >li").forEach((listItem) => {
+          listItem.addEventListener("click", function(e) {
+            selectReadingsPerFile(listItem.dataset.readingsPerFile)
+          })
+        })
+  
+        selectReadingsPerFile("{{config.readings_per_file}}")
       </script>
 
-      <aside class="note">
-        We'd recommend not uploading readings more often than once an hour. WiFi communication is a battery hungry process and should be done as little as possible to ensure long run times.
-      </aside>
     </div>
   </form>
 
