@@ -320,7 +320,7 @@ def save_reading(readings):
   per_minute = math.floor(config.reading_frequency)
   per_file = math.floor(config.readings_per_file * per_minute) * 60
   now = math.floor(now / per_file) * per_file  
-  readings_filename = "readings/{0:04d}-{1:02d}-{2:02d}T{4:02d}_{5:02d}_{6:02d}Z.txt".format(*time.localtime(now))
+  readings_filename = "readings/{0:04d}-{1:02d}-{2:02d}T{3:02d}_{4:02d}_{5:02d}Z.txt".format(*time.localtime(now))
 
   new_file = not helpers.file_exists(readings_filename)
   with open(readings_filename, "a") as f:
