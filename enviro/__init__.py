@@ -2,6 +2,9 @@
 # ===========================================================================
 from enviro.constants import *
 from machine import Pin
+
+from enviro.util_functions import get_battery_voltage, get_cpu_temperature
+
 hold_vsys_en_pin = Pin(HOLD_VSYS_EN_PIN, Pin.OUT, value=True)
 
 # detect board model based on devices on the i2c bus and pin state
@@ -176,7 +179,7 @@ def connect_to_wifi():
   logging.info("  - ip address: ", ip)
   """
   import rp2
-  rp2.country("GB") 
+  rp2.country("GB")
   wlan = network.WLAN(network.STA_IF)
   wlan.active(True)
   wlan.connect(wifi_ssid, wifi_password)
@@ -224,7 +227,7 @@ def low_disk_space():
     return (os.statvfs(".")[3] / os.statvfs(".")[2]) < 0.1   
   return False
 
-# returns True if the rtc clock has been set recently 
+# returns True if the rtc clock has been set recently
 def is_clock_set():
   # is the year on or before 2020?
   if rtc.datetime()[0] <= 2020:
@@ -283,10 +286,10 @@ def sync_clock_from_ntp():
     return False
 
   logging.info("  - rtc synched")
-  
+
   # write out the sync time log
   with open("sync_time.txt", "w") as syncfile:
-    syncfile.write("{0:04d}-{1:02d}-{2:02d}T{3:02d}:{4:02d}:{5:02d}Z".format(*timestamp))  
+    syncfile.write("{0:04d}-{1:02d}-{2:02d}T{3:02d}:{4:02d}:{5:02d}Z".format(*timestamp))
 
   return True
 
@@ -354,8 +357,9 @@ def get_sensor_readings():
     logging.info(f"  - seconds since last reading: {seconds_since_last}")
 
 
-  readings = get_board().get_sensor_readings(seconds_since_last, vbus_present)
-  # readings["voltage"] = 0.0 # battery_voltage #Temporarily removed until issue is fixed
+  readings = get_board().get_sensor_readings(seconds_since_last)
+  readings["voltage"] = get_battery_voltage()
+
 
   # write out the last time log
   with open("last_time.txt", "w") as timefile:
@@ -438,7 +442,7 @@ def upload_readings():
             # remove the sync time file to trigger a resync on next boot
             if helpers.file_exists("sync_time.txt"):
               os.remove("sync_time.txt")
-             
+
             # write out that we want to attempt a reupload
             with open("reattempt_upload.txt", "w") as attemptfile:
               attemptfile.write("")
