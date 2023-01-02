@@ -3,7 +3,7 @@
 from enviro.constants import *
 from machine import Pin
 
-from enviro.util_functions import get_battery_voltage, get_cpu_temperature
+from enviro.util_functions import get_battery_voltage
 
 hold_vsys_en_pin = Pin(HOLD_VSYS_EN_PIN, Pin.OUT, value=True)
 
@@ -358,7 +358,8 @@ def get_sensor_readings():
 
 
   readings = get_board().get_sensor_readings(seconds_since_last)
-  readings["voltage"] = get_battery_voltage()
+  if config.enable_battery_voltage:
+    readings["voltage"] = get_battery_voltage()
 
 
   # write out the last time log
