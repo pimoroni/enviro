@@ -15,6 +15,9 @@ wifi_password = None
 # how often to wake up and take a reading (in minutes)
 reading_frequency = 15
 
+# how many readings to store in each locally stored file (96 readings at 15 per file = 1 file per day)
+readings_per_file = 96
+
 # where to upload to ("http", "mqtt", "adafruit_io", "influxdb")
 destination = None
 
