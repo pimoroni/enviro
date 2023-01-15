@@ -18,14 +18,14 @@ reading_frequency = 15
 # how often to trigger a resync of the onboard RTC (in hours)
 resync_frequency = 168
 
-# Feature toggles
-enable_battery_voltage = False
-
 # where to upload to ("http", "mqtt", "adafruit_io", "influxdb")
 destination = None
 
 # how often to upload data (number of cached readings)
 upload_frequency = 5
+
+# Feature toggles
+enable_battery_voltage = False
 
 # web hook settings
 custom_http_url = None
