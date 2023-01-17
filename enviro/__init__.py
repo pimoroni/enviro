@@ -280,7 +280,7 @@ def wake_reason_name(wake_reason):
   return names.get(wake_reason)
 
 # get the readings from the on board sensors
-def get_sensor_readings():
+def get_sensor_readings(config):
   seconds_since_last = 0
   now_str = helpers.datetime_string()
   if helpers.file_exists("last_time.txt"):
@@ -301,7 +301,7 @@ def get_sensor_readings():
     logging.info(f"  - seconds since last reading: {seconds_since_last}")
 
 
-  readings = get_board().get_sensor_readings(seconds_since_last)
+  readings = get_board().get_sensor_readings(seconds_since_last, config)
   readings["voltage"] = 0.0 # battery_voltage #Temporarily removed until issue is fixed
 
   # write out the last time log

@@ -48,3 +48,7 @@ auto_water = False
 moisture_target_a = 50
 moisture_target_b = 50
 moisture_target_c = 50
+
+# compensate for usb_power
+usb_power = False
+usb_power_temperature_offset = 4

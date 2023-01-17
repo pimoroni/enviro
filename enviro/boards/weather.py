@@ -180,7 +180,7 @@ def rainfall(seconds_since_last):
 
   return amount, per_second
 
-def get_sensor_readings(seconds_since_last):
+def get_sensor_readings(seconds_since_last, config):
   # bme280 returns the register contents immediately and then starts a new reading
   # we want the current reading so do a dummy read to discard register contents first
   bme280.read()

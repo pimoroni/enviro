@@ -34,7 +34,7 @@ def particulates(particulate_data, measure):
   multiplier = 10 if measure >= PM0_3_PER_LITRE else 1
   return ((particulate_data[measure * 2] << 8) | particulate_data[measure * 2 + 1]) * multiplier
 
-def get_sensor_readings(seconds_since_last):
+def get_sensor_readings(seconds_since_last, config):
   # bme280 returns the register contents immediately and then starts a new reading
   # we want the current reading so do a dummy read to discard register contents first
   bme280.read()
