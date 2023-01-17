@@ -51,7 +51,8 @@ def get_sensor_readings(seconds_since_last, config):
 
   # TODO - update humidity
   # calculate absolute humidity with original temp/humidity values
-  # use absolute humidity to figure out the new humidity at the adjusted temperature value
+  # use absolute humidity to figure out the new relative humidity at the
+  # adjusted temperature value
 
   pressure = round(data[1] / 100.0, 2)
   humidity = round(data[2], 2)
