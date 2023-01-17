@@ -301,7 +301,7 @@ def get_sensor_readings():
     logging.info(f"  - seconds since last reading: {seconds_since_last}")
 
 
-  readings = get_board().get_sensor_readings(seconds_since_last, config)
+  readings = get_board().get_sensor_readings(seconds_since_last)
   readings["voltage"] = 0.0 # battery_voltage #Temporarily removed until issue is fixed
 
   # write out the last time log
