@@ -34,8 +34,3 @@ def _read_vsys_voltage():
 
 def stop_wifi():
   pass
-
-
-def get_cpu_temperature():
-  reading = CPU_TEMP.read_u16() * ADC_VOLT_CONVERSATION
-  return 27 - (reading - 0.706) / 0.001721
