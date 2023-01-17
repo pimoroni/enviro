@@ -3,6 +3,7 @@ import math
 from breakout_bme68x import BreakoutBME68X
 from breakout_bh1745 import BreakoutBH1745
 
+from enviro import config
 from enviro import i2c
 
 bme688 = BreakoutBME68X(i2c, address=0x77)
@@ -41,7 +42,7 @@ def colour_temperature_from_rgbc(r, g, b, c):
       ct = 10000
   return round(ct)
 
-def get_sensor_readings(seconds_since_last, config):
+def get_sensor_readings(seconds_since_last):
   data = bme688.read()
 
   temperature = round(data[0], 2)

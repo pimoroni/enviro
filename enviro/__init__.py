@@ -280,7 +280,7 @@ def wake_reason_name(wake_reason):
   return names.get(wake_reason)
 
 # get the readings from the on board sensors
-def get_sensor_readings(config):
+def get_sensor_readings():
   seconds_since_last = 0
   now_str = helpers.datetime_string()
   if helpers.file_exists("last_time.txt"):

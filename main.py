@@ -68,7 +68,7 @@ try:
   # TODO should the board auto take a reading when the timer has been set, or wait for the time?
   # take a reading from the onboard sensors
   enviro.logging.debug(f"> taking new reading")
-  reading = enviro.get_sensor_readings(enviro.config)
+  reading = enviro.get_sensor_readings()
 
   # here you can customise the sensor readings by adding extra information
   # or removing readings that you don't want, for example:

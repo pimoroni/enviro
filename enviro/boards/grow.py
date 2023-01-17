@@ -98,7 +98,7 @@ def water(moisture_levels):
           drip_noise()
         time.sleep(0.5)
 
-def get_sensor_readings(seconds_since_last, config):
+def get_sensor_readings(seconds_since_last):
   # bme280 returns the register contents immediately and then starts a new reading
   # we want the current reading so do a dummy read to discard register contents first
   bme280.read()
