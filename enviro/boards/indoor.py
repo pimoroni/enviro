@@ -44,18 +44,17 @@ def get_sensor_readings(seconds_since_last, config):
   data = bme688.read()
 
   temperature = round(data[0], 2)
-  humidity = round(data[2], 2)
 
-  # Compensate for additional heating when on usb power. Both the temperature
-  # and relative humidity are affected.
-  # The humidity correction is from https://github.com/pimoroni/pimoroni-pico
+  # Compensate for additional heating when on usb power.
   if config.usb_power:
-    corrected_temperature = temperature - config.usb_power_temperature_offset
-    dewpoint = temperature - ((100 - humidity) / 5)
-    humidity = 100 - (5 * (corrected_temperature - dewpoint))
-    temperature = corrected_temperature
+    temperature = temperature - config.usb_power_temperature_offset
+
+  # TODO - update humidity
+  # calculate absolute humidity with original temp/humidity values
+  # use absolute humidity to figure out the new humidity at the adjusted temperature value
 
   pressure = round(data[1] / 100.0, 2)
+  humidity = round(data[2], 2)
   gas_resistance = round(data[3])
   # an approximate air quality calculation that accounts for the effect of
   # humidity on the gas sensor
