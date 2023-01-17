@@ -30,7 +30,3 @@ def get_battery_voltage():
 def _read_vsys_voltage():
   adc_Vsys = machine.ADC(3)
   return adc_Vsys.read_u16() * 3.0 * ADC_VOLT_CONVERSATION
-
-
-def stop_wifi():
-  pass
