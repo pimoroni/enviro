@@ -1,6 +1,7 @@
 # keep the power rail alive by holding VSYS_EN high as early as possible
 # ===========================================================================
 from enviro.constants import *
+from enviro.provisioning import write_config
 from machine import Pin
 hold_vsys_en_pin = Pin(HOLD_VSYS_EN_PIN, Pin.OUT, value=True)
 
@@ -469,6 +470,10 @@ def sleep(time_override=None):
   rtc.set_alarm(0, minute, hour)
   rtc.enable_alarm_interrupt(True)
 
+  # assume we're running on battery power
+  config.usb_power = False
+  write_config()
+
   # disable the vsys hold, causing us to turn off
   logging.info("  - shutting down")
   hold_vsys_en_pin.init(Pin.IN)
@@ -476,6 +481,11 @@ def sleep(time_override=None):
   # if we're still awake it means power is coming from the USB port in which
   # case we can't (and don't need to) sleep.
   stop_activity_led()
+
+  # indicate that we're running on usb power - which requires temperature
+  # and humidity adjustments.
+  config.usb_power = True
+  write_config()
 
   # if running via mpremote/pyboard.py with a remote mount then we can't
   # reset the board so just exist
