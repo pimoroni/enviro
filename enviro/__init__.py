@@ -1,7 +1,6 @@
 # keep the power rail alive by holding VSYS_EN high as early as possible
 # ===========================================================================
 from enviro.constants import *
-from enviro.provisioning import write_config
 from machine import Pin
 hold_vsys_en_pin = Pin(HOLD_VSYS_EN_PIN, Pin.OUT, value=True)
 
