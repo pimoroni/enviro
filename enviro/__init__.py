@@ -1,7 +1,6 @@
 # keep the power rail alive by holding VSYS_EN high as early as possible
 # ===========================================================================
 from enviro.constants import *
-from enviro.provisioning import write_config
 from machine import Pin
 hold_vsys_en_pin = Pin(HOLD_VSYS_EN_PIN, Pin.OUT, value=True)
 
@@ -471,6 +470,7 @@ def sleep(time_override=None):
   rtc.enable_alarm_interrupt(True)
 
   # assume we're running on battery power
+  logging.debug("assume battery power in config")
   config.usb_power = False
   write_config()
 
@@ -484,6 +484,7 @@ def sleep(time_override=None):
 
   # indicate that we're running on usb power - which requires temperature
   # and humidity adjustments.
+  logging.debug("switching config to usb power")
   config.usb_power = True
   write_config()
 
@@ -508,3 +509,22 @@ def sleep(time_override=None):
 
   # reset the board
   machine.reset()
+
+# TODO - refactor
+# write the current values in config to the config.py file
+def write_config():
+  lines = []
+  with open("config.py", "r") as infile:
+    lines = infile.read().split("\n")
+
+  for i in range(0, len(lines)):
+    line = lines[i]
+    parts = line.split("=", 1)
+    if len(parts) == 2:
+      key = parts[0].strip()
+      if hasattr(config, key):
+        value = getattr(config, key)
+        lines[i] = f"{key} = {repr(value)}"
+
+  with open("config.py", "w") as outfile:
+    outfile.write("\n".join(lines))
