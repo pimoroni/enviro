@@ -1,7 +1,5 @@
 import machine
 
-# cpu temperature declaration
-CPU_TEMP = machine.ADC(machine.ADC.CORE_TEMP)
 ADC_VOLT_CONVERSATION = 3.3 / 65535
 
 
