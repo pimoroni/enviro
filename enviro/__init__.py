@@ -469,10 +469,11 @@ def sleep(time_override=None):
   rtc.set_alarm(0, minute, hour)
   rtc.enable_alarm_interrupt(True)
 
-  # assume we're running on battery power
-  logging.debug("assume battery power in config")
-  config.usb_power = False
-  helpers.write_config(config)
+  # always assume we're running on battery power until we know otherwise
+  if config.usb_power:
+    logging.debug("assume battery power in config")
+    config.usb_power = False
+    helpers.write_config(config)
 
   # disable the vsys hold, causing us to turn off
   logging.info("  - shutting down")

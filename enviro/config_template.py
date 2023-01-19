@@ -51,4 +51,4 @@ moisture_target_c = 50
 
 # compensate for usb power
 usb_power = False
-usb_power_temperature_offset = 4
+usb_power_temperature_offset = 4.5
