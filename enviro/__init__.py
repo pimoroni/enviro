@@ -30,7 +30,13 @@ def get_board():
   if model == "urban":
     import enviro.boards.urban as board
   return board
-  
+
+# return any additional sensors connected with Qw/ST
+def get_additional_sensors():
+  if 98 in i2c_devices:
+    import enviro.sensors.scd41 as scd41
+    yield scd41
+
 # set up the activity led
 # ===========================================================================
 from machine import PWM, Timer
@@ -411,9 +417,14 @@ def get_sensor_readings():
   readings = get_board().get_sensor_readings(seconds_since_last, vbus_present)
   # readings["voltage"] = 0.0 # battery_voltage #Temporarily removed until issue is fixed
 
+  # Add any additional sensor readings
+  for sensor in get_additional_sensors():
+      for key, value in sensor.get_sensor_readings(seconds_since_last).items():
+          readings[key] = value
+
   # write out the last time log
   with open("last_time.txt", "w") as timefile:
-    timefile.write(now_str)  
+    timefile.write(now_str)
 
   return readings
 
