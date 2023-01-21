@@ -73,9 +73,9 @@ try:
   # here you can customise the sensor readings by adding extra information
   # or removing readings that you don't want, for example:
   # 
-  #   del readings["temperature"]        # remove the temperature reading
+  #   del reading["temperature"]        # remove the temperature reading
   #
-  #   readings["custom"] = my_reading()  # add my custom reading value
+  #   reading["custom"] = my_reading()  # add my custom reading value
 
   # is an upload destination set?
   if enviro.config.destination:
