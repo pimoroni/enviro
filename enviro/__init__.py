@@ -463,6 +463,66 @@ def upload_readings():
 
   return True
 
+
+
+
+# define DELAYOFF used to ensure enviro will power down even if it hangs
+# ----------------------------------------------------------------------
+from machine import Pin
+from rp2 import PIO, StateMachine, asm_pio
+
+@asm_pio(sideset_init=PIO.OUT_HIGH)
+def delayoff_prog():   
+    label('d_loop')
+    jmp(y_dec, 'd_loop') [1]
+    label('done')
+    jmp('done').side(0)
+
+class DELAYOFF:
+    def __init__(self, pin, delay, sm_id=0):
+        delay_ms=int(delay*1000)
+        self._sm = StateMachine(sm_id, delayoff_prog, freq=2000, sideset_base=Pin(pin))
+        self._sm.put(delay_ms)
+        self._sm.exec('pull()')
+        self._sm.exec("mov(y, osr)") #load max count into y
+        self._sm.active(1)
+        logging.debug(f'> delayoff set on gpio{pin:} for {delay_ms:} ms')
+
+def arm_watchdog():
+  # set default alarm now in case processor hangs.  Normally ths is overwritten by sleep()
+
+  if helpers.file_exists("watchdog_live.txt"):
+    os.remove("watchdog_live.txt")
+    logging.warn("> * * Processor recovered by watchdog * *")
+  
+  # this code extracted from sleep TODO make into routine shared by both -----------------
+  dt = rtc.datetime()
+  hour, minute = dt[3:5]
+  
+  # calculate how many minutes into the day we are
+  minute = math.floor(minute / config.reading_frequency) * config.reading_frequency
+  minute += config.reading_frequency
+
+  while minute >= 60:      
+    minute -= 60
+    hour += 1
+  if hour >= 24:
+    hour -= 24
+  ampm = "am" if hour < 12 else "pm"
+
+  logging.info(f"  - setting default alarm to wake at {hour:02}:{minute:02}{ampm}")
+
+  # sleep until next scheduled reading
+  rtc.set_alarm(0, minute, hour)
+  rtc.enable_alarm_interrupt(True)
+  #------------------------------------------------------------------end copied from sleep
+
+  # power will be pulled if frame does not complete in teh reading frequncy * 50 seconds
+  delayoff = DELAYOFF(HOLD_VSYS_EN_PIN, config.reading_frequency*45) 
+  with open("watchdog_live.txt", "w") as hangfile:
+    hangfile.write("")
+
+
 def startup():
   import sys
 
@@ -486,6 +546,7 @@ def startup():
 
   # log the wake reason
   logging.info("  - wake reason:", wake_reason_name(reason))
+  arm_watchdog()
 
   # also immediately turn on the LED to indicate that we're doing something
   logging.debug("  - turn on activity led")
@@ -548,6 +609,10 @@ def sleep(time_override=None):
   # sleep until next scheduled reading
   rtc.set_alarm(0, minute, hour)
   rtc.enable_alarm_interrupt(True)
+  
+  # delete watchdog file
+  if helpers.file_exists("watchdog_live.txt"):
+    os.remove("watchdog_live.txt")
 
   # disable the vsys hold, causing us to turn off
   logging.info("  - shutting down")
@@ -578,3 +643,4 @@ def sleep(time_override=None):
 
   # reset the board
   machine.reset()
+  
