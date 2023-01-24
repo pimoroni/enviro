@@ -51,6 +51,7 @@ from phew import dns
 dns.run_catchall(ap.ifconfig()[0])
 
 logging.info("> creating web server...")
+
 # TODO This did not seem to work for me...
 @server.route("/wrong-host-redirect", methods=["GET"])
 def wrong_host_redirect(request):
@@ -58,6 +59,7 @@ def wrong_host_redirect(request):
   # a meta redirect so that the captive portal browser can be sent to the correct location
   body = f"<!DOCTYPE html><head><meta http-equiv=\"refresh\" content=\"0;URL='http://{DOMAIN}/provision-welcome'\" /></head>"
   return body
+
 
 @server.route("/provision-welcome", methods=["GET"])
 def provision_welcome(request):
