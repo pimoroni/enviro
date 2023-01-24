@@ -351,7 +351,7 @@ def get_sensor_readings():
     logging.info(f"  - seconds since last reading: {seconds_since_last}")
 
 
-  readings = get_board().get_sensor_readings(seconds_since_last)
+  readings = get_board().get_sensor_readings(seconds_since_last, vbus_present)
   # readings["voltage"] = 0.0 # battery_voltage #Temporarily removed until issue is fixed
 
   # write out the last time log
@@ -473,6 +473,8 @@ def startup():
   # get the reason we were woken up
   reason = get_wake_reason()
 
+  add_missing_config_settings()
+
   # give each board a chance to perform any startup it needs
   # ===========================================================================
   board = get_board()
@@ -509,6 +511,25 @@ def startup():
     # Note, this *may* result in a missed reading
     if reason == WAKE_REASON_RTC_ALARM:
       sleep()
+  
+
+def add_missing_config_settings():
+  # check if ca file paramter is set, if not set it to not use SSL by setting to None
+  try:
+    config.mqtt_broker_ca_file
+  except AttributeError:
+    warn_missing_config_setting("mqtt_broker_ca_file")
+    config.mqtt_broker_ca_file = None
+
+  try:
+    config.usb_power_temperature_offset
+  except AttributeError:
+    warn_missing_config_setting("usb_power_temperature_offset")
+    config.usb_power_temperature_offset = DEFAULT_USB_POWER_TEMPERATURE_OFFSET
+
+def warn_missing_config_setting(setting):
+    logging.warn(f"  - config setting '{setting}' missing - please add it to config.py")
+
 
 def sleep(time_override=None):
   if time_override is not None:
@@ -549,12 +570,6 @@ def sleep(time_override=None):
   rtc.set_alarm(0, minute, hour)
   rtc.enable_alarm_interrupt(True)
 
-  # always assume we're running on battery power until we know otherwise
-  if config.usb_power:
-    logging.debug("assume battery power in config")
-    config.usb_power = False
-    helpers.write_config(config)
-
   # disable the vsys hold, causing us to turn off
   logging.info("  - shutting down")
   hold_vsys_en_pin.init(Pin.IN)
@@ -562,12 +577,6 @@ def sleep(time_override=None):
   # if we're still awake it means power is coming from the USB port in which
   # case we can't (and don't need to) sleep.
   stop_activity_led()
-
-  # indicate that we're running on usb power - which requires temperature
-  # and humidity adjustments.
-  logging.debug("switching config to usb power")
-  config.usb_power = True
-  helpers.write_config(config)
 
   # if running via mpremote/pyboard.py with a remote mount then we can't
   # reset the board so just exist

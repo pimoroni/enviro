@@ -42,7 +42,7 @@ def colour_temperature_from_rgbc(r, g, b, c):
       ct = 10000
   return round(ct)
 
-def get_sensor_readings(seconds_since_last):
+def get_sensor_readings(seconds_since_last, is_usb_power):
   data = bme688.read()
 
   temperature = round(data[0], 2)
@@ -50,7 +50,7 @@ def get_sensor_readings(seconds_since_last):
 
   # Compensate for additional heating when on usb power - this also changes the
   # relative humidity value.
-  if config.usb_power:
+  if is_usb_power:
     adjusted_temperature = temperature - config.usb_power_temperature_offset
     absolute_humidity = helpers.relative_to_absolute_humidity(humidity, temperature)
     humidity = helpers.absolute_to_relative_humidity(absolute_humidity, adjusted_temperature)

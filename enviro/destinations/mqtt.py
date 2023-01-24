@@ -13,12 +13,6 @@ def upload_reading(reading):
   password = config.mqtt_broker_password
   nickname = reading["nickname"]
   
-  # check if ca file paramter is set, if not set it to not use SSL by setting to None
-  try:
-    config.mqtt_broker_ca_file
-  except AttributeError: 
-    config.mqtt_broker_ca_file = None
-  
   try:
     if config.mqtt_broker_ca_file:
     # Using SSL

@@ -58,22 +58,6 @@ def copy_file(source, target):
           break
         outfile.write(chunk)
 
-def write_config(config):
-  lines = []
-  with open("config.py", "r") as infile:
-    lines = infile.read().split("\n")
-
-  for i in range(0, len(lines)):
-    line = lines[i]
-    parts = line.split("=", 1)
-    if len(parts) == 2:
-      key = parts[0].strip()
-      if hasattr(config, key):
-        value = getattr(config, key)
-        lines[i] = f"{key} = {repr(value)}"
-
-  with open("config.py", "w") as outfile:
-    outfile.write("\n".join(lines))
 
 # temperature and humidity helpers
 # ===========================================================================

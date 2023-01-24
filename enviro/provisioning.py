@@ -12,6 +12,23 @@ DOMAIN = "pico.wireless"
 if not helpers.file_exists("config.py"):
   helpers.copy_file("enviro/config_template.py", "config.py")
 
+def write_config():
+  lines = []
+  with open("config.py", "r") as infile:
+    lines = infile.read().split("\n")
+
+  for i in range(0, len(lines)):
+    line = lines[i]
+    parts = line.split("=", 1)
+    if len(parts) == 2:
+      key = parts[0].strip()
+      if hasattr(config, key):
+        value = getattr(config, key)
+        lines[i] = f"{key} = {repr(value)}"
+
+  with open("config.py", "w") as outfile:
+    outfile.write("\n".join(lines))
+
 import config
 
 
@@ -33,7 +50,6 @@ from phew import dns
 dns.run_catchall(ap.ifconfig()[0])
 
 logging.info("> creating web server...")
-
 # TODO This did not seem to work for me...
 @server.route("/wrong-host-redirect", methods=["GET"])
 def wrong_host_redirect(request):
@@ -41,7 +57,6 @@ def wrong_host_redirect(request):
   # a meta redirect so that the captive portal browser can be sent to the correct location
   body = f"<!DOCTYPE html><head><meta http-equiv=\"refresh\" content=\"0;URL='http://{DOMAIN}/provision-welcome'\" /></head>"
   return body
-
 
 @server.route("/provision-welcome", methods=["GET"])
 def provision_welcome(request):
@@ -53,7 +68,7 @@ def provision_welcome(request):
 def provision_step_1_nickname(request):
   if request.method == "POST":
     config.nickname = request.form["nickname"]
-    helpers.write_config(config)
+    write_config()
     return redirect(f"http://{DOMAIN}/provision-step-2-wifi")
   else:
     return render_template("enviro/html/provision-step-1-nickname.html", board=model)
@@ -64,7 +79,7 @@ def provision_step_2_wifi(request):
   if request.method == "POST":
     config.wifi_ssid = request.form["wifi_ssid"]
     config.wifi_password = request.form["wifi_password"]
-    helpers.write_config(config)
+    write_config()
     return redirect(f"http://{DOMAIN}/provision-step-3-logging")
   else:
     return render_template("enviro/html/provision-step-2-wifi.html", board=model)
@@ -75,7 +90,7 @@ def provision_step_3_logging(request):
   if request.method == "POST":
     config.reading_frequency = int(request.form["reading_frequency"])
     config.upload_frequency = int(request.form["upload_frequency"]) if request.form["upload_frequency"] else None
-    helpers.write_config(config)
+    write_config()
     return redirect(f"http://{DOMAIN}/provision-step-4-destination")
   else:
     return render_template("enviro/html/provision-step-3-logging.html", board=model)
@@ -106,7 +121,7 @@ def provision_step_4_destination(request):
     config.influxdb_token = request.form["influxdb_token"]
     config.influxdb_bucket = request.form["influxdb_bucket"]
     
-    helpers.write_config(config)
+    write_config()
 
     if model == "grow":
       return redirect(f"http://{DOMAIN}/provision-step-grow-sensors")
@@ -135,7 +150,7 @@ def provision_step_grow_sensors(request):
     except ValueError:
       pass
     
-    helpers.write_config(config)
+    write_config()
 
     return redirect(f"http://{DOMAIN}/provision-step-5-done")
   else:
@@ -145,7 +160,7 @@ def provision_step_grow_sensors(request):
 @server.route("/provision-step-5-done", methods=["GET", "POST"])
 def provision_step_5_done(request):
   config.provisioned = True
-  helpers.write_config(config)
+  write_config()
 
   # a post request to the done handler means we're finished and
   # should reset the board
