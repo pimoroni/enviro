@@ -12,6 +12,7 @@ DOMAIN = "pico.wireless"
 if not helpers.file_exists("config.py"):
   helpers.copy_file("enviro/config_template.py", "config.py")
 
+# write the current values in config to the config.py file
 def write_config():
   lines = []
   with open("config.py", "r") as infile:

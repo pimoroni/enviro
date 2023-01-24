@@ -511,7 +511,6 @@ def startup():
     # Note, this *may* result in a missed reading
     if reason == WAKE_REASON_RTC_ALARM:
       sleep()
-  
 
 def add_missing_config_settings():
   # check if ca file paramter is set, if not set it to not use SSL by setting to None
@@ -529,7 +528,6 @@ def add_missing_config_settings():
 
 def warn_missing_config_setting(setting):
     logging.warn(f"  - config setting '{setting}' missing - please add it to config.py")
-
 
 def sleep(time_override=None):
   if time_override is not None:
