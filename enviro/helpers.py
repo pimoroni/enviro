@@ -58,7 +58,6 @@ def copy_file(source, target):
           break
         outfile.write(chunk)
 
-
 # temperature and humidity helpers
 # ===========================================================================
 
