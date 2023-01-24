@@ -480,7 +480,7 @@ def delayoff_prog():
 
 class DELAYOFF:
     def __init__(self, pin, delay, sm_id=0):
-        delay_ms=int(delay*1000)
+        delay_ms=int(delay * 60 * 1000)
         self._sm = StateMachine(sm_id, delayoff_prog, freq=2000, sideset_base=Pin(pin))
         self._sm.put(delay_ms)
         self._sm.exec('pull()')
@@ -497,11 +497,14 @@ def arm_watchdog():
   
   # this code extracted from sleep TODO make into routine shared by both -----------------
   dt = rtc.datetime()
-  hour, minute = dt[3:5]
-  
-  # calculate how many minutes into the day we are
-  minute = math.floor(minute / config.reading_frequency) * config.reading_frequency
-  minute += config.reading_frequency
+  hour, minute, second = dt[3:6]
+
+  # make sure the Alarm in the event of watchdog is set to 1 minute ahead 
+  minute += int(config.pio_watchdog_time)
+  minute += 1
+  #For edge case??  May not be needed
+  if second > 55:
+    minute += 1
 
   while minute >= 60:      
     minute -= 60
@@ -517,8 +520,8 @@ def arm_watchdog():
   rtc.enable_alarm_interrupt(True)
   #------------------------------------------------------------------end copied from sleep
 
-  # power will be pulled if frame does not complete in teh reading frequncy * 50 seconds
-  delayoff = DELAYOFF(HOLD_VSYS_EN_PIN, config.reading_frequency*45) 
+  # power will be pulled based on wathdog time (set in config file in minutes)
+  delayoff = DELAYOFF(HOLD_VSYS_EN_PIN, int(config.pio_watchdog_time))
   with open("watchdog_live.txt", "w") as hangfile:
     hangfile.write("")
 
@@ -546,7 +549,9 @@ def startup():
 
   # log the wake reason
   logging.info("  - wake reason:", wake_reason_name(reason))
-  arm_watchdog()
+  #set watchdog if configured in config file
+  if config.pio_watchdog_time is not 0:
+    arm_watchdog()
 
   # also immediately turn on the LED to indicate that we're doing something
   logging.debug("  - turn on activity led")
@@ -644,3 +649,4 @@ def sleep(time_override=None):
   # reset the board
   machine.reset()
   
+
