@@ -20,4 +20,4 @@ def add_missing_config_settings():
 
 
 def warn_missing_config_setting(setting):
-    logging.warn(f" - config setting '{setting}' missing, please add it to config.py")
+    logging.warn(f"> config setting '{setting}' missing, please add it to config.py")
