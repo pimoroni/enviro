@@ -97,7 +97,10 @@ import machine, sys, os, ujson
 from machine import RTC, ADC
 import phew
 from pcf85063a import PCF85063A
+import enviro.config_defaults as config_defaults
 import enviro.helpers as helpers
+
+config_defaults.add_missing_config_settings()
 
 # read the state of vbus to know if we were woken up by USB
 vbus_present = Pin("WL_GPIO2", Pin.IN).value()
@@ -473,8 +476,6 @@ def startup():
   # get the reason we were woken up
   reason = get_wake_reason()
 
-  add_missing_config_settings()
-
   # give each board a chance to perform any startup it needs
   # ===========================================================================
   board = get_board()
@@ -512,22 +513,6 @@ def startup():
     if reason == WAKE_REASON_RTC_ALARM:
       sleep()
 
-def add_missing_config_settings():
-  # check if ca file paramter is set, if not set it to not use SSL by setting to None
-  try:
-    config.mqtt_broker_ca_file
-  except AttributeError:
-    warn_missing_config_setting("mqtt_broker_ca_file")
-    config.mqtt_broker_ca_file = None
-
-  try:
-    config.usb_power_temperature_offset
-  except AttributeError:
-    warn_missing_config_setting("usb_power_temperature_offset")
-    config.usb_power_temperature_offset = DEFAULT_USB_POWER_TEMPERATURE_OFFSET
-
-def warn_missing_config_setting(setting):
-    logging.warn(f"  - config setting '{setting}' missing - please add it to config.py")
 
 def sleep(time_override=None):
   if time_override is not None:
