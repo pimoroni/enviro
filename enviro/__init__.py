@@ -513,7 +513,6 @@ def startup():
     if reason == WAKE_REASON_RTC_ALARM:
       sleep()
 
-
 def sleep(time_override=None):
   if time_override is not None:
     logging.info(f"> going to sleep for {time_override} minute(s)")
