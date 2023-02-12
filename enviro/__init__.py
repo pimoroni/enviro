@@ -97,7 +97,10 @@ import machine, sys, os, ujson
 from machine import RTC, ADC
 import phew
 from pcf85063a import PCF85063A
+import enviro.config_defaults as config_defaults
 import enviro.helpers as helpers
+
+config_defaults.add_missing_config_settings()
 
 # read the state of vbus to know if we were woken up by USB
 vbus_present = Pin("WL_GPIO2", Pin.IN).value()
@@ -351,7 +354,7 @@ def get_sensor_readings():
     logging.info(f"  - seconds since last reading: {seconds_since_last}")
 
 
-  readings = get_board().get_sensor_readings(seconds_since_last)
+  readings = get_board().get_sensor_readings(seconds_since_last, vbus_present)
   # readings["voltage"] = 0.0 # battery_voltage #Temporarily removed until issue is fixed
 
   # write out the last time log
