@@ -34,8 +34,8 @@ function create_directory {
 function copy {
   for file in $1
   do
-    echo -n "> copying file $file"
-    mpremote connect ${DEVICE} cp $file $2 > /dev/null
+    echo "> copying file $file"
+    mpremote connect ${DEVICE} cp $file $2$(basename $file)
     if [ $? -eq 0 ] ; then
       echo " .. done!"
     else
