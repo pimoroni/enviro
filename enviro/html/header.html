@@ -100,6 +100,12 @@
 
       #done pre {max-height: 20rem; overflow: scroll; background-color: var(--black); border-radius: var(--input-radius); color: white; padding: 1rem;}
 
+      details {user-select: none;}
+      details>summary span.icon {transition: all 0.5s; margin-left: auto;}
+      details[open] summary span.icon { transform: rotate(90deg); }
+      summary {display: flex; cursor: pointer; }
+      summary::-webkit-details-marker {display: none;}
+
       /* adjustments for viewing on phone rather than tablet or computer */
       @media (max-width: 680px) {
         #intro {grid-template-columns: 1fr;}
