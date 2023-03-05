@@ -100,7 +100,7 @@ def mqtt_discovery(name, device_class, unit, value_name, model ):
     "state_cla": "measurement",
     "stat_t":"enviro/" + nickname,
     "name":name,
-    "uniq_id":"sensor." + nickname + "." + device_class,
+    "uniq_id":"sensor." + nickname + "." + value_name,
   })
   try:
     # attempt to publish reading
