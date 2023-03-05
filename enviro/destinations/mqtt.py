@@ -96,7 +96,7 @@ def mqtt_discovery(name, device_class, unit, value_name, model ):
     },
     "unit_of_meas":unit,
     "dev_cla":device_class,
-    "val_tpl":"{{ value_json." + value_name +" }}",
+    "val_tpl":"{{ value_json.readings." + value_name +" }}",
     "state_cla": "measurement",
     "stat_t":"enviro/" + nickname,
     "name":name,
