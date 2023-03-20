@@ -191,8 +191,8 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
   rain, rain_per_second = rainfall(seconds_since_last)
 
   # Adjust pressure to calculated sea level value if set to in config
-  pressure = round(bme280_data[1] / 100.0, 2)
-  temperature = round(bme280_data[0], 2)
+  pressure = bme280_data[1] / 100.0
+  temperature = bme280_data[0]
   
   if config.sea_level_pressure:
     logging.info(f"  - recorded temperature: {temperature}")
@@ -202,9 +202,9 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
 
   from ucollections import OrderedDict
   return OrderedDict({
-    "temperature": temperature,
+    "temperature": round(temperature, 2),
     "humidity": round(bme280_data[2], 2),
-    "pressure": pressure,
+    "pressure": round(pressure, 2),
     "luminance": round(ltr_data[BreakoutLTR559.LUX], 2),
     "wind_speed": wind_speed(),
     "rain": rain,
