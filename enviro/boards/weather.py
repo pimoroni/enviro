@@ -3,7 +3,7 @@ from breakout_bme280 import BreakoutBME280
 from breakout_ltr559 import BreakoutLTR559
 from machine import Pin, PWM
 from pimoroni import Analog
-from enviro import i2c, activity_led
+from enviro import i2c, activity_led, config
 import enviro.helpers as helpers
 from phew import logging
 from enviro.constants import WAKE_REASON_RTC_ALARM, WAKE_REASON_BUTTON_PRESS
@@ -190,11 +190,21 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
   ltr_data = ltr559.get_reading()
   rain, rain_per_second = rainfall(seconds_since_last)
 
+  # Adjust pressure to calculated sea level value if set to in config
+  pressure = round(bme280_data[1] / 100.0, 2)
+  temperature = round(bme280_data[0], 2)
+  
+  if config.sea_level_pressure:
+    logging.info(f"  - recorded temperature: {temperature}")
+    logging.info(f"  - recorded pressure: {pressure}")
+    pressure = round(helpers.get_sea_level_pressure(pressure, temperature, config.height_above_sea_level), 2)
+    logging.info(f"  - calculated mean sea level pressure: {pressure}")
+
   from ucollections import OrderedDict
   return OrderedDict({
-    "temperature": round(bme280_data[0], 2),
+    "temperature": temperature,
     "humidity": round(bme280_data[2], 2),
-    "pressure": round(bme280_data[1] / 100.0, 2),
+    "pressure": pressure,
     "luminance": round(ltr_data[BreakoutLTR559.LUX], 2),
     "wind_speed": wind_speed(),
     "rain": rain,
