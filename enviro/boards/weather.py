@@ -3,7 +3,7 @@ from breakout_bme280 import BreakoutBME280
 from breakout_ltr559 import BreakoutLTR559
 from machine import Pin, PWM
 from pimoroni import Analog
-from enviro import i2c, activity_led
+from enviro import i2c, activity_led, config
 import enviro.helpers as helpers
 from phew import logging
 from enviro.constants import WAKE_REASON_RTC_ALARM, WAKE_REASON_BUTTON_PRESS
@@ -190,10 +190,25 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
   ltr_data = ltr559.get_reading()
   rain, rain_per_second = rainfall(seconds_since_last)
 
+  temperature = bme280_data[0]
+  humidity = bme280_data[2]
+
+  # Compensate for additional heating when on usb power - this also changes the
+  # relative humidity value.
+  if is_usb_power:
+    logging.info(f"  - recorded temperature: {temperature}")
+    logging.info(f"  - recorded humidity: {humidity}")
+    adjusted_temperature = temperature - config.usb_power_temperature_offset
+    absolute_humidity = helpers.relative_to_absolute_humidity(humidity, temperature)
+    humidity = helpers.absolute_to_relative_humidity(absolute_humidity, adjusted_temperature)
+    temperature = adjusted_temperature
+    logging.info(f"  - USB adjusted temperature: {temperature}")
+    logging.info(f"  - USB adjusted humidity: {humidity}")
+
   from ucollections import OrderedDict
   return OrderedDict({
-    "temperature": round(bme280_data[0], 2),
-    "humidity": round(bme280_data[2], 2),
+    "temperature": round(temperature, 2),
+    "humidity": round(humidity, 2),
     "pressure": round(bme280_data[1] / 100.0, 2),
     "luminance": round(ltr_data[BreakoutLTR559.LUX], 2),
     "wind_speed": wind_speed(),
