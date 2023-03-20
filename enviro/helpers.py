@@ -110,3 +110,10 @@ def get_saturation_vapor_pressure(temperature_in_k):
       temperature_in_k *
       (a1*v + a2*v**1.5 + a3*v**3 + a4*v**3.5 + a5*v**4 + a6*v**7.5)
   )
+
+# Calculates mean sea level pressure (QNH) from observed pressure
+# https://keisan.casio.com/exec/system/1224575267
+def get_sea_level_pressure(observed_pressure, temperature_in_c, altitude_in_m):
+# def sea(pressure, temperature, height):
+	qnh = observed_pressure * ((1 - ((0.0065 * altitude_in_m) / (temperature_in_c + (0.0065 * altitude_in_m) + 273.15)))** -5.257)
+	return qnh
