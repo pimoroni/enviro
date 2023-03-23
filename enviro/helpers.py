@@ -77,6 +77,18 @@ def absolute_to_relative_humidity(absolute_humidity, temperature_in_c):
 def celcius_to_kelvin(temperature_in_c):
   return temperature_in_c + 273.15
 
+def celcius_to_fahrenheit(temperature_in_c):
+  return temperature_in_c * 1.8 + 32
+
+def hpa_to_inches(pressure_in_hpa):
+  return pressure_in_hpa * 0.02953
+
+def metres_per_second_to_miles_per_hour(speed_in_mps):
+  return speed_in_mps * 2.2369362912
+
+def mm_to_inches(distance_in_mm):
+  return distance_in_mm * 0.0393700787
+
 # https://www.calctool.org/atmospheric-thermodynamics/absolute-humidity#actual-vapor-pressure
 # http://cires1.colorado.edu/~voemel/vp.html
 def get_actual_vapor_pressure(relative_humidity, temperature_in_k):

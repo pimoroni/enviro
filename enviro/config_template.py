@@ -19,7 +19,7 @@ reading_frequency = 15
 # how often to trigger a resync of the onboard RTC (in hours)
 resync_frequency = 168
 
-# where to upload to ("http", "mqtt", "adafruit_io", "influxdb")
+# where to upload to ("http", "mqtt", "adafruit_io", "influxdb", "weather_underground")
 destination = None
 
 # how often to upload data (number of cached readings)
@@ -46,6 +46,10 @@ influxdb_org = None
 influxdb_url = None
 influxdb_token = None
 influxdb_bucket = None
+
+# weather underground settings
+wunderground_id = None
+wunderground_key = None
 
 # grow specific settings
 auto_water = False
