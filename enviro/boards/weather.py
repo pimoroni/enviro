@@ -156,10 +156,10 @@ def wind_direction():
         closest_index = i
 
     resistance = (voltage * 10000) / (3.3 - voltage)
-    logging.info(f"> wind direction stats - voltage: {value}, resistance: {resistance}, closest value: {closest_value}, loops: {loop}")
+    logging.info(f"> wind direction stats - voltage: {value}, resistance: {resistance}, closest value: {closest_value}, closest index: {closest_index}, loops: {loop}")
 
-    # if True: #Test not waitng for two identical readings in a row
-    if last_index == closest_index:
+    if True: #Test not waitng for two identical readings in a row
+    # if last_index == closest_index:
       break
 
     last_index = closest_index
