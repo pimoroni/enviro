@@ -55,3 +55,6 @@ moisture_target_c = 50
 
 # compensate for usb power
 usb_power_temperature_offset = 4.5
+
+# offset up to +/- 360 degrees for wind direction if you can't reorientate the weather station
+wind_direction_offset = 0
