@@ -141,29 +141,20 @@ def wind_direction():
   # you read during transition between two values it can glitch
   # fixes https://github.com/pimoroni/enviro/issues/20
   voltage = 0.0
-  loop = 0
-  debug = []
-  while True:
-    value = wind_direction_pin.read_voltage()
+  
+  value = wind_direction_pin.read_voltage()
 
-    closest_index = -1
-    closest_value = float('inf')
+  closest_index = -1
+  closest_value = float('inf')
 
-    for i in range(16):
-      distance = abs(ADC_TO_DEGREES[i] - value)
-      if distance < closest_value:
-        closest_value = distance
-        closest_index = i
+  for i in range(16):
+    distance = abs(ADC_TO_DEGREES[i] - value)
+    if distance < closest_value:
+      closest_value = distance
+      closest_index = i
 
-    resistance = (voltage * 10000) / (3.3 - voltage)
-    logging.info(f"> wind direction stats - voltage: {value}, resistance: {resistance}, closest value: {closest_value}, closest index: {closest_index}, loops: {loop}")
-
-    if True: #Test not waitng for two identical readings in a row
-    # if last_index == closest_index:
-      break
-
-    last_index = closest_index
-    loop += 1
+  resistance = (voltage * 10000) / (3.3 - voltage)
+  logging.info(f"> wind direction stats - voltage: {value}, resistance: {resistance}, closest value: {closest_value}, closest index: {closest_index}")
 
   wind_direction = closest_index * 22.5
 
