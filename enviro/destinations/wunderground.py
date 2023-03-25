@@ -2,7 +2,7 @@ from enviro import logging
 from enviro.constants import UPLOAD_SUCCESS, UPLOAD_FAILED
 import urequests, time
 import config
-from helpers import celcius_to_fahrenheit, hpa_to_inches, metres_per_second_to_miles_per_hour, mm_to_inches
+import enviro.helpers
 
 def url_encode(t):
   result = ""
@@ -19,3 +19,21 @@ def url_encode(t):
 def log_destination():
   logging.info(f"> uploading cached readings to Weather Underground device: {config.wunderground_id}")
 
+def upload_reading(reading):
+  for key, value in reading["readings"].items():
+    timestamp = reading["timestamp"]
+
+    year = timestamp[0:4]
+    month = timestamp[5:7]
+    day = timestamp[8:10]
+    hour = timestamp[11:13]
+    minute = timestamp[14:16]
+    second = timestamp[17:19]
+
+    timestamp = year + "-" + month+ "-" + day + "+" + hour + "%3A" + minute + "%3A" + second
+
+  url = "https://weatherstation.wunderground.com/weatherstation/updateweatherstation.php?ID=" + config.wunderground_id + "&PASSWORD=" + config.wunderground_key + "&dateutc=" + timestamp
+
+  logging.info(f"> upload url: {url}")
+
+  return UPLOAD_SUCCESS
