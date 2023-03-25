@@ -123,6 +123,10 @@ def provision_step_4_destination(request):
     config.influxdb_url = request.form["influxdb_url"]
     config.influxdb_token = request.form["influxdb_token"]
     config.influxdb_bucket = request.form["influxdb_bucket"]
+
+    # wunderground
+    config.wunderground_id = request.form["wunderground_id"]
+    config.wunderground_key = request.form["wunderground_key"]
     
     write_config()
 
