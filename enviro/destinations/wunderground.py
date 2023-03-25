@@ -34,7 +34,7 @@ def upload_reading(reading):
         value = 100
       url += "&humidity=" + str(value)
     
-    if key == "pressure":
+    if key == "sea_level_pressure":
       url += "&baromin=" + str(hpa_to_inches(value))
     
     if key == "wind_speed":

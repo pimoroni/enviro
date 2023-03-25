@@ -15,4 +15,6 @@ You can sign up for a free acount, configure a device and drop the credentials i
 
 When you provision your device enter the station ID and station key and Enviro will automatically start sending data on the schedule you have requested.
 
+Ensure you have enabled the sea level pressure option and provided accurate [elevation data](https://whatismyelevation.com/) if you want to return pressure data.
+
 You can view the dashboard for your station by clicking the station name on the [devices](https://www.wunderground.com/member/devices) page.
