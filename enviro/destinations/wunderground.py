@@ -2,7 +2,7 @@ from enviro import logging
 from enviro.constants import UPLOAD_SUCCESS, UPLOAD_FAILED
 import urequests
 import config
-from enviro.helpers import celcius_to_fahrenheit, hpa_to_inches, metres_per_second_to_miles_per_hour
+from enviro.helpers import celcius_to_fahrenheit, hpa_to_inches, metres_per_second_to_miles_per_hour, mm_to_inches
 
 def log_destination():
   logging.info(f"> uploading cached readings to Weather Underground device: {config.wunderground_id}")
@@ -43,8 +43,13 @@ def upload_reading(reading):
     if key == "wind_direction":
       url += "&winddir=" + str(value)
     
+    if key == "rain_per_hour":
+      url += "&rainin=" + str(mm_to_inches(value))
+    
+    if key == "rain_today":
+      url += "&dailyrainin=" + str(mm_to_inches(value))
+
     #TODO Potentially able to convert luminance to solar radiation (solarradiation - [W/m^2])
-    #TODO Work out if the file in the rain trigger can be used to calculate and send (rainin - [rain inches over the past hour)] -- the accumulated rainfall in the past 60 min)
 
   logging.info(f"> upload url: {url}")
 
