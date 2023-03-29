@@ -24,6 +24,10 @@ def timestamp(dt):
   second = int(dt[17:19])
   return time.mktime((year, month, day, hour, minute, second, 0, 0))
 
+def timestamp_day(dt):
+  day = int(dt[8:10])
+  return day
+
 def uid():
   return "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}".format(*machine.unique_id())
 
