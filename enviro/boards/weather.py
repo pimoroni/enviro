@@ -198,14 +198,14 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
   ltr_data = ltr559.get_reading()
   rain, rain_per_second, rain_per_hour, rain_today = rainfall(seconds_since_last)
 
-  # Adjust pressure to calculated sea level value if set to in config
   pressure = bme280_data[1] / 100.0
   temperature = bme280_data[0]
+  humidity = bme280_data[2]
 
   from ucollections import OrderedDict
   readings = OrderedDict({
     "temperature": round(temperature, 2),
-    "humidity": round(bme280_data[2], 2),
+    "humidity": round(humidity, 2),
     "pressure": round(pressure, 2),
     "luminance": round(ltr_data[BreakoutLTR559.LUX], 2),
     "wind_speed": wind_speed(),
@@ -213,9 +213,11 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
     "rain_per_second": rain_per_second,
     "rain_per_hour": rain_per_hour,
     "rain_today": rain_today,
-    "wind_direction": wind_direction()
+    "wind_direction": wind_direction(),
+    "dewpoint": round(helpers.calculate_dewpoint(temperature, humidity), 2)
   })
 
+  # Add adjusted pressure to calculated sea level value if set to in config
   if config.sea_level_pressure:
     logging.info(f"  - recorded temperature: {temperature}")
     logging.info(f"  - recorded pressure: {pressure}")

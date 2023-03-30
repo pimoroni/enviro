@@ -78,6 +78,12 @@ def absolute_to_relative_humidity(absolute_humidity, temperature_in_c):
 
   return (WATER_VAPOR_SPECIFIC_GAS_CONSTANT * temperature_in_k * absolute_humidity) / saturation_vapor_pressure * 100
 
+# https://www.omnicalculator.com/physics/dew-point#how-to-calculate-dew-point-how-to-calculate-relative-humidity
+def calculate_dewpoint(temperature_in_c, relative_humidity):
+  alphatrh = (math.log((relative_humidity / 100))) + ((17.625 * temperature_in_c) / (243.04 + temperature_in_c))
+  dewpoint_in_c = (243.04 * alphatrh) / (17.625 - alphatrh)
+  return dewpoint_in_c
+
 def celcius_to_kelvin(temperature_in_c):
   return temperature_in_c + 273.15
 
