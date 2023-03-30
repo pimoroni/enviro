@@ -165,6 +165,11 @@ def rainfall(seconds_since_last):
         # count how many rain ticks since the last reading
         if now - ts < seconds_since_last:
           amount += RAIN_MM_PER_TICK
+          # Pick up any untracked yesterday data if current reading is a new day
+          # Techincally this should be yesterday, but capturing in today is much
+          # less complex than backdating in the readings file from here
+          if tsday != now_day:
+            today += RAIN_MM_PER_TICK
         # count how many rain ticks in the last hour
         if now - ts < 3600:
           per_hour += RAIN_MM_PER_TICK
