@@ -52,8 +52,6 @@ def upload_reading(reading):
     if key == "dewpoint":
       url += "&dewptf=" + str(celcius_to_fahrenheit(value))
 
-    #TODO Potentially able to convert luminance to solar radiation (solarradiation - [W/m^2])
-
   logging.info(f"> upload url: {url}")
 
   try:
