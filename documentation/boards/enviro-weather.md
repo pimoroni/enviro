@@ -11,6 +11,7 @@ Enviro Weather is a super slimline all in one board for keeping a (weather) eye 
 |Temperature|`temperature`|celcius|°C|`22.11`|
 |Humidity|`humidity`|percent|%|`55.42`|
 |Air Pressure|`pressure`|hectopascals|hPa|`997.16`|
+|Adjusted Sea Level Air Pressure|`sea_level_pressure`|hectopascals|hPa|`1014.06`|
 |Luminance|`luminance`|lux|lx|`35`|
 |Rainfall|`rain`|millimetres|mm|`1.674`|
 |Rainfall Average|`rain_per_second`|millimetres per second|mm/s|`1.674`|
