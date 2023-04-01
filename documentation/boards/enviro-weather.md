@@ -13,10 +13,14 @@ Enviro Weather is a super slimline all in one board for keeping a (weather) eye 
 |Air Pressure|`pressure`|hectopascals|hPa|`997.16`|
 |Luminance|`luminance`|lux|lx|`35`|
 |Rainfall|`rain`|millimetres|mm|`1.674`|
-|Rainfall Average|`rain_per_second`|millimetres per second|mm/s|`1.674`|
+|Rainfall Average Second|`rain_per_second`|millimetres per second|mm/s|`1.674`|
+|Rainfall Average Hour|`rain_per_hour`|millimetres per hour|mm/h|`1.674`|
+|Rainfall Today (local time)|`rain_today`|millimetres accumulated today|mm/s|`1.674`|
 |Wind Direction|`wind_direction`|angle|°|`45`|
 |Wind Speed|`wind_speed`|metres per second|m/s|`0.45`|
 |Voltage|`voltage`|volts|V|`4.035`|
+
+The rain today value is adjusted for local time (and/or DST) by modifying the utc_offset value in config.py
 
 ## On-board devices
 
