@@ -1,5 +1,5 @@
 from enviro.constants import *
-import machine, math, os, time
+import machine, math, os, time, utime
 
 # miscellany
 # ===========================================================================
@@ -24,8 +24,13 @@ def timestamp(dt):
   second = int(dt[17:19])
   return time.mktime((year, month, day, hour, minute, second, 0, 0))
 
-def timestamp_day(dt):
-  day = int(dt[8:10])
+# Return the day number of your timestamp string accommodating UTC offsets
+def timestamp_day(dt, offset_hours):
+  # Bounce via timestamp to properly calculate hours change
+  time = timestamp(dt)
+  time = time + (offset_hours * 3600)
+  dt = utime.localtime(time)
+  day = int(dt[2])
   return day
 
 def uid():

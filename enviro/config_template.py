@@ -13,6 +13,9 @@ wifi_ssid = None
 wifi_password = None
 wifi_country = "GB"
 
+# For local time corrections to daily rain logging (include DST)
+utc_offset = 1
+
 # how often to wake up and take a reading (in minutes)
 reading_frequency = 15
 

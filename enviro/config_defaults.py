@@ -23,6 +23,12 @@ def add_missing_config_settings():
   except AttributeError:
     warn_missing_config_setting("wifi_country")
     config.wifi_country = "GB"
+    
+  try:
+    config.utc_offset
+  except AttributeError:
+    warn_missing_config_setting("utc_offset")
+    config.utc_offset = 0
 
 def warn_missing_config_setting(setting):
     logging.warn(f"> config setting '{setting}' missing, please add it to config.py")

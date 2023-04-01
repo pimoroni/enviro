@@ -1,4 +1,4 @@
-import time, math, os
+import time, math, os, config
 from breakout_bme280 import BreakoutBME280
 from breakout_ltr559 import BreakoutLTR559
 from machine import Pin, PWM
@@ -152,7 +152,8 @@ def rainfall(seconds_since_last):
   per_hour = 0
   today = 0
   now = helpers.timestamp(helpers.datetime_string())
-  now_day = helpers.timestamp_day(helpers.datetime_string())
+  now_day = helpers.timestamp_day(helpers.datetime_string(), config.utc_offset)
+  logging.info(f"> current day number is {now_day}")
   if helpers.file_exists("rain.txt"):
     with open("rain.txt", "r") as rainfile:
       rain_entries = rainfile.read().split("\n")
@@ -161,7 +162,8 @@ def rainfall(seconds_since_last):
     for entry in rain_entries:
       if entry:
         ts = helpers.timestamp(entry)
-        tsday = helpers.timestamp_day(entry)
+        tsday = helpers.timestamp_day(entry, config.utc_offset)
+        logging.info(f"> rain reading day number is {tsday}")
         # count how many rain ticks since the last reading
         if now - ts < seconds_since_last:
           amount += RAIN_MM_PER_TICK
