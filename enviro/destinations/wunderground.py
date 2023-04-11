@@ -58,7 +58,7 @@ def upload_reading(reading):
     # send (GET) reading data to http endpoint
     result = urequests.get(url)
 
-    logging.debug(f"  - Result ({result.status_code} {result.reason})")
+    result.close()
     
     if result.status_code == 200:
       return UPLOAD_SUCCESS
