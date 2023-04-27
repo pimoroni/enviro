@@ -153,55 +153,105 @@ print("")
 print("    -  --  ---- -----=--==--===  hey enviro, let's go!  ===--==--=----- ----  --  -     ")
 print("")
 
+def reconnect_wifi(ssid, password, country):
+    import time
+    import network
+    import math
+    import rp2
+    import ubinascii
+    
+    start_ms = time.ticks_ms()
 
-import network # TODO this was removed from 0.0.8
+    # Set country
+    rp2.country(country)
+
+    # Reference: https://datasheets.raspberrypi.com/picow/connecting-to-the-internet-with-pico-w.pdf
+    CYW43_LINK_DOWN = 0
+    CYW43_LINK_JOIN = 1
+    CYW43_LINK_NOIP = 2
+    CYW43_LINK_UP = 3
+    CYW43_LINK_FAIL = -1
+    CYW43_LINK_NONET = -2
+    CYW43_LINK_BADAUTH = -3
+
+    status_names = {
+        CYW43_LINK_DOWN: "Link is down",
+        CYW43_LINK_JOIN: "Connected to wifi",
+        CYW43_LINK_NOIP: "Connected to wifi, but no IP address",
+        CYW43_LINK_UP: "Connect to wifi with an IP address",
+        CYW43_LINK_FAIL: "Connection failed",
+        CYW43_LINK_NONET: "No matching SSID found (could be out of range, or down)",
+        CYW43_LINK_BADAUTH: "Authenticatation failure",
+    }
+
+    wlan = network.WLAN(network.STA_IF)
+
+    def wlog(message): #replace with enviro logging
+        print(f"[WLAN] {message}")
+
+    def dump_status():
+        status = wlan.status()
+        wlog(f"active: {1 if wlan.active() else 0}, status: {status} ({status_names[status]})")
+        return status
+
+    def wait_status(expected_status, *, timeout=10, tick_sleep=0.5):
+        for i in range(math.ceil(timeout / tick_sleep)):
+            time.sleep(tick_sleep)
+            status = dump_status()
+            if status == expected_status:
+                return True
+            if status < 0:
+                raise Exception(status_names[status])
+        return False
+
+    wlan.active(True)
+    # Disable power saving mode - TODO only do this on USB power/config option
+    wlan.config(pm=0xa11140)
+
+    # Print MAC
+    mac = ubinascii.hexlify(wlan.config('mac'),':').decode()
+    wlog("MAC: " + mac)
+    
+    # Disconnect when necessary
+    status = dump_status()
+    if status >= CYW43_LINK_JOIN and status <= CYW43_LINK_UP:
+        wlog("Disconnecting...")
+        wlan.disconnect()
+        try:
+            wait_status(CYW43_LINK_DOWN)
+        except Exception as x:
+            raise Exception(f"Failed to disconnect: {x}")
+    wlog("Ready for connection!")
+
+    # Connect to our AP
+    wlog(f"Connecting to SSID {ssid} (password: {password})...")
+    wlan.connect(ssid, password)
+    try:
+        wait_status(CYW43_LINK_UP)
+    except Exception as x:
+        raise Exception(f"Failed to connect to SSID {ssid} (password: {password}): {x}")
+    wlog("Connected successfully!")
+
+    ip, subnet, gateway, dns = wlan.ifconfig()
+    wlog(f"IP: {ip}, Subnet: {subnet}, Gateway: {gateway}, DNS: {dns}")
+    
+    elapsed_ms = time.ticks_ms() - start_ms
+    wlog(f"Elapsed: {elapsed_ms}ms")
+    return elapsed_ms
+
 def connect_to_wifi():
-  """ TODO what it was changed to
-  if phew.is_connected_to_wifi():
-    logging.info(f"> already connected to wifi")
+  try:
+    logging.info(f"> connecting to wifi network '{config.wifi_ssid}'")
+    elapsed_ms = reconnect_wifi(config.wifi_ssid, config.wifi_password, config.wifi_country)
+    # a slow connection time will drain the battery faster and may
+    # indicate a poor quality connection
+    seconds_to_connect = elapsed_ms / 1000
+    if seconds_to_connect > 5:
+      logging.warn("  - took", seconds_to_connect, "seconds to connect to wifi")
     return True
-  """
-
-  wifi_ssid = config.wifi_ssid
-  wifi_password = config.wifi_password
-
-  logging.info(f"> connecting to wifi network '{wifi_ssid}'")
-  """ TODO what it was changed to
-  ip = phew.connect_to_wifi(wifi_ssid, wifi_password, timeout_seconds=30)
-
-  if not ip:
-    logging.error(f"! failed to connect to wireless network {wifi_ssid}")
+  except Exception as x:
+    logging.error(f"! {x}")
     return False
-
-  logging.info("  - ip address: ", ip)
-  """
-  import rp2
-  rp2.country("GB") 
-  wlan = network.WLAN(network.STA_IF)
-  wlan.active(True)
-  wlan.connect(wifi_ssid, wifi_password)
-
-  start = time.ticks_ms()
-  while time.ticks_diff(time.ticks_ms(), start) < 30000:
-    if wlan.status() < 0 or wlan.status() >= 3:
-      break
-    time.sleep(0.5)
-
-  seconds_to_connect = int(time.ticks_diff(time.ticks_ms(), start) / 1000)
-
-  if wlan.status() != 3:
-    logging.error(f"! failed to connect to wireless network {wifi_ssid}")
-    return False
-
-  # a slow connection time will drain the battery faster and may
-  # indicate a poor quality connection
-  if seconds_to_connect > 5:
-    logging.warn("  - took", seconds_to_connect, "seconds to connect to wifi")
-
-  ip_address = wlan.ifconfig()[0]
-  logging.info("  - ip address: ", ip_address)
-
-  return True
 
 # log the error, blink the warning led, and go back to sleep
 def halt(message):
@@ -463,6 +513,15 @@ def upload_readings():
   except ImportError:
     logging.error(f"! cannot find destination {destination}")
     return False
+
+  finally:
+    # Disconnect wifi
+    import network
+    print("[WLAN] Disconnecting after upload")
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+    wlan.disconnect()
+    wlan.active(False)
 
   return True
 
