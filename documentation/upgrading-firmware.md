@@ -73,7 +73,7 @@ Hit reset and your board should resume logging (or enter provisioning if that's 
 
 ### Starting from scratch
 
-Need to delete everything from your board and start from scratch? You can do that by downloading [this special .uf2 file](https://www.raspberrypi.org/documentation/pico/getting-started/static/6f6f31460c258138bd33cc96ddd76b91/flash_nuke.uf2) and copying it to Enviro whilst it's in bootloader/DFU mode. Once you've done that, you'll need to follow all the steps in this guide again.
+Need to delete everything from your board and start from scratch? You can do that by downloading [this special .uf2 file](https://datasheets.raspberrypi.com/soft/flash_nuke.uf2) and copying it to Enviro whilst it's in bootloader/DFU mode. Once you've done that, you'll need to follow all the steps in this guide again.
 
 ⚠ Beware! Doing this will delete **everything** - including all your logged data and configuration details.
 
