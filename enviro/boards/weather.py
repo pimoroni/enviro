@@ -193,17 +193,21 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
   temperature = bme280_data[0]
   humidity = bme280_data[2]
 
-  # Compensate for additional heating when on usb power - this also changes the
-  # relative humidity value.
+  # Compensate for additional heating when on different power sources - this
+  # also changes the relative humidity value
+  logging.info(f"  - recorded temperature: {temperature}")
+  logging.info(f"  - recorded humidity: {humidity}")
   if is_usb_power:
-    logging.info(f"  - recorded temperature: {temperature}")
-    logging.info(f"  - recorded humidity: {humidity}")
     adjusted_temperature = temperature - config.usb_power_temperature_offset
-    absolute_humidity = helpers.relative_to_absolute_humidity(humidity, temperature)
-    humidity = helpers.absolute_to_relative_humidity(absolute_humidity, adjusted_temperature)
-    temperature = adjusted_temperature
-    logging.info(f"  - USB adjusted temperature: {temperature}")
-    logging.info(f"  - USB adjusted humidity: {humidity}")
+    logging.info(f"  - USB temperature offset: {config.usb_power_temperature_offset}")
+  else:
+    adjusted_temperature = temperature - config.battery_power_temperature_offset
+    logging.info(f"  - Battery temperature offset: {config.usb_power_temperature_offset}")
+  absolute_humidity = helpers.relative_to_absolute_humidity(humidity, temperature)
+  humidity = helpers.absolute_to_relative_humidity(absolute_humidity, adjusted_temperature)
+  temperature = adjusted_temperature
+  logging.info(f"  - adjusted temperature: {temperature}")
+  logging.info(f"  - adjusted humidity: {humidity}")
 
   from ucollections import OrderedDict
   return OrderedDict({
