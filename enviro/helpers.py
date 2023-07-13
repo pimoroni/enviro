@@ -1,5 +1,6 @@
 from enviro.constants import *
 import machine, math, os, time, utime
+from phew import logging
 
 # miscellany
 # ===========================================================================
@@ -23,6 +24,32 @@ def timestamp(dt):
   minute = int(dt[14:16])
   second = int(dt[17:19])
   return time.mktime((year, month, day, hour, minute, second, 0, 0))
+
+def uk_bst():
+  # Return True if in UK BST - manually update bst_timestamps {} as needed
+  dt = datetime_string()
+  year = int(dt[0:4])
+  ts = timestamp(dt)
+  bst = False
+
+  bst_timestamps = {
+    2023: {"start": 1679792400, "end": 1698541200},
+    2024: {"start": 1711846800, "end": 1729990800},
+    2025: {"start": 1743296400, "end": 1761440400},
+    2026: {"start": 1774746000, "end": 1792890000},
+    2027: {"start": 1806195600, "end": 1824944400},
+    2028: {"start": 1837645200, "end": 1856394000},
+    2029: {"start": 1869094800, "end": 1887843600},
+    2030: {"start": 1901149200, "end": 1919293200}
+  }
+
+  if year in bst_timestamps:
+    if bst_timestamps[year]["start"] < ts and bst_timestamps[year]["end"] > ts:
+      bst = True
+  else:
+    logging.warn(f"> Provided year is not in BST lookup dictionary: {year}")
+  return bst
+  
 
 # Return the day number of your timestamp string accommodating UTC offsets
 def timestamp_day(dt, offset_hours):
