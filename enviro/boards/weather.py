@@ -202,7 +202,7 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
     logging.info(f"  - USB temperature offset: {config.usb_power_temperature_offset}")
   else:
     adjusted_temperature = temperature - config.battery_power_temperature_offset
-    logging.info(f"  - Battery temperature offset: {config.usb_power_temperature_offset}")
+    logging.info(f"  - Battery temperature offset: {config.battery_power_temperature_offset}")
   absolute_humidity = helpers.relative_to_absolute_humidity(humidity, temperature)
   humidity = helpers.absolute_to_relative_humidity(absolute_humidity, adjusted_temperature)
   temperature = adjusted_temperature
