@@ -2,7 +2,7 @@ import config
 from phew import logging
 
 DEFAULT_USB_POWER_TEMPERATURE_OFFSET = 4.5
-DEFAULT_BATTERY_POWER_TEMPERATURE_OFFSET = 2.0
+DEFAULT_BATTERY_POWER_TEMPERATURE_OFFSET = 0.0
 
 
 def add_missing_config_settings():

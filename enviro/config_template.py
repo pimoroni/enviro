@@ -59,4 +59,4 @@ usb_power_temperature_offset = 4.5
 # compensate for battery power (only on weather boards)
 # degrees to remove from measured temperature when running on battery
 # this will vary based on poll and wifi upload frequency with accumulated heat as these values increase
-battery_power_temperature_offset = 2.0
+battery_power_temperature_offset = 0.0
