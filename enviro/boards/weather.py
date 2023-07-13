@@ -151,8 +151,16 @@ def rainfall(seconds_since_last):
   amount = 0
   per_hour = 0
   today = 0
+  offset = 0
+  
+  if config.uk_bst == True:
+    if helpers.uk_bst():
+      offset = 1
+  elif config.utc_offset != 0:
+    offset += config.utc_offset
+
   now = helpers.timestamp(helpers.datetime_string())
-  now_day = helpers.timestamp_day(helpers.datetime_string(), config.utc_offset)
+  now_day = helpers.timestamp_day(helpers.datetime_string(), offset)
   logging.info(f"> current day number is {now_day}")
   if helpers.file_exists("rain.txt"):
     with open("rain.txt", "r") as rainfile:
