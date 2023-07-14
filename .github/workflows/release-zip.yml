@@ -13,8 +13,8 @@ jobs:
 
     env:
       RELEASE_FILE: enviro-${{github.event.release.tag_name || github.sha}}
-      FIRMWARE_NAME: pimoroni-picow_enviro-v1.19.10-micropython
-      FIRMWARE_URL: https://github.com/pimoroni/pimoroni-pico/releases/download/v1.19.10/
+      FIRMWARE_NAME: pimoroni-enviro-v1.20.3-micropython
+      FIRMWARE_URL: https://github.com/pimoroni/pimoroni-pico/releases/download/v1.20.3
 
     steps:
     - uses: actions/checkout@v2
