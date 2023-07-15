@@ -96,7 +96,7 @@ def get_readings(i2c, address):
     return readings
 ```
 
-Modify the function qwst_boards() in enviro/\_\_init\_\_.py to include an entry for your new board. This should use an if statement to check the address from the config file is visible on the I2C bus, reference your new module file path from the section above in the import statement and append a dictionary that has keys for "name", "include" and "address" to the modules list. The include key has a value of your imported module and the address is the I2C address from the config file.
+Modify the function get_qwst_modules() in enviro/\_\_init\_\_.py to include an entry for your new board. This should use an if statement to check the address from the config file is visible on the I2C bus, reference your new module file path from the section above in the import statement and append a dictionary that has keys for "name", "include" and "address" to the modules list. The include key has a value of your imported module and the address is the I2C address from the config file.
 
 Example:
 ```
