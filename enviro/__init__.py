@@ -2,6 +2,7 @@
 # ===========================================================================
 from enviro.constants import *
 from machine import Pin
+import config
 hold_vsys_en_pin = Pin(HOLD_VSYS_EN_PIN, Pin.OUT, value=True)
 
 # detect board model based on devices on the i2c bus and pin state
@@ -32,13 +33,20 @@ def get_board():
   return board
 
 # return any additional sensors connected with Qw/ST
-def get_additional_sensors():
+def get_qwst_modules():
   if I2C_ADDR_SCD41 in i2c_devices:
     try:
       import enviro.sensors.scd41 as scd41
-      yield scd41
+      yield {"name": "SCD41", "include": scd41, "address": I2C_ADDR_SCD41}
     except RuntimeError:
       # Likely another device present on the SCD41 address
+      pass
+
+  if config.bme688_address in i2c_devices:
+    try:
+      import enviro.qwst_modules.bme688 as bme688
+      yield {"name": "BME688", "include": bme688, "address": config.bme688_address}
+    except RuntimeError:
       pass
 
 # set up the activity led
@@ -419,18 +427,22 @@ def get_sensor_readings():
 
 
   readings = get_board().get_sensor_readings(seconds_since_last, vbus_present)
+  module_readings = get_qwst_modules_readings(seconds_since_last)
+  readings = readings | module_readings
   # readings["voltage"] = 0.0 # battery_voltage #Temporarily removed until issue is fixed
-
-  # Add any additional sensor readings
-  for sensor in get_additional_sensors():
-      for key, value in sensor.get_sensor_readings(seconds_since_last).items():
-          readings[key] = value
 
   # write out the last time log
   with open("last_time.txt", "w") as timefile:
     timefile.write(now_str)
 
   return readings
+
+def get_qwst_modules_readings():
+  module_readings = {}
+  for module in get_qwst_modules():
+    logging.info(f"  - getting readings from module: {module['name']}")
+    module_readings = module_readings | module["include"].get_readings(i2c, module["address"], seconds_since_last)
+  return module_readings
 
 # save the provided readings into a todays readings data file
 def save_reading(readings):

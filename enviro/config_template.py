@@ -55,3 +55,8 @@ moisture_target_c = 50
 
 # compensate for usb power
 usb_power_temperature_offset = 4.5
+
+# QW/ST modules
+# These are modules supported out of the box, provide the I2C address if
+# connected or otherwise leave as None
+bme688_address = None
