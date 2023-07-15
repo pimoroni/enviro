@@ -2,17 +2,31 @@
 ## Tips if you want to modify the code
 ### Adding data points to the returned readings
 #### Simple data mangling
-Here you can customise the sensor readings to be saved and uploaded by adjusting the "reading" dictionary; Adding extra information or removing data points that you don't want, for example:
+You can customise the sensor readings to be saved and uploaded by adjusting the "reading" dictionary; Adding extra information or removing data points that you don't want. Make any adustments after the line populating the reading dictionary:
 ```
-del reading["temperature"]        # remove the temperature data
+reading = enviro.get_sensor_readings()
+```
 
+For example:
+```
+reading = enviro.get_sensor_readings()
+
+del reading["temperature"]        # remove the temperature data
 reading["custom"] = my_reading()  # add my custom reading value
 ```
 
-#### Custom module data points (BME688)
-Add simple built in module calls here directly such as a BME688:
+#### Custom data points (BME688 example)
+Add simple built in module calls in main.py after the reading dictionary is populated and modify the reading dictionary as required
 
+Add your code after the line:
 ```
+reading = enviro.get_sensor_readings()
+```
+
+A simple BME688 module example:
+```
+reading = enviro.get_sensor_readings()
+
 from breakout_bme68x import BreakoutBME68X
 bme = BreakoutBME68X(enviro.i2c)
 temperature, pressure, humidity, gas_resistance, status, gas_index, meas_index = bme.read()
@@ -20,9 +34,10 @@ reading["temperature2"] = temperature
 ```
 Credit: @hfg-gmuend in [#178](https://github.com/pimoroni/enviro/issues/178)
   
-Or add your own module to call or modify a function in the appropriate boards/*.py file
-
 The above code will overwrite the returned data if you use the same key name e.g. "temperature", ensure this is what you want to do, or otherwise pick a unique name for your new data point e.g. "temperature2"
+
+#### Modifying specific board sensor collections
+If the existing readings from a specific board require adjustment, for example adding a sea level adjusted value for atmospheric pressure readings. This should be done in the in board specific file in the boards directory, modifying the necessary lines in the get_sensor_readings() function.
 
 ### Code structure
 
