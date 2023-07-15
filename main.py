@@ -69,8 +69,8 @@ try:
   # take a reading from the onboard sensors
   enviro.logging.debug(f"> taking new reading")
   
-  # Take a reading from the configured boards sensors, returns a dictionary of
-  # reading name and value pairs
+  # Take a reading from the configured boards sensors and any configured qw/st
+  # modules, returns a dictionary of reading name and value pairs
   # e.g. reading = {"temperature" : 19.1, "humidity" : 64,...}
   reading = enviro.get_sensor_readings()
 
