@@ -431,8 +431,12 @@ def upload_readings():
           json = ujson.load(upload_file)
           destination_module.log_destination()
           status = destination_module.upload_reading(json)
-          # Delete if primary upload succeeds regardless of secondary - prioritise stability over data coverage
-          # This will mean multiple uploads to secondary if primary fails - may need to improve destination success management dpeending on destination duplicate handling
+          
+          # Delete if primary upload succeeds regardless of secondary
+          # Prioritise stability over secondary destination data coverage
+          # This will mean multiple uploads to secondary if primary fails
+          # May need to improve destination success management depending on
+          # destination duplicate handling
           if status == UPLOAD_SUCCESS:
             logging.info(f"  - Primary destination upload success for {filename}")
             os.remove(f"uploads/{cache_file[0]}")
