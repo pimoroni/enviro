@@ -20,6 +20,12 @@ resync_frequency = 168
 
 # where to upload to ("http", "mqtt", "adafruit_io", "influxdb")
 destination = None
+# Optional secondary destination - this will consume more battery
+# Cached uploads cleanup occurs only on primary destination success, this means
+# secondary data will not retry if primary is successful, also secondary data
+# will be reuploaded if the primary fails, ensure the secondary destination can
+# handle duplicate uploads
+secondary_destination = None
 
 # how often to upload data (number of cached readings)
 upload_frequency = 5
