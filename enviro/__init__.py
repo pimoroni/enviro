@@ -428,8 +428,9 @@ def upload_readings():
       try:
         with open(f"uploads/{cache_file[0]}", "r") as upload_file:
           filename = cache_file[0]
+          json = ujson.load(upload_file)
           destination_module.log_destination()
-          status = destination_module.upload_reading(ujson.load(upload_file))
+          status = destination_module.upload_reading(json)
           # Delete if primary upload succeeds regardless of secondary - prioritise stability over data coverage
           # This will mean multiple uploads to secondary if primary fails - may need to improve destination success management dpeending on destination duplicate handling
           if status == UPLOAD_SUCCESS:
@@ -463,7 +464,7 @@ def upload_readings():
             return False
           
           secondary_destination_module.log_destination()
-          secondary_status = secondary_destination_module.upload_reading(ujson.load(upload_file))
+          secondary_status = secondary_destination_module.upload_reading(json)
           if secondary_status == UPLOAD_SUCCESS:
             logging.info(f"  - Secondary destination upload success for {filename}")
 
