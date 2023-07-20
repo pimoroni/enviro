@@ -31,7 +31,7 @@ jobs:
     - name: Prepare repository
       shell: bash
       run: |
-        python3 -m pip install littlefs-python
+        python3 -m pip install littlefs-python==0.4.0
         wget ${{env.FIRMWARE_URL}}/${{env.FIRMWARE_NAME}}.uf2
         ./dir2uf2/dir2uf2 --append-to ${{env.FIRMWARE_NAME}}.uf2 --manifest enviro/uf2-manifest.txt --filename ${{env.RELEASE_FILE}}.uf2 enviro/
         rm -rf enviro/.git*
