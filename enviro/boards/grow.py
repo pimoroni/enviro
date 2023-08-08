@@ -1,5 +1,4 @@
 import time
-import math
 from breakout_bme280 import BreakoutBME280
 from breakout_ltr559 import BreakoutLTR559
 from scd30 import SCD30
@@ -121,16 +120,19 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
   water(moisture_levels) # run pumps if needed
   
   time.sleep(0.2)
-  scd30_data = scd30.read_measurement()
-  if(math.isnan(scd30_data[0])):
-      scd30_data = dummy_scd30
 
-  if(scd30_data[0] == 0 and dummy_scd30[0] != 0):
-      scd30_data = dummy_scd30
-
+  try:
+    scd30_data = scd30.read_measurement()
+    # Check if the returned value is valid
+    if not scd30_data[0]:
+        print("CO2 value is invalid.")
+        scd30_data[0] = 0        
+  except Exception as e:
+    print("Error reading measurement:", e)
+    scd30_data[0] = 0
 
   from ucollections import OrderedDict
-  return OrderedDict({
+  readings = OrderedDict({
     "temperature": round(bme280_data[0], 2),
     "humidity": round(bme280_data[2], 2),
     "pressure": round(bme280_data[1] / 100.0, 2),
@@ -140,6 +142,7 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
     "moisture_c": round(moisture_levels[2], 2),
     "co2": round(scd30_data[0], 2)
   })
+  return readings
   
 def play_tone(frequency = None):
   if frequency:
@@ -148,3 +151,4 @@ def play_tone(frequency = None):
 
 def stop_tone():
   piezo_pwm.duty_u16(0)
+
