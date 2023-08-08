@@ -1,6 +1,8 @@
 import time
+import math
 from breakout_bme280 import BreakoutBME280
 from breakout_ltr559 import BreakoutLTR559
+from scd30 import SCD30
 from machine import Pin, PWM
 from enviro import i2c
 from phew import logging
@@ -9,6 +11,9 @@ CHANNEL_NAMES = ['A', 'B', 'C']
 
 bme280 = BreakoutBME280(i2c, 0x77)
 ltr559 = BreakoutLTR559(i2c)
+scd30 = SCD30(i2c, 0x61)
+
+scd30.start_continous_measurement()
 
 piezo_pwm = PWM(Pin(28))
 
@@ -99,6 +104,10 @@ def water(moisture_levels):
         time.sleep(0.5)
 
 def get_sensor_readings(seconds_since_last, is_usb_power):
+  # dummy read co2  
+  scd30.get_status_ready()
+  dummy_scd30 = scd30.read_measurement()
+  
   # bme280 returns the register contents immediately and then starts a new reading
   # we want the current reading so do a dummy read to discard register contents first
   bme280.read()
@@ -110,6 +119,15 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
   moisture_levels = moisture_readings()
 
   water(moisture_levels) # run pumps if needed
+  
+  time.sleep(0.2)
+  scd30_data = scd30.read_measurement()
+  if(math.isnan(scd30_data[0])):
+      scd30_data = dummy_scd30
+
+  if(scd30_data[0] == 0 and dummy_scd30[0] != 0):
+      scd30_data = dummy_scd30
+
 
   from ucollections import OrderedDict
   return OrderedDict({
@@ -119,7 +137,8 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
     "luminance": round(ltr_data[BreakoutLTR559.LUX], 2),
     "moisture_a": round(moisture_levels[0], 2),
     "moisture_b": round(moisture_levels[1], 2),
-    "moisture_c": round(moisture_levels[2], 2)
+    "moisture_c": round(moisture_levels[2], 2),
+    "co2": round(scd30_data[0], 2)
   })
   
 def play_tone(frequency = None):
