@@ -194,6 +194,7 @@ def reconnect_wifi(ssid, password, country):
         wlog(f"active: {1 if wlan.active() else 0}, status: {status} ({status_names[status]})")
         return status
 
+    # Return True on expected status, exception on error status (negative) and False on timeout
     def wait_status(expected_status, *, timeout=10, tick_sleep=0.5):
         for i in range(math.ceil(timeout / tick_sleep)):
             time.sleep(tick_sleep)
@@ -205,8 +206,9 @@ def reconnect_wifi(ssid, password, country):
         return False
 
     wlan.active(True)
-    # Disable power saving mode - TODO only do this on USB power/config option
-    wlan.config(pm=0xa11140)
+    # Disable power saving mode if on USB power
+    if vbus_present:
+      wlan.config(pm=0xa11140)
 
     # Print MAC
     mac = ubinascii.hexlify(wlan.config('mac'),':').decode()
