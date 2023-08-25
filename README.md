@@ -1,6 +1,5 @@
 # Enviro MicroPython firmware <!-- omit in toc -->
 
-- [New firmware!](#new-firmware)
 - [About Enviro](#about-enviro)
 - [Powering Enviro boards](#powering-enviro-boards)
 - [Supported products](#supported-products)
