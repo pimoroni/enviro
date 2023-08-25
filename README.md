@@ -38,7 +38,6 @@ You can use 3xAA or 3xAAA (either alkaline or NiMH), a single cell LiPo battery,
 - Enviro Grow ([store link](https://shop.pimoroni.com/products/enviro-grow))
 - Enviro Weather ([store link](https://shop.pimoroni.com/products/enviro-weather))
 - Enviro Urban ([store link](https://shop.pimoroni.com/products/enviro-urban))
-- Enviro Camera ([store link](https://shop.pimoroni.com/products/enviro-camera)) - coming soon!
 
 ## Supported endpoints
 - [Adafruit IO](documentation/destinations/adafruit-io.md)
