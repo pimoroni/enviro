@@ -7,14 +7,6 @@
 - [Supported endpoints](#supported-endpoints)
 - [Documentation](#documentation)
 
-## New firmware!
-
-v.0.0.9 is an **alpha** release of the firmware which may contain bugs and other instabilities. Thanks for your continued feedback and bug reports - we'll get it fixed up as soon as we can :)
-
-Download the alpha firmware here: https://github.com/pimoroni/enviro/releases/tag/v0.0.9
-
-If you want to return to the shipping firmware you can re-flash your Enviro with v.0.0.2: https://github.com/pimoroni/enviro/releases/tag/v0.0.2
-
 ## About Enviro
 
 Our Enviro range of boards offer a wide array of environmental sensing and data logging functionality. They are designed to be setup in location for months at a time and take regular measurements.
