@@ -47,7 +47,7 @@ def uk_bst():
     if bst_timestamps[year]["start"] < ts and bst_timestamps[year]["end"] > ts:
       bst = True
   else:
-    logging.warn(f"> Provided year is not in BST lookup dictionary: {year}")
+    logging.warn(f"> Current year is not in BST lookup dictionary: {year}")
   return bst
   
 
