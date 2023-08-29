@@ -148,47 +148,56 @@ def wind_direction():
 
 def rainfall(seconds_since_last):
   new_rain_entries = []
-  amount = 0
+  amount = 0 # rain since last reading
   per_hour = 0
   today = 0
-  offset = 0
+  offset = 0 # UTC offset hours
   
+  # configure offset variable for UK BST or timezone offset from config file
+  # and BST lookup function
   if config.uk_bst == True:
     if helpers.uk_bst():
       offset = 1
   elif config.utc_offset != 0:
     offset += config.utc_offset
 
+  # determine current day number and timestamp
   now = helpers.timestamp(helpers.datetime_string())
   now_day = helpers.timestamp_day(helpers.datetime_string(), offset)
   logging.info(f"> current day number is {now_day}")
+  
+  # process the rain file data
   if helpers.file_exists("rain.txt"):
     with open("rain.txt", "r") as rainfile:
       rain_entries = rainfile.read().split("\n")
 
-    # process the rain file data
+    # populate latest, per second, today and last hour readings from rain log
+    # file, write new rain log file dropping any yesterday readings
     for entry in rain_entries:
       if entry:
         ts = helpers.timestamp(entry)
         tsday = helpers.timestamp_day(entry, config.utc_offset)
         logging.info(f"> rain reading day number is {tsday}")
-        # count how many rain ticks since the last reading
+        # populate amount with rain since the last reading
         if now - ts < seconds_since_last:
           amount += RAIN_MM_PER_TICK
-          # Pick up any untracked yesterday data if current reading is a new day
-          # Techincally this should be yesterday, but capturing in today is much
-          # less complex than backdating in the readings file from here
+          # add any rain ticks from yesterday since the previous reading
+          # this will misallocate day totals, but will ensure the hourly total
+          # is correct without introducing complexity backdating yesterday and
+          # the error will be minimised with frequent readings
+          # TODO sum yesterday rain and generate a rain_today reading with
+          # 23:59:59 timestamp of yesterday
           if tsday != now_day:
             today += RAIN_MM_PER_TICK
         # count how many rain ticks in the last hour
         if now - ts < 3600:
           per_hour += RAIN_MM_PER_TICK
-        # count how many rain ticks today and delete older entries
+        # count how many rain ticks today and drop older entries for new file
         if tsday == now_day:
           today += RAIN_MM_PER_TICK
           new_rain_entries.append(entry)
     
-    # write out adjusted rain log
+    # write out new adjusted rain log
     with open("rain.txt", "w") as newrainfile:
       newrainfile.write("\n".join(new_rain_entries))
   
