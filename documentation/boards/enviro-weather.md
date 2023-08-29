@@ -22,7 +22,9 @@ Enviro Weather is a super slimline all in one board for keeping a (weather) eye 
 |Wind Speed|`wind_speed`|metres per second|m/s|`0.45`|
 |Voltage|`voltage`|volts|V|`4.035`|
 
-The rain today value is adjusted for local time (and/or DST) by modifying the utc_offset value in config.py
+The rain today value is adjusted for DST in the UK by setting uk_bst = True in config.py
+For static time zone offsets (not taking account of DST), modify the utc_offset value in config.py
+The time zone offset value is ignored if uk_bst = True
 
 ## On-board devices
 
