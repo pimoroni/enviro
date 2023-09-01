@@ -1,5 +1,6 @@
 from enviro.constants import *
-import machine, math, os, time
+import machine, math, os, time, utime
+from phew import logging
 
 # miscellany
 # ===========================================================================
@@ -23,6 +24,41 @@ def timestamp(dt):
   minute = int(dt[14:16])
   second = int(dt[17:19])
   return time.mktime((year, month, day, hour, minute, second, 0, 0))
+
+def uk_bst():
+  # Return True if in UK BST - manually update bst_timestamps {} as needed
+  dt = datetime_string()
+  year = int(dt[0:4])
+  ts = timestamp(dt)
+  bst = False
+
+  bst_timestamps = {
+    2023: {"start": 1679792400, "end": 1698541200},
+    2024: {"start": 1711846800, "end": 1729990800},
+    2025: {"start": 1743296400, "end": 1761440400},
+    2026: {"start": 1774746000, "end": 1792890000},
+    2027: {"start": 1806195600, "end": 1824944400},
+    2028: {"start": 1837645200, "end": 1856394000},
+    2029: {"start": 1869094800, "end": 1887843600},
+    2030: {"start": 1901149200, "end": 1919293200}
+  }
+
+  if year in bst_timestamps:
+    if bst_timestamps[year]["start"] < ts and bst_timestamps[year]["end"] > ts:
+      bst = True
+  else:
+    logging.warn(f"> Current year is not in BST lookup dictionary: {year}")
+  return bst
+  
+
+# Return the day number of your timestamp string accommodating UTC offsets
+def timestamp_day(dt, offset_hours):
+  # Bounce via timestamp to properly calculate hours change
+  time = timestamp(dt)
+  time = time + (offset_hours * 3600)
+  dt = utime.localtime(time)
+  day = int(dt[2])
+  return day
 
 def uid():
   return "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}".format(*machine.unique_id())
@@ -74,8 +110,26 @@ def absolute_to_relative_humidity(absolute_humidity, temperature_in_c):
 
   return (WATER_VAPOR_SPECIFIC_GAS_CONSTANT * temperature_in_k * absolute_humidity) / saturation_vapor_pressure * 100
 
+# https://www.omnicalculator.com/physics/dew-point#how-to-calculate-dew-point-how-to-calculate-relative-humidity
+def calculate_dewpoint(temperature_in_c, relative_humidity):
+  alphatrh = (math.log((relative_humidity / 100))) + ((17.625 * temperature_in_c) / (243.04 + temperature_in_c))
+  dewpoint_in_c = (243.04 * alphatrh) / (17.625 - alphatrh)
+  return dewpoint_in_c
+
 def celcius_to_kelvin(temperature_in_c):
   return temperature_in_c + 273.15
+
+def celcius_to_fahrenheit(temperature_in_c):
+  return temperature_in_c * 1.8 + 32
+
+def hpa_to_inches(pressure_in_hpa):
+  return pressure_in_hpa * 0.02953
+
+def metres_per_second_to_miles_per_hour(speed_in_mps):
+  return speed_in_mps * 2.2369362912
+
+def mm_to_inches(distance_in_mm):
+  return distance_in_mm * 0.0393700787
 
 # https://www.calctool.org/atmospheric-thermodynamics/absolute-humidity#actual-vapor-pressure
 # http://cires1.colorado.edu/~voemel/vp.html
@@ -98,3 +152,10 @@ def get_saturation_vapor_pressure(temperature_in_k):
       temperature_in_k *
       (a1*v + a2*v**1.5 + a3*v**3 + a4*v**3.5 + a5*v**4 + a6*v**7.5)
   )
+
+# Calculates mean sea level pressure (QNH) from observed pressure
+# https://keisan.casio.com/exec/system/1224575267
+def get_sea_level_pressure(observed_pressure, temperature_in_c, altitude_in_m):
+# def sea(pressure, temperature, height):
+	qnh = observed_pressure * ((1 - ((0.0065 * altitude_in_m) / (temperature_in_c + (0.0065 * altitude_in_m) + 273.15)))** -5.257)
+	return qnh
