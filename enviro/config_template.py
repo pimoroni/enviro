@@ -25,6 +25,7 @@ destination = None
 # secondary data will not retry if primary is successful, also secondary data
 # will be reuploaded if the primary fails, ensure the secondary destination can
 # handle duplicate uploads
+# set to None if not in use
 secondary_destination = None
 
 # how often to upload data (number of cached readings)

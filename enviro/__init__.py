@@ -421,8 +421,9 @@ def upload_readings():
     exec(f"import enviro.destinations.{destination}")
     destination_module = sys.modules[f"enviro.destinations.{destination}"]
     
-    exec(f"import enviro.destinations.{secondary_destination}")
-    secondary_destination_module = sys.modules[f"enviro.destinations.{secondary_destination}"]
+    if secondary_destination:
+      exec(f"import enviro.destinations.{secondary_destination}")
+      secondary_destination_module = sys.modules[f"enviro.destinations.{secondary_destination}"]
 
     for cache_file in os.ilistdir("uploads"):
       try:
@@ -467,10 +468,11 @@ def upload_readings():
             logging.error(f"  ! failed to upload '{cache_file[0]}' to {destination}")
             return False
           
-          secondary_destination_module.log_destination()
-          secondary_status = secondary_destination_module.upload_reading(json)
-          if secondary_status == UPLOAD_SUCCESS:
-            logging.info(f"  - Secondary destination upload success for {filename}")
+          if secondary_destination:
+            secondary_destination_module.log_destination()
+            secondary_status = secondary_destination_module.upload_reading(json)
+            if secondary_status == UPLOAD_SUCCESS:
+              logging.info(f"  - Secondary destination upload success for {filename}")
 
       except OSError:
         logging.error(f"  ! failed to open '{cache_file[0]}'")
