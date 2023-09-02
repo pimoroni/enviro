@@ -65,6 +65,11 @@ try:
   filesystem_stats = os.statvfs(".")
   enviro.logging.debug(f"> {filesystem_stats[3]} blocks free out of {filesystem_stats[2]}")
 
+  # Add HASS Discovery command before taking new readings
+  if enviro.config.destination == "mqtt":
+      if enviro.config.hass_discovery:
+        enviro.hass_discovery()
+
   # TODO should the board auto take a reading when the timer has been set, or wait for the time?
   # take a reading from the onboard sensors
   enviro.logging.debug(f"> taking new reading")
