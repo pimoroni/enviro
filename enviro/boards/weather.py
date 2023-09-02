@@ -1,4 +1,4 @@
-import time, math, os
+import time, math, os, config
 from breakout_bme280 import BreakoutBME280
 from breakout_ltr559 import BreakoutLTR559
 from machine import Pin, PWM
@@ -25,6 +25,28 @@ wind_speed_pin = Pin(9, Pin.IN, Pin.PULL_UP)
 rain_pin = Pin(10, Pin.IN, Pin.PULL_DOWN)
 last_rain_trigger = False
 
+def log_rain():
+  # read the current rain entries
+  rain_entries = []
+  if helpers.file_exists("rain.txt"):
+    with open("rain.txt", "r") as rainfile:
+      rain_entries = rainfile.read().split("\n")
+
+  # add new entry
+  logging.info(f"> add new rain trigger at {helpers.datetime_string()}")
+  rain_entries.append(helpers.datetime_string())
+
+  # limit number of entries to 190 - each entry is 21 bytes including
+  # newline so this keeps the total rain.txt filesize just under one
+  # filesystem block (4096 bytes)
+  if len(rain_entries) > 190:
+    logging.info("Rain log file exceeded 190 entries and was truncated")
+    rain_entries = rain_entries[-190:]
+
+  # write out adjusted rain log
+  with open("rain.txt", "w") as rainfile:
+    rainfile.write("\n".join(rain_entries))
+
 def startup(reason):
   global last_rain_trigger
   import wakeup
@@ -33,24 +55,7 @@ def startup(reason):
   rain_sensor_trigger = wakeup.get_gpio_state() & (1 << 10)
 
   if rain_sensor_trigger:
-    # read the current rain entries
-    rain_entries = []
-    if helpers.file_exists("rain.txt"):
-      with open("rain.txt", "r") as rainfile:
-        rain_entries = rainfile.read().split("\n")
-
-    # add new entry
-    logging.info(f"> add new rain trigger at {helpers.datetime_string()}")
-    rain_entries.append(helpers.datetime_string())
-
-    # limit number of entries to 190 - each entry is 21 bytes including
-    # newline so this keeps the total rain.txt filesize just under one
-    # filesystem block (4096 bytes)
-    rain_entries = rain_entries[-190:]
-
-    # write out adjusted rain log
-    with open("rain.txt", "w") as rainfile:
-      rainfile.write("\n".join(rain_entries))
+    log_rain()
 
     last_rain_trigger = True
 
@@ -70,24 +75,7 @@ def check_trigger():
     time.sleep(0.05)
     activity_led(0)
 
-    # read the current rain entries
-    rain_entries = []
-    if helpers.file_exists("rain.txt"):
-      with open("rain.txt", "r") as rainfile:
-        rain_entries = rainfile.read().split("\n")
-
-    # add new entry
-    logging.info(f"> add new rain trigger at {helpers.datetime_string()}")
-    rain_entries.append(helpers.datetime_string())
-
-    # limit number of entries to 190 - each entry is 21 bytes including
-    # newline so this keeps the total rain.txt filesize just under one 
-    # filesystem block (4096 bytes)
-    rain_entries = rain_entries[-190:]
-
-    # write out adjusted rain log
-    with open("rain.txt", "w") as rainfile:
-      rainfile.write("\n".join(rain_entries))
+    log_rain()
 
   last_rain_trigger = rain_sensor_trigger
 
@@ -159,26 +147,65 @@ def wind_direction():
   return closest_index * 45
 
 def rainfall(seconds_since_last):
-  amount = 0
+  new_rain_entries = []
+  amount = 0 # rain since last reading
+  per_hour = 0
+  today = 0
+  offset = 0 # UTC offset hours
+  
+  # configure offset variable for UK BST or timezone offset from config file
+  # and BST lookup function
+  if config.uk_bst == True:
+    if helpers.uk_bst():
+      offset = 1
+  elif config.utc_offset != 0:
+    offset += config.utc_offset
+
+  # determine current day number and timestamp
   now = helpers.timestamp(helpers.datetime_string())
+  now_day = helpers.timestamp_day(helpers.datetime_string(), offset)
+  logging.info(f"> current day number is {now_day}")
+  
+  # process the rain file data
   if helpers.file_exists("rain.txt"):
     with open("rain.txt", "r") as rainfile:
       rain_entries = rainfile.read().split("\n")
 
-    # count how many rain ticks since the last reading
+    # populate latest, per second, today and last hour readings from rain log
+    # file, write new rain log file dropping any yesterday readings
     for entry in rain_entries:
       if entry:
         ts = helpers.timestamp(entry)
+        tsday = helpers.timestamp_day(entry, config.utc_offset)
+        logging.info(f"> rain reading day number is {tsday}")
+        # populate amount with rain since the last reading
         if now - ts < seconds_since_last:
           amount += RAIN_MM_PER_TICK
-
-    os.remove("rain.txt")
+          # add any rain ticks from yesterday since the previous reading
+          # this will misallocate day totals, but will ensure the hourly total
+          # is correct without introducing complexity backdating yesterday and
+          # the error will be minimised with frequent readings
+          # TODO sum yesterday rain and generate a rain_today reading with
+          # 23:59:59 timestamp of yesterday
+          if tsday != now_day:
+            today += RAIN_MM_PER_TICK
+        # count how many rain ticks in the last hour
+        if now - ts < 3600:
+          per_hour += RAIN_MM_PER_TICK
+        # count how many rain ticks today and drop older entries for new file
+        if tsday == now_day:
+          today += RAIN_MM_PER_TICK
+          new_rain_entries.append(entry)
+    
+    # write out new adjusted rain log
+    with open("rain.txt", "w") as newrainfile:
+      newrainfile.write("\n".join(new_rain_entries))
   
   per_second = 0
   if seconds_since_last > 0:
     per_second = amount / seconds_since_last
 
-  return amount, per_second
+  return amount, per_second, per_hour, today
 
 def get_sensor_readings(seconds_since_last, is_usb_power):
   # bme280 returns the register contents immediately and then starts a new reading
@@ -188,7 +215,7 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
   bme280_data = bme280.read()
 
   ltr_data = ltr559.get_reading()
-  rain, rain_per_second = rainfall(seconds_since_last)
+  rain, rain_per_second, rain_per_hour, rain_today = rainfall(seconds_since_last)
 
   from ucollections import OrderedDict
   return OrderedDict({
@@ -199,5 +226,7 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
     "wind_speed": wind_speed(),
     "rain": rain,
     "rain_per_second": rain_per_second,
+    "rain_per_hour": rain_per_hour,
+    "rain_today": rain_today,
     "wind_direction": wind_direction()
   })
