@@ -28,6 +28,32 @@
     <fieldset>
       <input id="wifi_password" name="wifi_password" type="text" value="{{config.wifi_password}}" placeholder="e.g. Cats4lyfe&lt;3!" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" />
     </fieldset>
+
+    <details>
+      <summary><h2>Advanced configuration</h2>
+        <span class="icon">➔</span>
+      </summary>
+      <p>
+        <aside>Only fill in the following fields if you know what you're doing. Leaving them empty works best in most cases, and they are generally only required if your Wifi network does not have a DHCP service running.</aside>
+        <aside>MAC address: {{mac_address}}</aside>
+        <h2>IPv4 address:</h2>
+        <fieldset>
+          <input id="ipv4_address" name="ipv4_address" type="text" value="{{config.wifi_ifconfig[0]}}" placeholder="e.g. 192.168.0.42" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" />
+        </fieldset>
+        <h2>Netmask:</h2>
+        <fieldset>
+          <input id="ipv4_netmask" name="ipv4_netmask" type="text" value="{{config.wifi_ifconfig[1]}}" placeholder="e.g. 255.255.255.0" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" />
+        </fieldset>
+        <h2>Gateway:</h2>
+        <fieldset>
+          <input id="ipv4_gateway" name="ipv4_gateway" type="text" value="{{config.wifi_ifconfig[2]}}" placeholder="e.g. 255.255.255.1" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" />
+        </fieldset>
+        <h2>DNS server:</h2>
+        <fieldset>
+          <input id="dns_server" name="dns_server" type="text" value="{{config.wifi_ifconfig[3]}}" placeholder="e.g. 8.8.8.8" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" />
+        </fieldset>
+      </p>
+    </details>
   </form>
 
   <nav>

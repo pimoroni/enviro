@@ -180,6 +180,9 @@ def connect_to_wifi():
   wlan = network.WLAN(network.STA_IF)
   wlan.active(True)
   wlan.connect(wifi_ssid, wifi_password)
+  if config.wifi_ifconfig is not None:
+    logging.info(f"> using manual ip config {config.wifi_ifconfig}")
+    wlan.ifconfig(config.wifi_ifconfig)
 
   start = time.ticks_ms()
   while time.ticks_diff(time.ticks_ms(), start) < 30000:

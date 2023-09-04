@@ -1,4 +1,4 @@
-import network, os, json, time, machine, sys
+import network, os, json, time, machine, sys, ubinascii
 
 import enviro.helpers as helpers
 import enviro
@@ -42,6 +42,8 @@ logging.info("  -", model)
 # put board into access point mode
 logging.info("> going into access point mode")
 ap = access_point(f"Enviro {model[:1].upper()}{model[1:]} Setup")
+wlan = network.WLAN(network.AP_IF)
+mac_address = ubinascii.hexlify(wlan.config('mac'), ":").decode().upper()
 logging.info("  -", ap.ifconfig()[0])
 
 
@@ -82,6 +84,17 @@ def provision_step_2_wifi(request):
   if request.method == "POST":
     config.wifi_ssid = request.form["wifi_ssid"]
     config.wifi_password = request.form["wifi_password"]
+    ipv4 = request.form["ipv4_address"]
+    if "." in ipv4:  # Something was entered. Save manual config
+      wifi_ifconfig = [
+        ipv4,
+        request.form["ipv4_netmask"], 
+        request.form["ipv4_gateway"], 
+        request.form["dns_server"],
+      ]
+      config.wifi_ifconfig = tuple(wifi_ifconfig)
+    else:
+      config.wifi_ifconfig = None
     write_config()
     return redirect(f"http://{DOMAIN}/provision-step-3-logging")
   else:
