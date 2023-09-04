@@ -68,14 +68,15 @@ try:
   # TODO should the board auto take a reading when the timer has been set, or wait for the time?
   # take a reading from the onboard sensors
   enviro.logging.debug(f"> taking new reading")
+  
+  # Take a reading from the configured boards sensors and any configured qw/st
+  # modules, returns a dictionary of reading name and value pairs
+  # e.g. reading = {"temperature" : 19.1, "humidity" : 64,...}
   reading = enviro.get_sensor_readings()
 
-  # here you can customise the sensor readings by adding extra information
-  # or removing readings that you don't want, for example:
-  # 
-  #   del readings["temperature"]        # remove the temperature reading
-  #
-  #   readings["custom"] = my_reading()  # add my custom reading value
+  # Here you can customise the returned date, adding or removing data points
+  # Refer to the documentation for more information: 
+  # https://github.com/pimoroni/enviro/blob/main/documentation/developer-guide.md
 
   # is an upload destination set?
   if enviro.config.destination:

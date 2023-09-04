@@ -2,6 +2,7 @@ import config
 from phew import logging
 
 DEFAULT_USB_POWER_TEMPERATURE_OFFSET = 4.5
+DEFAULT_BME688_ADDRESS = None
 
 
 def add_missing_config_settings():
@@ -17,6 +18,12 @@ def add_missing_config_settings():
   except AttributeError:
     warn_missing_config_setting("usb_power_temperature_offset")
     config.usb_power_temperature_offset = DEFAULT_USB_POWER_TEMPERATURE_OFFSET
+
+  try:
+    config.bme688_address
+  except AttributeError:
+    warn_missing_config_setting("bme688_address")
+    config.bme688_address = DEFAULT_BME688_ADDRESS
 
 
 def warn_missing_config_setting(setting):
