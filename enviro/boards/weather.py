@@ -33,33 +33,16 @@ def startup(reason):
   rain_sensor_trigger = wakeup.get_gpio_state() & (1 << 10)
 
   if rain_sensor_trigger:
-    # read the current rain entries
-    rain_entries = []
-    if helpers.file_exists("rain.txt"):
-      with open("rain.txt", "r") as rainfile:
-        rain_entries = rainfile.read().split("\n")
-
-    # add new entry
-    logging.info(f"> add new rain trigger at {helpers.datetime_string()}")
-    rain_entries.append(helpers.datetime_string())
-
-    # limit number of entries to 190 - each entry is 21 bytes including
-    # newline so this keeps the total rain.txt filesize just under one
-    # filesystem block (4096 bytes)
-    rain_entries = rain_entries[-190:]
-
-    # write out adjusted rain log
-    with open("rain.txt", "w") as rainfile:
-      rainfile.write("\n".join(rain_entries))
+    store_rain_trigger_record()
 
     last_rain_trigger = True
 
     # if we were woken by the RTC or a Poke continue with the startup
     return (reason is WAKE_REASON_RTC_ALARM 
       or reason is WAKE_REASON_BUTTON_PRESS)
-
-  # there was no rain trigger so continue with the startup
-  return True
+  else:
+    # there was no rain trigger so continue with the startup
+    return True
 
 def check_trigger():
   global last_rain_trigger
@@ -69,27 +52,28 @@ def check_trigger():
     activity_led(100)
     time.sleep(0.05)
     activity_led(0)
-
-    # read the current rain entries
-    rain_entries = []
-    if helpers.file_exists("rain.txt"):
-      with open("rain.txt", "r") as rainfile:
-        rain_entries = rainfile.read().split("\n")
-
-    # add new entry
-    logging.info(f"> add new rain trigger at {helpers.datetime_string()}")
-    rain_entries.append(helpers.datetime_string())
-
-    # limit number of entries to 190 - each entry is 21 bytes including
-    # newline so this keeps the total rain.txt filesize just under one 
-    # filesystem block (4096 bytes)
-    rain_entries = rain_entries[-190:]
-
-    # write out adjusted rain log
-    with open("rain.txt", "w") as rainfile:
-      rainfile.write("\n".join(rain_entries))
+    store_rain_trigger_record()
 
   last_rain_trigger = rain_sensor_trigger
+
+
+def store_rain_trigger_record():
+  # read the current rain entries
+  rain_entries = []
+  if helpers.file_exists("rain.txt"):
+    with open("rain.txt", "r") as rainfile:
+      rain_entries = rainfile.read().split("\n")
+  # add new entry
+  logging.info(f"> add new rain trigger at {helpers.datetime_string()}")
+  rain_entries.append(helpers.datetime_string())
+  # limit number of entries to 190 - each entry is 21 bytes including
+  # newline so this keeps the total rain.txt filesize just under one
+  # filesystem block (4096 bytes)
+  rain_entries = rain_entries[-190:]
+  # write out adjusted rain log
+  with open("rain.txt", "w") as rainfile:
+    rainfile.write("\n".join(rain_entries))
+
 
 def wind_speed(sample_time_ms=1000):
   # get initial sensor state
