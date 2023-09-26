@@ -1,19 +1,10 @@
 # Enviro MicroPython firmware <!-- omit in toc -->
 
-- [New firmware!](#new-firmware)
 - [About Enviro](#about-enviro)
 - [Powering Enviro boards](#powering-enviro-boards)
 - [Supported products](#supported-products)
 - [Supported endpoints](#supported-endpoints)
 - [Documentation](#documentation)
-
-## New firmware!
-
-v.0.0.9 is an **alpha** release of the firmware which may contain bugs and other instabilities. Thanks for your continued feedback and bug reports - we'll get it fixed up as soon as we can :)
-
-Download the alpha firmware here: https://github.com/pimoroni/enviro/releases/tag/v0.0.9
-
-If you want to return to the shipping firmware you can re-flash your Enviro with v.0.0.2: https://github.com/pimoroni/enviro/releases/tag/v0.0.2
 
 ## About Enviro
 
@@ -46,7 +37,6 @@ You can use 3xAA or 3xAAA (either alkaline or NiMH), a single cell LiPo battery,
 - Enviro Grow ([store link](https://shop.pimoroni.com/products/enviro-grow))
 - Enviro Weather ([store link](https://shop.pimoroni.com/products/enviro-weather))
 - Enviro Urban ([store link](https://shop.pimoroni.com/products/enviro-urban))
-- Enviro Camera ([store link](https://shop.pimoroni.com/products/enviro-camera)) - coming soon!
 
 ## Supported endpoints
 - [Adafruit IO](documentation/destinations/adafruit-io.md)
