@@ -122,7 +122,7 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
   time.sleep(0.2)
 
   try:
-    scd30_data = scd30.read_measurement()
+    scd30_data = list(scd30.read_measurement())
     # Check if the returned value is valid
     if not scd30_data[0]:
         print("CO2 value is invalid.")
