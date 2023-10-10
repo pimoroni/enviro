@@ -5,6 +5,7 @@ from scd30 import SCD30
 from machine import Pin, PWM
 from enviro import i2c
 from phew import logging
+import math
 
 CHANNEL_NAMES = ['A', 'B', 'C']
 
@@ -124,9 +125,9 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
   try:
     scd30_data = list(scd30.read_measurement())
     # Check if the returned value is valid
-    if not scd30_data[0]:
+    if not scd30_data[0] or math.isnan(scd30_data[0]):
         print("CO2 value is invalid.")
-        scd30_data[0] = 0        
+        scd30_data[0] = 0
   except Exception as e:
     print("Error reading measurement:", e)
     scd30_data[0] = 0
