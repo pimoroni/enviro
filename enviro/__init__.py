@@ -416,12 +416,13 @@ def upload_readings():
 
   destination = config.destination
   secondary_destination = config.secondary_destination
+  valid_secondary_destinations = ["http", "mqtt", "adafruit_io", "influxdb", "wunderground"]
 
   try:
     exec(f"import enviro.destinations.{destination}")
     destination_module = sys.modules[f"enviro.destinations.{destination}"]
     
-    if secondary_destination:
+    if secondary_destination in valid_secondary_destinations and secondary_destination != destination:
       exec(f"import enviro.destinations.{secondary_destination}")
       secondary_destination_module = sys.modules[f"enviro.destinations.{secondary_destination}"]
 
@@ -468,7 +469,7 @@ def upload_readings():
             logging.error(f"  ! failed to upload '{cache_file[0]}' to {destination}")
             return False
           
-          if secondary_destination:
+          if secondary_destination in valid_secondary_destinations and secondary_destination != destination:
             secondary_destination_module.log_destination()
             secondary_status = secondary_destination_module.upload_reading(json)
             if secondary_status == UPLOAD_SUCCESS:
