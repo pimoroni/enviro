@@ -11,6 +11,7 @@ nickname = None
 # network access details
 wifi_ssid = None
 wifi_password = None
+wifi_country = "GB"
 
 # how often to wake up and take a reading (in minutes)
 reading_frequency = 15
