@@ -17,12 +17,12 @@ jobs:
       FIRMWARE_URL: https://github.com/pimoroni/pimoroni-pico/releases/download/v1.20.4
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         path: enviro
         submodules: true
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         repository: gadgetoid/dir2uf2
         ref: v0.0.1
@@ -37,25 +37,25 @@ jobs:
         rm -rf enviro/.git*
         rm -rf enviro/phew/.git*
 
-    - uses: vimtor/action-zip@v1
+    - uses: vimtor/action-zip@v1.2
       with:
         files: enviro/
         dest: ${{env.RELEASE_FILE}}.zip
 
     - name: Store .zip as artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ${{env.RELEASE_FILE}}
         path: enviro/
 
     - name: Store filesystem .uf2 as artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ${{env.RELEASE_FILE}}-filesystem-only
         path: ${{env.RELEASE_FILE}}.uf2
 
     - name: Store full .uf2 as artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ${{env.FIRMWARE_NAME}}-${{env.RELEASE_FILE}}.uf2
         path: ${{env.FIRMWARE_NAME}}-${{env.RELEASE_FILE}}.uf2
