@@ -213,7 +213,7 @@ def reconnect_wifi(ssid, password, country):
   
   # Disconnect when necessary
   status = dump_status()
-  if status >= CYW43_LINK_JOIN and status <= CYW43_LINK_UP:
+  if status >= CYW43_LINK_JOIN and status < CYW43_LINK_UP:
     logging.info("> Disconnecting...")
     wlan.disconnect()
     try:
