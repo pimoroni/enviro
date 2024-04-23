@@ -153,7 +153,7 @@ print("")
 print("    -  --  ---- -----=--==--===  hey enviro, let's go!  ===--==--=----- ----  --  -     ")
 print("")
 
-def reconnect_wifi(ssid, password, country):
+def reconnect_wifi(ssid, password, country, hostname=None):
   import time
   import network
   import math
@@ -164,6 +164,11 @@ def reconnect_wifi(ssid, password, country):
 
   # Set country
   rp2.country(country)
+
+  # Set hostname
+  if hostname is None:
+      hostname = f"EnviroW-{helpers.uid()[-4:]}"
+  network.hostname(hostname)
 
   # Reference: https://datasheets.raspberrypi.com/picow/connecting-to-the-internet-with-pico-w.pdf
   CYW43_LINK_DOWN = 0
