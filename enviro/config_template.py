@@ -53,5 +53,5 @@ moisture_target_a = 50
 moisture_target_b = 50
 moisture_target_c = 50
 
-# compensate for usb power
+# compensate for usb power - degrees to remove from measured temperature
 usb_power_temperature_offset = 4.5
