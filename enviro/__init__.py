@@ -421,7 +421,7 @@ def get_sensor_readings():
 def save_reading(readings):
   # open todays reading file and save readings
   helpers.mkdir_safe("readings")
-  readings_filename = f"readings/{helpers.date_string()}.txt"
+  readings_filename = f"readings/{helpers.date_string()}.csv"
   new_file = not helpers.file_exists(readings_filename)
   with open(readings_filename, "a") as f:
     if new_file:
