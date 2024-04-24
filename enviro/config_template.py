@@ -25,6 +25,9 @@ destination = None
 # how often to upload data (number of cached readings)
 upload_frequency = 5
 
+# Watchdog timer in whole minutes (integer), 0 is not active 
+pio_watchdog_time = 20
+
 # web hook settings
 custom_http_url = None
 custom_http_username = None
