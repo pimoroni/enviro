@@ -529,6 +529,20 @@ def upload_readings():
 
   return True
 
+# HASS Discovery
+def hass_discovery():
+  destination = config.destination
+  try:
+    exec(f"import enviro.destinations.{destination}")
+    destination_module = sys.modules[f"enviro.destinations.{destination}"]
+    destination_module.hass_discovery(model)
+    config.hass_discovery_triggered = True
+  except ImportError:
+    logging.error(f"! cannot find destination {destination}")
+    return False
+  except:
+      logging.error(f"Unknown error in setting HASS Discovery")
+
 def startup():
   import sys
 

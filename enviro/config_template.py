@@ -36,6 +36,8 @@ mqtt_broker_username = None
 mqtt_broker_password = None
 # mqtt broker if using local SSL
 mqtt_broker_ca_file = None
+# Home Assistant Discovery setting
+hass_discovery = False # This could arguably be set to a text field for better customisability 
 
 # adafruit ui settings
 adafruit_io_username = None
