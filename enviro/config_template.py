@@ -55,3 +55,8 @@ moisture_target_c = 50
 
 # compensate for usb power
 usb_power_temperature_offset = 4.5
+
+# sea level pressure conversion (adjusts measured pressure output for mean sea level value)
+sea_level_pressure = False
+# height in metres
+height_above_sea_level = 0
