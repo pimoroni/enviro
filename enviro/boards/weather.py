@@ -3,7 +3,7 @@ from breakout_bme280 import BreakoutBME280
 from breakout_ltr559 import BreakoutLTR559
 from machine import Pin, PWM
 from pimoroni import Analog
-from enviro import i2c, activity_led
+from enviro import i2c, activity_led, config
 import enviro.helpers as helpers
 from phew import logging
 from enviro.constants import WAKE_REASON_RTC_ALARM, WAKE_REASON_BUTTON_PRESS
@@ -127,36 +127,36 @@ def wind_speed(sample_time_ms=1000):
 
 def wind_direction():
   # adc reading voltage to cardinal direction taken from our python
-  # library - each array index represents a 45 degree step around
-  # the compass (index 0 == 0, 1 == 45, 2 == 90, etc.)
+  # library - each array index represents a 22.5 degree step around
+  # the compass (index 0 == 0, 1 == 22.5, 2 == 45, etc.)
   # we find the closest matching value in the array and use the index
   # to determine the heading
-  ADC_TO_DEGREES = (0.9, 2.0, 3.0, 2.8, 2.5, 1.5, 0.3, 0.6)
+  ADC_TO_DEGREES = (2.533, 1.308, 1.487, 0.270, 0.300, 0.212, 0.595, 0.408,
+                    0.926, 0.789, 2.031, 1.932, 3.046, 2.667, 2.859, 2.265)
 
   closest_index = -1
   last_index = None
+  voltage = 0.0
+  
+  value = wind_direction_pin.read_voltage()
 
-  # ensure we have two readings that match in a row as otherwise if
-  # you read during transition between two values it can glitch
-  # fixes https://github.com/pimoroni/enviro/issues/20
-  while True:
-    value = wind_direction_pin.read_voltage()
+  closest_index = -1
+  closest_value = float('inf')
 
-    closest_index = -1
-    closest_value = float('inf')
+  for i in range(16):
+    distance = abs(ADC_TO_DEGREES[i] - value)
+    if distance < closest_value:
+      closest_value = distance
+      closest_index = i
+ 
+  resistance = (voltage * 10000) / (3.3 - voltage)
+  logging.info(f"> wind direction stats - voltage: {value}, resistance: {resistance}, closest value: {closest_value}, closest index: {closest_index}")
 
-    for i in range(8):
-      distance = abs(ADC_TO_DEGREES[i] - value)
-      if distance < closest_value:
-        closest_value = distance
-        closest_index = i
+  wind_direction = closest_index * 22.5
 
-    if last_index == closest_index:
-      break
-
-    last_index = closest_index
-
-  return closest_index * 45
+  offset_wind_direction = (wind_direction + 360 + config.wind_direction_offset) % 360
+  
+  return offset_wind_direction
 
 def rainfall(seconds_since_last):
   amount = 0
