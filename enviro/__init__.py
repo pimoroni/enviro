@@ -469,18 +469,34 @@ def upload_readings():
     return False
 
   destination = config.destination
+  secondary_destination = config.secondary_destination
+  valid_secondary_destinations = ["http", "mqtt", "adafruit_io", "influxdb", "wunderground"]
+
   try:
     exec(f"import enviro.destinations.{destination}")
     destination_module = sys.modules[f"enviro.destinations.{destination}"]
-    destination_module.log_destination()
+    
+    if secondary_destination in valid_secondary_destinations and secondary_destination != destination:
+      exec(f"import enviro.destinations.{secondary_destination}")
+      secondary_destination_module = sys.modules[f"enviro.destinations.{secondary_destination}"]
 
     for cache_file in os.ilistdir("uploads"):
       try:
         with open(f"uploads/{cache_file[0]}", "r") as upload_file:
-          status = destination_module.upload_reading(ujson.load(upload_file))
+          filename = cache_file[0]
+          json = ujson.load(upload_file)
+          destination_module.log_destination()
+          status = destination_module.upload_reading(json)
+          
+          # Delete if primary upload succeeds regardless of secondary
+          # Prioritise stability over secondary destination data coverage
+          # This will mean multiple uploads to secondary if primary fails
+          # May need to improve destination success management depending on
+          # destination duplicate handling
           if status == UPLOAD_SUCCESS:
+            logging.info(f"  - Primary destination upload success for {filename}")
             os.remove(f"uploads/{cache_file[0]}")
-            logging.info(f"  - uploaded {cache_file[0]}")
+            logging.info(f"  - removing file {cache_file[0]}")
           elif status == UPLOAD_RATE_LIMITED:
             # write out that we want to attempt a reupload
             with open("reattempt_upload.txt", "w") as attemptfile:
@@ -506,6 +522,12 @@ def upload_readings():
           else:
             logging.error(f"  ! failed to upload '{cache_file[0]}' to {destination}")
             return False
+          
+          if secondary_destination in valid_secondary_destinations and secondary_destination != destination:
+            secondary_destination_module.log_destination()
+            secondary_status = secondary_destination_module.upload_reading(json)
+            if secondary_status == UPLOAD_SUCCESS:
+              logging.info(f"  - Secondary destination upload success for {filename}")
 
       except OSError:
         logging.error(f"  ! failed to open '{cache_file[0]}'")
