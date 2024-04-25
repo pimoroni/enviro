@@ -13,13 +13,20 @@ wifi_ssid = None
 wifi_password = None
 wifi_country = "GB"
 
+# Adjust daily rain day for UK BST
+uk_bst = True
+
+# For local time corrections to daily rain logging other than BST
+# Ignored if uk_bst = True
+utc_offset = 0
+
 # how often to wake up and take a reading (in minutes)
 reading_frequency = 15
 
 # how often to trigger a resync of the onboard RTC (in hours)
 resync_frequency = 168
 
-# where to upload to ("http", "mqtt", "adafruit_io", "influxdb")
+# where to upload to ("http", "mqtt", "adafruit_io", "influxdb", "wunderground")
 destination = None
 
 # how often to upload data (number of cached readings)
@@ -47,6 +54,10 @@ influxdb_url = None
 influxdb_token = None
 influxdb_bucket = None
 
+# weather underground settings
+wunderground_id = None
+wunderground_key = None
+
 # grow specific settings
 auto_water = False
 moisture_target_a = 50
@@ -55,3 +66,8 @@ moisture_target_c = 50
 
 # compensate for usb power
 usb_power_temperature_offset = 4.5
+
+# sea level pressure conversion (adjusts measured pressure output for mean sea level value)
+sea_level_pressure = False
+# height in metres
+height_above_sea_level = 0

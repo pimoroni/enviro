@@ -28,6 +28,10 @@
           Adafruit IO
           <p class="note">A platform designed by our friends at Adafruit to store and display your data.</p>
         </li>
+        <li data-destination="wunderground">
+          Weather Underground
+          <p class="note">A public website hosted by IBM to upload and publish private weather station data.</p>
+        </li>
       </ul>        
     </section>
 
@@ -103,6 +107,20 @@
         <fieldset>
           <input type="text" name="custom_http_username" value="{{config.custom_http_username}}" placeholder="Username (e.g. data_junkie)" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" />        
           <input type="text" name="custom_http_password" value="{{config.custom_http_password}}" placeholder="Password (e.g. ih3artd4ta)" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" />
+        </fieldset>
+      </div>
+
+      <div id="destination_wunderground">
+        <h2>Enter your Weather Underground Station ID.</h2>
+        <aside>You will have created this when setting up your Weather Underground device.</aside>
+        <fieldset>
+          <input type="text" name="wunderground_id" value="{{config.wunderground_id}}" placeholder="e.g. limor_rocks" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" />
+        </fieldset>
+        <br>
+        <h2>Enter your Weather Underground station key.</h2>
+        <aside>You can find this by reviewing the device configuration in your Weather Underground account.</aside>
+        <fieldset>
+          <input type="text" name="wunderground_key" value="{{config.wunderground_key}}" placeholder="e.g. 2f123d34567ac23bc23c234add54c8c8af3403a2" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" />
         </fieldset>
       </div>
     </div>
