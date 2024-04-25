@@ -3,7 +3,7 @@ from breakout_bme280 import BreakoutBME280
 from breakout_ltr559 import BreakoutLTR559
 from machine import Pin, PWM
 from pimoroni import Analog
-from enviro import i2c, activity_led
+from enviro import i2c, activity_led, config
 import enviro.helpers as helpers
 from phew import logging
 from enviro.constants import WAKE_REASON_RTC_ALARM, WAKE_REASON_BUTTON_PRESS
@@ -135,19 +135,28 @@ def wind_direction():
                     0.926, 0.789, 2.031, 1.932, 3.046, 2.667, 2.859, 2.265)
 
   closest_index = -1
-  closest_value = float('inf')
-
+  last_index = None
+  voltage = 0.0
+  
   value = wind_direction_pin.read_voltage()
+
+  closest_index = -1
+  closest_value = float('inf')
 
   for i in range(16):
     distance = abs(ADC_TO_DEGREES[i] - value)
     if distance < closest_value:
       closest_value = distance
       closest_index = i
-
-  voltage = value
+ 
   resistance = (voltage * 10000) / (3.3 - voltage)
-  return closest_index * 22.5
+  logging.info(f"> wind direction stats - voltage: {value}, resistance: {resistance}, closest value: {closest_value}, closest index: {closest_index}")
+
+  wind_direction = closest_index * 22.5
+
+  offset_wind_direction = (wind_direction + 360 + config.wind_direction_offset) % 360
+  
+  return offset_wind_direction
 
 def rainfall(seconds_since_last):
   amount = 0
