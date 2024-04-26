@@ -137,9 +137,6 @@ def wind_direction():
   closest_index = -1
   last_index = None
 
-  # ensure we have two readings that match in a row as otherwise if
-  # you read during transition between two values it can glitch
-  # fixes https://github.com/pimoroni/enviro/issues/20
   voltage = 0.0
   
   value = wind_direction_pin.read_voltage()
