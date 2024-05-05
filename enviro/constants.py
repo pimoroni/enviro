@@ -1,5 +1,5 @@
 # version
-ENVIRO_VERSION = "0.0.10" 
+ENVIRO_VERSION = "0.2.0" 
  
 # modules
 ENVIRO_UNKNOWN                = None
