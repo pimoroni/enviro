@@ -10,9 +10,9 @@ from pimoroni_i2c import PimoroniI2C
 i2c = PimoroniI2C(I2C_SDA_PIN, I2C_SCL_PIN, 100000)
 i2c_devices = i2c.scan()
 model = None
-if 56 in i2c_devices: # 56 = colour / light sensor and only present on Indoor
+if I2C_ADDR_BH1745 in i2c_devices: # colour / light sensor and only present on Indoor
   model = "indoor"
-elif 35 in i2c_devices: # 35 = ltr-599 on grow & weather
+elif I2C_ADDR_LTR559 in i2c_devices: # ltr-599 on grow & weather
   pump3_pin = Pin(12, Pin.IN, Pin.PULL_UP)
   model = "grow" if pump3_pin.value() == False else "weather"    
   pump3_pin.init(pull=None)
@@ -30,7 +30,17 @@ def get_board():
   if model == "urban":
     import enviro.boards.urban as board
   return board
-  
+
+# return any additional sensors connected with Qw/ST
+def get_additional_sensors():
+  if I2C_ADDR_SCD41 in i2c_devices:
+    try:
+      import enviro.sensors.scd41 as scd41
+      yield scd41
+    except RuntimeError:
+      # Likely another device present on the SCD41 address
+      pass
+
 # set up the activity led
 # ===========================================================================
 from machine import PWM, Timer
@@ -411,9 +421,14 @@ def get_sensor_readings():
   readings = get_board().get_sensor_readings(seconds_since_last, vbus_present)
   # readings["voltage"] = 0.0 # battery_voltage #Temporarily removed until issue is fixed
 
+  # Add any additional sensor readings
+  for sensor in get_additional_sensors():
+      for key, value in sensor.get_sensor_readings(seconds_since_last).items():
+          readings[key] = value
+
   # write out the last time log
   with open("last_time.txt", "w") as timefile:
-    timefile.write(now_str)  
+    timefile.write(now_str)
 
   return readings
 
