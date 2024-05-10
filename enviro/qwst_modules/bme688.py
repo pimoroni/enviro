@@ -2,7 +2,7 @@ from breakout_bme68x import BreakoutBME68X
 from ucollections import OrderedDict
 from phew import logging
 
-def get_readings(i2c, address):
+def get_readings(i2c, address, seconds_since_last):
     bme688 = BreakoutBME68X(i2c)
     bme688_data = bme688.read()
 

@@ -2,12 +2,10 @@ import time
 
 import breakout_scd41
 
-from enviro import i2c
+def get_readings(i2c, address, seconds_since_last):
+  breakout_scd41.init(i2c)
+  breakout_scd41.start()
 
-breakout_scd41.init(i2c)
-breakout_scd41.start()
-
-def get_sensor_readings(seconds_since_last):
   retries = 25
   while retries > 0 and not breakout_scd41.ready():
     time.sleep(0.2)

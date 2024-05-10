@@ -15,27 +15,6 @@ del reading["temperature"]        # remove the temperature data
 reading["custom"] = my_reading()  # add my custom reading value
 ```
 
-#### Custom data points (BME688 example)
-Add simple built in module calls in main.py after the reading dictionary is populated and modify the reading dictionary as required
-
-Add your code after the line:
-```
-reading = enviro.get_sensor_readings()
-```
-
-A simple BME688 module example:
-```
-reading = enviro.get_sensor_readings()
-
-from breakout_bme68x import BreakoutBME68X
-bme = BreakoutBME68X(enviro.i2c)
-temperature, pressure, humidity, gas_resistance, status, gas_index, meas_index = bme.read()
-reading["temperature2"] = temperature
-```
-Credit: @hfg-gmuend in [#178](https://github.com/pimoroni/enviro/issues/178)
-  
-The above code will overwrite the returned data if you use the same key name e.g. "temperature", ensure this is what you want to do, or otherwise pick a unique name for your new data point e.g. "temperature2"
-
 #### Adding a QW/ST globally supported module
 You can add one or more module boards connected over the QW/ST connector and provide a global configuration for collecting and returning the data to the readings alongside the enviro board specific items.
 
@@ -68,6 +47,8 @@ def add_missing_config_settings():
     config.bme688_address = DEFAULT_BME688_ADDRESS
 ```
 
+Alternatively, if the module can only use a single address, you can simply add the address to constants.py
+
 Create a new python module in the enviro/qwst_modules/ directory that defines how your custom board should collect and return data to the reading dictionary. The readings must be performed in a function called get_readings that takes positional arguments i2c and address. The return of this function must be an OrderedDict{} and should contain key value pairs of reading names to values, with reading names that are likely to be unique to this board to ensure they do not overwrite other readings on upload.
 
 Example:
@@ -78,7 +59,7 @@ from breakout_bme68x import BreakoutBME68X
 from ucollections import OrderedDict
 from phew import logging
 
-def get_readings(i2c, address):
+def get_readings(i2c, address, seconds_since_last):
     bme688 = BreakoutBME68X(i2c)
     bme688_data = bme688.read()
 
@@ -96,7 +77,7 @@ def get_readings(i2c, address):
     return readings
 ```
 
-Modify the function get_qwst_modules() in enviro/\_\_init\_\_.py to include an entry for your new board. This should use an if statement to check the address from the config file is visible on the I2C bus, reference your new module file path from the section above in the import statement and append a dictionary that has keys for "name", "include" and "address" to the modules list. The include key has a value of your imported module and the address is the I2C address from the config file.
+Modify the function get_qwst_modules() in enviro/\_\_init\_\_.py to include an entry for your new board. This should use an if statement to check the address from the config file is visible on the I2C bus, reference your new module file path from the section above in the import statement and yield a dictionary that has keys for "name", "include" and "address" to the caller. The include key has a value of your imported module and the address is the I2C address from the config file.
 
 Example:
 ```
@@ -105,8 +86,11 @@ def get_qwst_modules():
   # <...existing module configurations...>
 
   if config.bme688_address in i2c_devices:
-    import enviro.qwst_modules.bme688 as bme688
-    modules.append({"name": "BME688", "include": bme688, "address": config.bme688_address})
+    try:
+      import enviro.qwst_modules.bme688 as bme688
+      yield {"name": "BME688", "include": bme688, "address": config.bme688_address}
+    except RuntimeError:
+      pass
 
   return modules
 ```

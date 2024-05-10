@@ -36,7 +36,7 @@ def get_board():
 def get_qwst_modules():
   if I2C_ADDR_SCD41 in i2c_devices:
     try:
-      import enviro.sensors.scd41 as scd41
+      import enviro.qwst_modules.scd41 as scd41
       yield {"name": "SCD41", "include": scd41, "address": I2C_ADDR_SCD41}
     except RuntimeError:
       # Likely another device present on the SCD41 address
@@ -437,7 +437,7 @@ def get_sensor_readings():
 
   return readings
 
-def get_qwst_modules_readings():
+def get_qwst_modules_readings(seconds_since_last):
   module_readings = {}
   for module in get_qwst_modules():
     logging.info(f"  - getting readings from module: {module['name']}")
