@@ -280,8 +280,8 @@ def low_disk_space():
 
 # returns True if the rtc clock has been set recently 
 def is_clock_set():
-  # is the year on or before 2020?
-  if rtc.datetime()[0] <= 2020:
+  # is the year on or before 2020 or after 2050?
+  if rtc.datetime()[0] <= 2020 or rtc.datetime()[0] >= 2050:
     return False
 
   if helpers.file_exists("sync_time.txt"):
