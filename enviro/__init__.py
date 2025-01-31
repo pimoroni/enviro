@@ -110,7 +110,7 @@ vbus_present = Pin("WL_GPIO2", Pin.IN).value()
 # read battery voltage - we have to toggle the wifi chip select
 # pin to take the reading - this is probably not ideal but doesn't
 # seem to cause issues. there is no obvious way to shut down the
-# wifi for a while properly to do this (wlan.disonnect() and
+# wifi for a while properly to do this (wlan.disconnect() and
 # wlan.active(False) both seem to mess things up big style..)
 old_state = Pin(WIFI_CS_PIN).value()
 Pin(WIFI_CS_PIN, Pin.OUT, value=True)
@@ -128,7 +128,7 @@ rtc_alarm_pin = Pin(RTC_ALARM_PIN, Pin.IN, Pin.PULL_DOWN)
 # BUG This should only be set up for Enviro Camera
 # external_trigger_pin = Pin(EXTERNAL_INTERRUPT_PIN, Pin.IN, Pin.PULL_DOWN)
 
-# intialise the pcf85063a real time clock chip
+# initialise the pcf85063a real time clock chip
 rtc = PCF85063A(i2c)
 i2c.writeto_mem(0x51, 0x00, b'\x00') # ensure rtc is running (this should be default?)
 rtc.enable_timer_interrupt(False)
@@ -186,7 +186,7 @@ def reconnect_wifi(ssid, password, country, hostname=None):
     CYW43_LINK_UP: "Connect to wifi with an IP address",
     CYW43_LINK_FAIL: "Connection failed",
     CYW43_LINK_NONET: "No matching SSID found (could be out of range, or down)",
-    CYW43_LINK_BADAUTH: "Authenticatation failure",
+    CYW43_LINK_BADAUTH: "Authentication failure",
   }
 
   wlan = network.WLAN(network.STA_IF)
@@ -305,7 +305,7 @@ def is_clock_set():
         if seconds_since_sync < (config.resync_frequency * 60 * 60):
           return True
 
-        logging.info(f"  - rtc has not been synched for {config.resync_frequency} hour(s)")
+        logging.info(f"  - rtc has not been synced for {config.resync_frequency} hour(s)")
       except AttributeError:
         return True
 
@@ -336,7 +336,7 @@ def sync_clock_from_ntp():
       os.remove("sync_time.txt")
     return False
 
-  logging.info("  - rtc synched")
+  logging.info("  - rtc synced")
   
   # write out the sync time log
   with open("sync_time.txt", "w") as syncfile:
@@ -417,9 +417,9 @@ def get_sensor_readings():
 
   return readings
 
-# save the provided readings into a todays readings data file
+# save the provided readings into a today's readings data file
 def save_reading(readings):
-  # open todays reading file and save readings
+  # open today's reading file and save readings
   helpers.mkdir_safe("readings")
   readings_filename = f"readings/{helpers.date_string()}.csv"
   new_file = not helpers.file_exists(readings_filename)

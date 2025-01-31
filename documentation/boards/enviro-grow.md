@@ -2,13 +2,13 @@
 
 A wireless monitoring system to help take good care of your plants. Monitor moisture levels with the soil sensors, or hook up pumps to make a whole auto-watering system!
 
-Enviro Grow comes with three capacitive moisture sensors to monitor up to three pots or trays of seeds separately. Because there are no exposed electrodes, capacitive sensors are a lot less vulnerable to corrosion over time than old school resistive sensors. There's also a buzzer so it can signal your attention. The onboard sensors can measure temperature, humidity, pressure and light so you can finetune the growing conditions for your plants (you could also use the light sensor it to stop the buzzer from going off at night).
+Enviro Grow comes with three capacitive moisture sensors to monitor up to three pots or trays of seeds separately. Because there are no exposed electrodes, capacitive sensors are a lot less vulnerable to corrosion over time than old school resistive sensors. There's also a buzzer so it can signal your attention. The onboard sensors can measure temperature, humidity, pressure and light so you can fine-tune the growing conditions for your plants (you could also use the light sensor it to stop the buzzer from going off at night).
 
 ## Readings
 
 |Name|Parameter|Unit|Symbol|Example|
 |---|---|---|---|---|
-|Temperature|`temperature`|celcius|°C|`22.11`|
+|Temperature|`temperature`|celsius|°C|`22.11`|
 |Humidity|`humidity`|percent|%|`55.42`|
 |Air Pressure|`pressure`|hectopascals|hPa|`997.16`|
 |Luminance|`luminance`|lux|lx|`35`|
