@@ -1,33 +1,41 @@
-import time, math, os
+# imports common to all boards
+from enviro import config
+import enviro.helpers as helpers
+from enviro import i2c
+from ucollections import OrderedDict
+
+# board specific imports
+import time, math, os, wakeup
 from breakout_bme280 import BreakoutBME280
 from breakout_ltr559 import BreakoutLTR559
 from machine import Pin, PWM
 from pimoroni import Analog
-from enviro import i2c, activity_led
-import enviro.helpers as helpers
+from enviro import activity_led
 from phew import logging
 from enviro.constants import WAKE_REASON_RTC_ALARM, WAKE_REASON_BUTTON_PRESS
 
+# board specific global constants
 # amount of rain required for the bucket to tip in mm
 RAIN_MM_PER_TICK = 0.2794
-
 # distance from the centre of the anemometer to the centre 
 # of one of the cups in cm
 WIND_CM_RADIUS = 7.0
 # scaling factor for wind speed in m/s
 WIND_FACTOR = 0.0218
 
+# board specific sensors
 bme280 = BreakoutBME280(i2c, 0x77)
 ltr559 = BreakoutLTR559(i2c)
 
+# board specific pins
 wind_direction_pin = Analog(26)
 wind_speed_pin = Pin(9, Pin.IN, Pin.PULL_UP)
 rain_pin = Pin(10, Pin.IN, Pin.PULL_DOWN)
 last_rain_trigger = False
 
+# Define functions
 def startup(reason):
   global last_rain_trigger
-  import wakeup
 
   # check if rain sensor triggered wake
   rain_sensor_trigger = wakeup.get_gpio_state() & (1 << 10)
@@ -187,15 +195,28 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
   time.sleep(0.1)
   bme280_data = bme280.read()
 
+  temperature = round(bme280_data[0], 2)
+  pressure = round(bme280_data[1] / 100.0, 2)
+  humidity = round(bme280_data[2], 2)
+
+  # Compensate for additional heating when on usb power - this also changes the
+  # relative humidity value.
+  if is_usb_power:
+    adjusted_temperature = temperature - config.usb_power_temperature_offset
+    absolute_humidity = helpers.relative_to_absolute_humidity(humidity, temperature)
+    humidity = helpers.absolute_to_relative_humidity(absolute_humidity, adjusted_temperature)
+    temperature = adjusted_temperature
+  
   ltr_data = ltr559.get_reading()
+  luminance = round(ltr_data[BreakoutLTR559.LUX], 2)
+
   rain, rain_per_second = rainfall(seconds_since_last)
 
-  from ucollections import OrderedDict
   return OrderedDict({
-    "temperature": round(bme280_data[0], 2),
-    "humidity": round(bme280_data[2], 2),
-    "pressure": round(bme280_data[1] / 100.0, 2),
-    "luminance": round(ltr_data[BreakoutLTR559.LUX], 2),
+    "temperature": temperature,
+    "humidity": humidity,
+    "pressure": pressure,
+    "luminance": luminance,
     "wind_speed": wind_speed(),
     "rain": rain,
     "rain_per_second": rain_per_second,
