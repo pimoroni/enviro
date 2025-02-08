@@ -1,11 +1,17 @@
+# imports common to all boards
+from enviro import config
 import enviro.helpers as helpers
+from enviro import i2c
+from ucollections import OrderedDict
+
+# board specific imports
 import math
 from breakout_bme68x import BreakoutBME68X
 from breakout_bh1745 import BreakoutBH1745
 
-from enviro import config
-from enviro import i2c
+# board specific global constants
 
+# board specific sensors
 bme688 = BreakoutBME68X(i2c, address=0x77)
 
 bh1745 = BreakoutBH1745(i2c)
@@ -13,6 +19,9 @@ bh1745 = BreakoutBH1745(i2c)
 # reports bad results (this is undocumented...)
 i2c.writeto_mem(0x38, 0x44, b'\x02')
 
+# board specific pins
+
+# define functions
 def lux_from_rgbc(r, g, b, c):
   if g < 1:
       tmp = 0
@@ -43,11 +52,13 @@ def colour_temperature_from_rgbc(r, g, b, c):
   return round(ct)
 
 def get_sensor_readings(seconds_since_last, is_usb_power):
-  data = bme688.read()
+  bme688_data = bme688.read()
 
-  temperature = round(data[0], 2)
-  humidity = round(data[2], 2)
 
+  temperature = round(bme688_data[0], 2)
+  pressure = round(bme688_data[1] / 100.0, 2)
+  humidity = round(bme688_data[2], 2)
+  
   # Compensate for additional heating when on usb power - this also changes the
   # relative humidity value.
   if is_usb_power:
@@ -55,9 +66,7 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
     absolute_humidity = helpers.relative_to_absolute_humidity(humidity, temperature)
     humidity = helpers.absolute_to_relative_humidity(absolute_humidity, adjusted_temperature)
     temperature = adjusted_temperature
-
-  pressure = round(data[1] / 100.0, 2)
-  gas_resistance = round(data[3])
+  gas_resistance = round(bme688_data[3])
   # an approximate air quality calculation that accounts for the effect of
   # humidity on the gas sensor
   # https://forums.pimoroni.com/t/bme680-observed-gas-ohms-readings/6608/25
@@ -65,14 +74,15 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
 
   bh1745.measurement_time_ms(160)
   r, g, b, c = bh1745.rgbc_raw()
-
-  from ucollections import OrderedDict
+  luminance = lux_from_rgbc(r, g, b, c)
+  color_temperature = colour_temperature_from_rgbc(r, g, b, c)
+  
   return OrderedDict({
     "temperature": temperature,
     "humidity": humidity,
     "pressure": pressure,
     "gas_resistance": gas_resistance,
     "aqi": aqi,
-    "luminance": lux_from_rgbc(r, g, b, c),
-    "color_temperature": colour_temperature_from_rgbc(r, g, b, c)
+    "luminance": luminance,
+    "color_temperature": color_temperature
   })

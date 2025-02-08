@@ -1,21 +1,28 @@
-import time, math
+# imports common to all boards
+from enviro import config
+import enviro.helpers as helpers
+from enviro import i2c
+from ucollections import OrderedDict
+
+# board specific imports
+import time
 from machine import Pin, ADC
 from breakout_bme280 import BreakoutBME280
 from pimoroni_i2c import PimoroniI2C
 from phew import logging
-from enviro import i2c
 
+# board specific global constants
 # how long to capture the microphone signal for when taking a reading, in milliseconds
 MIC_SAMPLE_TIME_MS = 500
 
+# board specific sensors
+bme280 = BreakoutBME280(i2c, 0x77)
+noise_adc = ADC(0)
+
+# board specific pins
 sensor_reset_pin = Pin(9, Pin.OUT, value=True)
 sensor_enable_pin = Pin(10, Pin.OUT, value=False)
 boost_enable_pin = Pin(11, Pin.OUT, value=False)
-
-noise_adc = ADC(0)
-
-bme280 = BreakoutBME280(i2c, 0x77)
-
 PM1_UGM3                = 2
 PM2_5_UGM3              = 3
 PM10_UGM3               = 4
@@ -29,6 +36,7 @@ PM2_5_PER_LITRE         = 11
 PM5_PER_LITRE           = 12
 PM10_PER_LITRE          = 13
 
+# define functions
 def particulates(particulate_data, measure):
   # bit of a fudge to convert decilitres into litres... who uses decilitre?!
   multiplier = 10 if measure >= PM0_3_PER_LITRE else 1
@@ -40,7 +48,19 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
   bme280.read()
   time.sleep(0.1)
   bme280_data = bme280.read()
+
+  temperature = round(bme280_data[0], 2)
+  pressure = round(bme280_data[1] / 100.0, 2)
+  humidity = round(bme280_data[2], 2)
   
+  # Compensate for additional heating when on usb power - this also changes the
+  # relative humidity value.
+  if is_usb_power:
+    adjusted_temperature = temperature - config.usb_power_temperature_offset
+    absolute_humidity = helpers.relative_to_absolute_humidity(humidity, temperature)
+    humidity = helpers.absolute_to_relative_humidity(absolute_humidity, adjusted_temperature)
+    temperature = adjusted_temperature
+    
   logging.debug("  - starting sensor")
   boost_enable_pin.value(True)
   sensor_enable_pin.value(True)
@@ -51,6 +71,9 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
   logging.debug("  - taking pms5003i reading")
   pms_i2c = PimoroniI2C(14, 15, 100000)
   particulate_data = pms_i2c.readfrom_mem(0x12, 0x00, 32)
+  pm1 = particulates(particulate_data, PM1_UGM3)
+  pm2_5 = particulates(particulate_data, PM2_5_UGM3) 
+  pm10 = particulates(particulate_data, PM10_UGM3)
 
   sensor_enable_pin.value(False)
   boost_enable_pin.value(False)
@@ -65,15 +88,15 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
     max_value = max(max_value, value)
   
   noise_vpp = max_value - min_value
+  noise = round(noise_vpp, 3)
 
-  from ucollections import OrderedDict
+
   return OrderedDict({
-    "temperature": round(bme280_data[0], 2),
-    "humidity": round(bme280_data[2], 2),
-    "pressure": round(bme280_data[1] / 100.0, 2),
-    "noise": round(noise_vpp, 3),
-    "pm1": particulates(particulate_data, PM1_UGM3), 
-    "pm2_5": particulates(particulate_data, PM2_5_UGM3), 
-    "pm10": particulates(particulate_data, PM10_UGM3)
+    "temperature": temperature,
+    "humidity": humidity,
+    "pressure": pressure,
+    "noise": noise,
+    "pm1": pm1, 
+    "pm2_5": pm2_5, 
+    "pm10": pm10
   })
-

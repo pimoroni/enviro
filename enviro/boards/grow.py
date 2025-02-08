@@ -1,15 +1,24 @@
+# imports common to all boards
+from enviro import config
+import enviro.helpers as helpers
+from enviro import i2c
+from ucollections import OrderedDict
+
+# board specific imports
 import time
 from breakout_bme280 import BreakoutBME280
 from breakout_ltr559 import BreakoutLTR559
 from machine import Pin, PWM
-from enviro import i2c
 from phew import logging
 
+# board specific global constants
 CHANNEL_NAMES = ['A', 'B', 'C']
 
+# board specific sensors
 bme280 = BreakoutBME280(i2c, 0x77)
 ltr559 = BreakoutLTR559(i2c)
 
+# board specific pins
 piezo_pwm = PWM(Pin(28))
 
 moisture_sensor_pins = [
@@ -24,6 +33,7 @@ pump_pins = [
   Pin(10, Pin.OUT, value=0)
 ]
 
+# define functions
 def moisture_readings():
   results = []
 
@@ -73,7 +83,6 @@ def drip_noise():
   piezo_pwm.duty_u16(0)
 
 def water(moisture_levels):
-  from enviro import config
   targets = [
     config.moisture_target_a, 
     config.moisture_target_b,
@@ -105,21 +114,33 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
   time.sleep(0.1)
   bme280_data = bme280.read()
 
-  ltr_data = ltr559.get_reading()
+  temperature = round(bme280_data[0], 2)
+  pressure = round(bme280_data[1] / 100.0, 2)
+  humidity = round(bme280_data[2], 2)
+  
+  # Compensate for additional heating when on usb power - this also changes the
+  # relative humidity value.
+  if is_usb_power:
+    adjusted_temperature = temperature - config.usb_power_temperature_offset
+    absolute_humidity = helpers.relative_to_absolute_humidity(humidity, temperature)
+    humidity = helpers.absolute_to_relative_humidity(absolute_humidity, adjusted_temperature)
+    temperature = adjusted_temperature
 
-  moisture_levels = moisture_readings()
+  ltr_data = ltr559.get_reading()
+  luminance = round(ltr_data[BreakoutLTR559.LUX], 2)
+
+  moisture_levels = [round(lvl,2) for lvl in moisture_readings()]
 
   water(moisture_levels) # run pumps if needed
 
-  from ucollections import OrderedDict
   return OrderedDict({
-    "temperature": round(bme280_data[0], 2),
-    "humidity": round(bme280_data[2], 2),
-    "pressure": round(bme280_data[1] / 100.0, 2),
-    "luminance": round(ltr_data[BreakoutLTR559.LUX], 2),
-    "moisture_a": round(moisture_levels[0], 2),
-    "moisture_b": round(moisture_levels[1], 2),
-    "moisture_c": round(moisture_levels[2], 2)
+    "temperature": temperature,
+    "humidity": humidity,
+    "pressure": pressure,
+    "luminance": luminance,
+    "moisture_a": moisture_levels[0],
+    "moisture_b": moisture_levels[1],
+    "moisture_c": moisture_levels[2]
   })
   
 def play_tone(frequency = None):
