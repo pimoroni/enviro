@@ -23,7 +23,7 @@
 # from phew import logging
 # logging.disable_logging_types(logging.LOG_DEBUG)
 
-# Issue #117 where neeed to sleep on startup otherwis emight not boot
+# Issue #117 where need to sleep on startup otherwise might not boot
 from time import sleep
 sleep(0.5)
 
@@ -45,7 +45,7 @@ try:
 
   # check disk space...
   if enviro.low_disk_space():
-    # less than 10% of diskspace left, this probably means cached results
+    # less than 10% of disk space left, this probably means cached results
     # are not getting uploaded so warn the user and halt with an error
     
     # Issue #126 to try and upload if disk space is low

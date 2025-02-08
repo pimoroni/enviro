@@ -30,7 +30,7 @@ def upload_reading(reading):
     mqtt_client.disconnect()
     return UPLOAD_SUCCESS
 
-  # Try disconneting to see if it prevents hangs on this typew of errors recevied so far
+  # Try disconnecting to see if it prevents hangs on this type of errors received so far
   except (OSError, IndexError) as exc:
     try:
       import sys, io

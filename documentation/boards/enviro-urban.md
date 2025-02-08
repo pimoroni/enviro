@@ -8,7 +8,7 @@ Enviro Urban is an all in one board for checking up on all the airborne nasties 
 
 |Name|Parameter|Unit|Symbol|Example|
 |---|---|---|---|---|
-|Temperature|`temperature`|celcius|°C|`22.11`|
+|Temperature|`temperature`|celsius|°C|`22.11`|
 |Humidity|`humidity`|percent|%|`55.42`|
 |Air Pressure|`pressure`|hectopascals|hPa|`997.16`|
 |Noise|`noise`|voltage|V|`0.87`|
