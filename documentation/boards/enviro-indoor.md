@@ -15,7 +15,6 @@ The top of the range BME688 sensor on Enviro Indoor can measure temperature/humi
 |Air Quality Index|`aqi`|percent|%|`13.1`|
 |Luminance|`luminance`|lux|lx|`35`|
 |Color Temperature|`color_temperature`|kelvin|K|`4581`|
-|Voltage|`voltage`|volts|V|`4.035`|
 
 ## On-board devices
 
