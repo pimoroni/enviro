@@ -227,14 +227,34 @@ def reconnect_wifi(ssid, password, country, hostname=None):
       raise Exception(f"Failed to disconnect: {x}")
   logging.info("> Ready for connection!")
 
-  # Connect to our AP
+  # Connect to our AP. The CYW43 can report a transient negative status —
+  # LINK_FAIL, or even BADAUTH with a correct password after a cold boot —
+  # when a fresh join attempt made seconds later succeeds. Tear the link
+  # down and retry a few times before giving up, rather than abandoning
+  # the whole cycle on the first bad status.
   logging.info(f"> Connecting to SSID {ssid} (password: {password})...")
-  wlan.connect(ssid, password)
-  try:
-    if not wait_status(CYW43_LINK_UP):
-      raise Exception(f"timed out in state {wlan.status()} waiting for link up")
-  except Exception as x:
-    raise Exception(f"Failed to connect to SSID {ssid} (password: {password}): {x}")
+  last_error = None
+  for attempt in range(3):
+    try:
+      if attempt > 0:
+        logging.info(f"> Retrying connection ({attempt + 1}/3)...")
+        wlan.disconnect()  # cyw43_wifi_leave(): reset the join state machine
+        try:
+          wait_status(CYW43_LINK_DOWN, timeout=5)
+        except Exception:
+          # the failed attempt's negative status can linger briefly;
+          # teardown is best-effort — always proceed to a fresh join
+          pass
+        time.sleep(1)
+      wlan.connect(ssid, password)
+      if wait_status(CYW43_LINK_UP):
+        last_error = None
+        break
+      last_error = f"timed out in state {wlan.status()} waiting for link up"
+    except Exception as x:
+      last_error = str(x)
+  if last_error is not None:
+    raise Exception(f"Failed to connect to SSID {ssid} (password: {password}): {last_error}")
   logging.info("> Connected successfully!")
 
   ip, subnet, gateway, dns = wlan.ifconfig()
