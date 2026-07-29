@@ -231,7 +231,8 @@ def reconnect_wifi(ssid, password, country, hostname=None):
   logging.info(f"> Connecting to SSID {ssid} (password: {password})...")
   wlan.connect(ssid, password)
   try:
-    wait_status(CYW43_LINK_UP)
+    if not wait_status(CYW43_LINK_UP):
+      raise Exception(f"timed out in state {wlan.status()} waiting for link up")
   except Exception as x:
     raise Exception(f"Failed to connect to SSID {ssid} (password: {password}): {x}")
   logging.info("> Connected successfully!")
