@@ -1,4 +1,5 @@
 from enviro.constants import *
+import errno
 import machine
 import math
 import os
