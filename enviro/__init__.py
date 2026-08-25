@@ -478,19 +478,19 @@ def upload_readings():
     destination_module = sys.modules[f"enviro.destinations.{destination}"]
     destination_module.log_destination()
 
-    for cache_file in os.ilistdir("uploads"):
+    for cache_file in os.listdir("uploads"):
       try:
-        with open(f"uploads/{cache_file[0]}", "r") as upload_file:
+        with open(f"uploads/{cache_file}", "r") as upload_file:
           status = destination_module.upload_reading(json.load(upload_file))
           if status == UPLOAD_SUCCESS:
-            os.remove(f"uploads/{cache_file[0]}")
-            logging.info(f"  - uploaded {cache_file[0]}")
+            os.remove(f"uploads/{cache_file}")
+            logging.info(f"  - uploaded {cache_file}")
           elif status == UPLOAD_RATE_LIMITED:
             # write out that we want to attempt a reupload
             with open("reattempt_upload.txt", "w") as attemptfile:
               attemptfile.write("")
 
-            logging.info(f"  - cannot upload '{cache_file[0]}' - rate limited")
+            logging.info(f"  - cannot upload '{cache_file}' - rate limited")
             sleep(1)
           elif status == UPLOAD_LOST_SYNC:
             # remove the sync time file to trigger a resync on next boot
@@ -501,22 +501,22 @@ def upload_readings():
             with open("reattempt_upload.txt", "w") as attemptfile:
               attemptfile.write("")
 
-            logging.info(f"  - cannot upload '{cache_file[0]}' - rtc has become out of sync")
+            logging.info(f"  - cannot upload '{cache_file}' - rtc has become out of sync")
             sleep(1)
           elif status == UPLOAD_SKIP_FILE:
-            logging.error(f"  ! cannot upload '{cache_file[0]}' to {destination}. Skipping file")
+            logging.error(f"  ! cannot upload '{cache_file}' to {destination}. Skipping file")
             warn_led(WARN_LED_BLINK)
             continue
           else:
-            logging.error(f"  ! failed to upload '{cache_file[0]}' to {destination}")
+            logging.error(f"  ! failed to upload '{cache_file}' to {destination}")
             return False
 
       except OSError:
-        logging.error(f"  ! failed to open '{cache_file[0]}'")
+        logging.error(f"  ! failed to open '{cache_file}'")
         return False
 
       except KeyError:
-        logging.error(f"  ! skipping '{cache_file[0]}' as it is missing data. It was likely created by an older version of the enviro firmware")
+        logging.error(f"  ! skipping '{cache_file}' as it is missing data. It was likely created by an older version of the enviro firmware")
 
   except ImportError:
     logging.error(f"! cannot find destination {destination}")
