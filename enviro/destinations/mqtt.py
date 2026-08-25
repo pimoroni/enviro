@@ -1,7 +1,7 @@
 from enviro import logging
 from enviro.constants import UPLOAD_SUCCESS, UPLOAD_FAILED
 from enviro.mqttsimple import MQTTClient
-import ujson
+import json
 import config
 
 def log_destination():
@@ -26,7 +26,7 @@ def upload_reading(reading):
       mqtt_client = MQTTClient(reading["uid"], server, user=username, password=password, keepalive=60)
     # Now continue with connection and upload
     mqtt_client.connect()
-    mqtt_client.publish(f"enviro/{nickname}", ujson.dumps(reading), retain=True)
+    mqtt_client.publish(f"enviro/{nickname}", json.dumps(reading), retain=True)
     mqtt_client.disconnect()
     return UPLOAD_SUCCESS
 

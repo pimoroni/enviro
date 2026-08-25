@@ -66,7 +66,7 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
   bh1745.measurement_time_ms(160)
   r, g, b, c = bh1745.rgbc_raw()
 
-  from ucollections import OrderedDict
+  from collections import OrderedDict
   return OrderedDict({
     "temperature": temperature,
     "humidity": humidity,

@@ -1,6 +1,6 @@
 from enviro import logging
 from enviro.constants import *
-import urequests
+import requests
 import config
 
 def log_destination():
@@ -28,7 +28,7 @@ def upload_reading(reading):
   url = f"http://io.adafruit.com/api/v2/{username}/groups/enviro/data"
 
   try:
-    result = urequests.post(url, json=payload, headers=headers)
+    result = requests.post(url, json=payload, headers=headers)
 
     error_message = ""    
     try:

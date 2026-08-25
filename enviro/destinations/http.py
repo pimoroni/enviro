@@ -1,6 +1,6 @@
 from enviro import logging
 from enviro.constants import UPLOAD_SUCCESS, UPLOAD_FAILED
-import urequests
+import requests
 import config
 
 def log_destination():
@@ -15,7 +15,7 @@ def upload_reading(reading):
 
   try:
     # post reading data to http endpoint
-    result = urequests.post(url, auth=auth, json=reading)
+    result = requests.post(url, auth=auth, json=reading)
     result.close()
 
     if result.status_code in [200, 201, 202]:

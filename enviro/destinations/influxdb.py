@@ -1,6 +1,6 @@
 from enviro import logging
 from enviro.constants import UPLOAD_SUCCESS, UPLOAD_FAILED
-import urequests, time
+import requests, time
 import config
 
 def url_encode(t):
@@ -49,7 +49,7 @@ def upload_reading(reading):
  
   try:
     # post reading data to http endpoint
-    result = urequests.post(url, headers=headers, data=payload)
+    result = requests.post(url, headers=headers, data=payload)
     result.close()
     
     if result.status_code == 204:  # why 204? we'll never know...

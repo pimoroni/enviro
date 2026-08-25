@@ -66,7 +66,7 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
   
   noise_vpp = max_value - min_value
 
-  from ucollections import OrderedDict
+  from collections import OrderedDict
   return OrderedDict({
     "temperature": round(bme280_data[0], 2),
     "humidity": round(bme280_data[2], 2),

@@ -93,7 +93,7 @@ if needs_provisioning:
   # control never returns to here, provisioning takes over completely
 
 # all the other imports, so many shiny modules
-import machine, sys, os, ujson
+import machine, sys, os, json
 from machine import RTC, ADC
 import phew
 from pcf85063a import PCF85063A
@@ -158,7 +158,7 @@ def reconnect_wifi(ssid, password, country, hostname=None):
   import network
   import math
   import rp2
-  import ubinascii
+  import binascii
   
   start_ms = time.ticks_ms()
 
@@ -213,7 +213,7 @@ def reconnect_wifi(ssid, password, country, hostname=None):
     wlan.config(pm=0xa11140)
 
   # Print MAC
-  mac = ubinascii.hexlify(wlan.config('mac'),':').decode()
+  mac = binascii.hexlify(wlan.config('mac'),':').decode()
   logging.info("> MAC: " + mac)
   
   # Disconnect when necessary
@@ -449,7 +449,7 @@ def cache_upload(readings):
   helpers.mkdir_safe("uploads")
   with open(uploads_filename, "w") as upload_file:
     #json.dump(payload, upload_file) # TODO what it was changed to
-    upload_file.write(ujson.dumps(payload))
+    upload_file.write(json.dumps(payload))
 
 # return the number of cached results waiting to be uploaded
 def cached_upload_count():
@@ -477,7 +477,7 @@ def upload_readings():
     for cache_file in os.ilistdir("uploads"):
       try:
         with open(f"uploads/{cache_file[0]}", "r") as upload_file:
-          status = destination_module.upload_reading(ujson.load(upload_file))
+          status = destination_module.upload_reading(json.load(upload_file))
           if status == UPLOAD_SUCCESS:
             os.remove(f"uploads/{cache_file[0]}")
             logging.info(f"  - uploaded {cache_file[0]}")
