@@ -138,3 +138,6 @@ rain.txt
 
 # Pycharm idea
 .idea/
+
+# generated at build time by ci_genversion
+board/version.py

@@ -8,3 +8,5 @@ require("aioble")
 
 freeze("$(PIMORONI_PICO_PATH)/micropython/modules_py", "pimoroni.py")
 freeze("$(PIMORONI_PICO_PATH)/micropython/modules_py", "boot.py")
+
+freeze("$(BOARD_DIR)", "version.py")
