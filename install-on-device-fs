@@ -1,20 +1,18 @@
 #!/usr/bin/env bash
 
-DEVICES=$(mpremote connect list | grep MicroPython | cut -d " " -f 1)
+DEVICE=$(mpremote connect list | grep MicroPython | head -n 1 | cut -d " " -f 1)
 
-if [ -z $DEVICES ] ; then
+if [ -z "$DEVICE" ] ; then
   echo "No MicroPython devices found in FS mode"
   exit 1
 fi
-
-DEVICE=${DEVICES[0]}
 
 echo "Copying Enviro firmware files to ${DEVICE}"
 
 function create_directory {
   echo -n "> creating directory $1"
 
-  RESULT=$(mpremote connect ${DEVICE} mkdir $1)
+  RESULT=$(mpremote connect ${DEVICE} mkdir $1 2>&1)
   ERROR=$?
 
 

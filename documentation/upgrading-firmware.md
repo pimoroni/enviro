@@ -56,7 +56,7 @@ Clone this repo to your computer so you have a local copy:
 
 ### Transferring files using the Linux command line
 
-If you're running Linux you can use our`install-on-device-fs` script to copy the files across quickly. You'll need to install `mpremote` if you don't have it installed already (`pip3 install mpremote`). You may need to edit the script to change `pattern="/dev/tty.usbmodem1*"`to match the location of your USB device (find it using `lsusb`).
+If you're running Linux you can use our `install-on-device-fs` script to copy the files across quickly. You'll need to install `mpremote` if you don't have it installed already (`pip3 install mpremote`). The script picks the first MicroPython device `mpremote connect list` reports, so unplug any others first.
 
 You can also use this method on Windows using Windows Subsystem for Linux, though you will need to [set up USB passthrough](https://docs.microsoft.com/en-us/windows/wsl/connect-usb) to enable WSL to see the Pico W.
 
