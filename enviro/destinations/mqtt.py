@@ -16,9 +16,8 @@ def upload_reading(reading):
   try:
     if config.mqtt_broker_ca_file:
     # Using SSL
-      f = open("ca.crt")
-      ssl_data = f.read()
-      f.close()
+      with open("ca.crt", "rb") as f:
+        ssl_data = f.read()
       mqtt_client = MQTTClient(reading["uid"], server, user=username, password=password, keepalive=60,
                                ssl=True, ssl_params={"cert": ssl_data})
     else:
