@@ -14,9 +14,9 @@ if 56 in i2c_devices: # 56 = colour / light sensor and only present on Indoor
   model = "indoor"
 elif 35 in i2c_devices: # 35 = ltr-599 on grow & weather
   pump3_pin = Pin(12, Pin.IN, Pin.PULL_UP)
-  model = "grow" if pump3_pin.value() == False else "weather"    
+  model = "grow" if not pump3_pin.value() else "weather"
   pump3_pin.init(pull=None)
-else:    
+else:
   model = "urban" # otherwise it's urban..
 
 # return the module that implements this board type
@@ -30,7 +30,7 @@ def get_board():
   if model == "urban":
     import enviro.boards.urban as board
   return board
-  
+
 # set up the activity led
 # ===========================================================================
 from machine import PWM, Timer
@@ -45,7 +45,7 @@ def activity_led(brightness):
   # gamma correct the brightness (gamma 2.8)
   value = int(pow(brightness / 100.0, 2.8) * 65535.0 + 0.5)
   activity_led_pwm.duty_u16(value)
-  
+
 activity_led_timer = Timer(-1)
 activity_led_pulse_speed_hz = 1
 def activity_led_callback(t):
@@ -83,18 +83,21 @@ try:
   import config # fails to import (missing/corrupt) go into provisioning
   if not config.provisioned: # provisioned flag not set go into provisioning
     needs_provisioning = True
-except Exception as e:
+except Exception as e:  # noqa: BLE001
   logging.error("> missing or corrupt config.py", e)
   needs_provisioning = True
 
 if needs_provisioning:
   logging.info("> entering provisioning mode")
-  import enviro.provisioning
+  import enviro.provisioning  # noqa: F401
   # control never returns to here, provisioning takes over completely
 
 # all the other imports, so many shiny modules
-import machine, sys, os, json
-from machine import RTC, ADC
+import machine
+import sys
+import os
+import json
+from machine import RTC, ADC  # noqa: F401
 import phew
 from pcf85063a import PCF85063A
 import enviro.config_defaults as config_defaults
@@ -130,7 +133,7 @@ rtc_alarm_pin = Pin(RTC_ALARM_PIN, Pin.IN, Pin.PULL_DOWN)
 
 # intialise the pcf85063a real time clock chip
 rtc = PCF85063A(i2c)
-i2c.writeto_mem(0x51, 0x00, b'\x00') # ensure rtc is running (this should be default?)
+i2c.writeto_mem(0x51, 0x00, b"\x00") # ensure rtc is running (this should be default?)
 rtc.enable_timer_interrupt(False)
 
 t = rtc.datetime()
@@ -139,16 +142,16 @@ RTC().datetime((t[0], t[1], t[2], t[6], t[3], t[4], t[5], 0)) # synch PR2040 rtc
 
 # jazz up that console! toot toot!
 print("       ___            ___            ___          ___          ___            ___       ")
-print("      /  /\          /__/\          /__/\        /  /\        /  /\          /  /\      ")
-print("     /  /:/_         \  \:\         \  \:\      /  /:/       /  /::\        /  /::\     ")
-print("    /  /:/ /\         \  \:\         \  \:\    /  /:/       /  /:/\:\      /  /:/\:\    ")
-print("   /  /:/ /:/_    _____\__\:\    ___  \  \:\  /__/::\      /  /:/~/:/     /  /:/  \:\   ")
-print("  /__/:/ /:/ /\  /__/::::::::\  /___\  \__\:\ \__\/\:\__  /__/:/ /:/___  /__/:/ \__\:\  ")
-print("  \  \:\/:/ /:/  \  \:\~~~__\/  \  \:\ |  |:|    \  \:\/\ \  \:\/:::::/  \  \:\ /  /:/  ")
-print("   \  \::/ /:/    \  \:\         \  \:\|  |:|     \__\::/  \  \::/~~~`    \  \:\  /:/   ")
-print("    \  \:\/:/      \  \:\         \  \:\__|:|     /  /:/    \  \:\         \  \:\/:/    ")
-print("     \  \::/        \  \:\         \  \::::/     /__/:/      \  \:\         \  \::/     ")
-print("      \__\/          \__\/          `~~~~~`      \__\/        \__\/          \__\/      ")
+print(r"      /  /\          /__/\          /__/\        /  /\        /  /\          /  /\      ")
+print(r"     /  /:/_         \  \:\         \  \:\      /  /:/       /  /::\        /  /::\     ")
+print(r"    /  /:/ /\         \  \:\         \  \:\    /  /:/       /  /:/\:\      /  /:/\:\    ")
+print(r"   /  /:/ /:/_    _____\__\:\    ___  \  \:\  /__/::\      /  /:/~/:/     /  /:/  \:\   ")
+print(r"  /__/:/ /:/ /\  /__/::::::::\  /___\  \__\:\ \__\/\:\__  /__/:/ /:/___  /__/:/ \__\:\  ")
+print(r"  \  \:\/:/ /:/  \  \:\~~~__\/  \  \:\ |  |:|    \  \:\/\ \  \:\/:::::/  \  \:\ /  /:/  ")
+print(r"   \  \::/ /:/    \  \:\         \  \:\|  |:|     \__\::/  \  \::/~~~`    \  \:\  /:/   ")
+print(r"    \  \:\/:/      \  \:\         \  \:\__|:|     /  /:/    \  \:\         \  \:\/:/    ")
+print(r"     \  \::/        \  \:\         \  \::::/     /__/:/      \  \:\         \  \::/     ")
+print(r"      \__\/          \__\/          `~~~~~`      \__\/        \__\/          \__\/      ")
 print("")
 print("    -  --  ---- -----=--==--===  hey enviro, let's go!  ===--==--=----- ----  --  -     ")
 print("")
@@ -159,7 +162,7 @@ def reconnect_wifi(ssid, password, country, hostname=None):
   import math
   import rp2
   import binascii
-  
+
   start_ms = time.ticks_ms()
 
   # Set country
@@ -198,7 +201,7 @@ def reconnect_wifi(ssid, password, country, hostname=None):
 
   # Return True on expected status, exception on error status (negative) and False on timeout
   def wait_status(expected_status, *, timeout=10, tick_sleep=0.5):
-    for i in range(math.ceil(timeout / tick_sleep)):
+    for _ in range(math.ceil(timeout / tick_sleep)):
       time.sleep(tick_sleep)
       status = dump_status()
       if status == expected_status:
@@ -213,9 +216,9 @@ def reconnect_wifi(ssid, password, country, hostname=None):
     wlan.config(pm=0xa11140)
 
   # Print MAC
-  mac = binascii.hexlify(wlan.config('mac'),':').decode()
+  mac = binascii.hexlify(wlan.config("mac"),":").decode()
   logging.info("> MAC: " + mac)
-  
+
   # Disconnect when necessary
   status = dump_status()
   if status >= CYW43_LINK_JOIN and status < CYW43_LINK_UP:
@@ -223,8 +226,8 @@ def reconnect_wifi(ssid, password, country, hostname=None):
     wlan.disconnect()
     try:
       wait_status(CYW43_LINK_DOWN)
-    except Exception as x:
-      raise Exception(f"Failed to disconnect: {x}")
+    except Exception as x:  # noqa: BLE001
+      raise Exception(f"Failed to disconnect: {x}") from x
   logging.info("> Ready for connection!")
 
   # Connect to our AP
@@ -232,13 +235,13 @@ def reconnect_wifi(ssid, password, country, hostname=None):
   wlan.connect(ssid, password)
   try:
     wait_status(CYW43_LINK_UP)
-  except Exception as x:
-    raise Exception(f"Failed to connect to SSID {ssid} (password: {password}): {x}")
+  except Exception as x:  # noqa: BLE001
+    raise Exception(f"Failed to connect to SSID {ssid} (password: {password}): {x}") from x
   logging.info("> Connected successfully!")
 
   ip, subnet, gateway, dns = wlan.ifconfig()
   logging.info(f"> IP: {ip}, Subnet: {subnet}, Gateway: {gateway}, DNS: {dns}")
-  
+
   elapsed_ms = time.ticks_ms() - start_ms
   logging.info(f"> Elapsed: {elapsed_ms}ms")
   return elapsed_ms
@@ -253,7 +256,7 @@ def connect_to_wifi():
     if seconds_to_connect > 5:
       logging.warn("  - took", seconds_to_connect, "seconds to connect to wifi")
     return True
-  except Exception as x:
+  except Exception as x:  # noqa: BLE001
     logging.error(f"! {x}")
     return False
 
@@ -265,7 +268,8 @@ def halt(message):
 
 # log the exception, blink the warning led, and go back to sleep
 def exception(exc):
-  import sys, io
+  import sys
+  import io
   buf = io.StringIO()
   sys.print_exception(exc, buf)
   logging.exception("! " + buf.getvalue())
@@ -275,10 +279,10 @@ def exception(exc):
 # returns True if we've used up 90% of the internal filesystem
 def low_disk_space():
   if not phew.remote_mount: # os.statvfs doesn't exist on remote mounts
-    return (os.statvfs(".")[3] / os.statvfs(".")[2]) < 0.1   
+    return (os.statvfs(".")[3] / os.statvfs(".")[2]) < 0.1
   return False
 
-# returns True if the rtc clock has been set recently 
+# returns True if the rtc clock has been set recently
 def is_clock_set():
   # is the year on or before 2020?
   if rtc.datetime()[0] <= 2020:
@@ -320,12 +324,12 @@ def sync_clock_from_ntp():
   timestamp = ntp.fetch()
   if not timestamp:
     logging.error("  - failed to fetch time from ntp server")
-    return False  
+    return False
 
   # fixes an issue where sometimes the RTC would not pick up the new time
-  i2c.writeto_mem(0x51, 0x00, b'\x10') # reset the rtc so we can change the time
+  i2c.writeto_mem(0x51, 0x00, b"\x10") # reset the rtc so we can change the time
   rtc.datetime(timestamp) # set the time on the rtc chip
-  i2c.writeto_mem(0x51, 0x00, b'\x00') # ensure rtc is running
+  i2c.writeto_mem(0x51, 0x00, b"\x00") # ensure rtc is running
   rtc.enable_timer_interrupt(False)
 
   # read back the RTC time to confirm it was updated successfully
@@ -337,10 +341,10 @@ def sync_clock_from_ntp():
     return False
 
   logging.info("  - rtc synched")
-  
+
   # write out the sync time log
   with open("sync_time.txt", "w") as syncfile:
-    syncfile.write("{0:04d}-{1:02d}-{2:02d}T{3:02d}:{4:02d}:{5:02d}Z".format(*timestamp))  
+    syncfile.write("{0:04d}-{1:02d}-{2:02d}T{3:02d}:{4:02d}:{5:02d}Z".format(*timestamp))
 
   return True
 
@@ -352,7 +356,7 @@ def warn_led(state):
     rtc.set_clock_output(PCF85063A.CLOCK_OUT_1024HZ)
   elif state == WARN_LED_BLINK:
     rtc.set_clock_output(PCF85063A.CLOCK_OUT_1HZ)
-    
+
 # the pcf85063a defaults to 32KHz clock output so need to explicitly turn off
 warn_led(WARN_LED_OFF)
 
@@ -360,7 +364,7 @@ warn_led(WARN_LED_OFF)
 # returns the reason the board woke up from deep sleep
 def get_wake_reason():
   import wakeup
-  
+
   wake_reason = None
   if wakeup.get_gpio_state() & (1 << BUTTON_PIN):
     wake_reason = WAKE_REASON_BUTTON_PRESS
@@ -413,7 +417,7 @@ def get_sensor_readings():
 
   # write out the last time log
   with open("last_time.txt", "w") as timefile:
-    timefile.write(now_str)  
+    timefile.write(now_str)
 
   return readings
 
@@ -465,7 +469,7 @@ def is_upload_needed():
 # upload cached readings to the configured destination
 def upload_readings():
   if not connect_to_wifi():
-    logging.error(f"  - cannot upload readings, wifi connection failed")
+    logging.error("  - cannot upload readings, wifi connection failed")
     return False
 
   destination = config.destination
@@ -492,7 +496,7 @@ def upload_readings():
             # remove the sync time file to trigger a resync on next boot
             if helpers.file_exists("sync_time.txt"):
               os.remove("sync_time.txt")
-             
+
             # write out that we want to attempt a reupload
             with open("reattempt_upload.txt", "w") as attemptfile:
               attemptfile.write("")
@@ -513,7 +517,7 @@ def upload_readings():
 
       except KeyError:
         logging.error(f"  ! skipping '{cache_file[0]}' as it is missing data. It was likely created by an older version of the enviro firmware")
-        
+
   except ImportError:
     logging.error(f"! cannot find destination {destination}")
     return False
@@ -602,7 +606,7 @@ def sleep(time_override=None):
     minute = math.floor(minute / config.reading_frequency) * config.reading_frequency
     minute += config.reading_frequency
 
-  while minute >= 60:      
+  while minute >= 60:
     minute -= 60
     hour += 1
   if hour >= 24:

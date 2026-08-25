@@ -1,7 +1,9 @@
-import time, math, os
+import time
+import math
+import os
 from breakout_bme280 import BreakoutBME280
 from breakout_ltr559 import BreakoutLTR559
-from machine import Pin, PWM
+from machine import Pin
 from pimoroni import Analog
 from enviro import i2c, activity_led
 import enviro.helpers as helpers
@@ -11,7 +13,7 @@ from enviro.constants import WAKE_REASON_RTC_ALARM, WAKE_REASON_BUTTON_PRESS
 # amount of rain required for the bucket to tip in mm
 RAIN_MM_PER_TICK = 0.2794
 
-# distance from the centre of the anemometer to the centre 
+# distance from the centre of the anemometer to the centre
 # of one of the cups in cm
 WIND_CM_RADIUS = 7.0
 # scaling factor for wind speed in m/s
@@ -55,7 +57,7 @@ def startup(reason):
     last_rain_trigger = True
 
     # if we were woken by the RTC or a Poke continue with the startup
-    return (reason is WAKE_REASON_RTC_ALARM 
+    return (reason is WAKE_REASON_RTC_ALARM
       or reason is WAKE_REASON_BUTTON_PRESS)
 
   # there was no rain trigger so continue with the startup
@@ -81,7 +83,7 @@ def check_trigger():
     rain_entries.append(helpers.datetime_string())
 
     # limit number of entries to 190 - each entry is 21 bytes including
-    # newline so this keeps the total rain.txt filesize just under one 
+    # newline so this keeps the total rain.txt filesize just under one
     # filesystem block (4096 bytes)
     rain_entries = rain_entries[-190:]
 
@@ -121,9 +123,7 @@ def wind_speed(sample_time_ms=1000):
 
   # calculate the wind speed in metres per second
   circumference = WIND_CM_RADIUS * 2.0 * math.pi
-  wind_m_s = rotation_hz * circumference * WIND_FACTOR
-
-  return wind_m_s
+  return rotation_hz * circumference * WIND_FACTOR
 
 def wind_direction():
   # adc reading voltage to cardinal direction taken from our python
@@ -143,7 +143,7 @@ def wind_direction():
     value = wind_direction_pin.read_voltage()
 
     closest_index = -1
-    closest_value = float('inf')
+    closest_value = float("inf")
 
     for i in range(8):
       distance = abs(ADC_TO_DEGREES[i] - value)
@@ -173,7 +173,7 @@ def rainfall(seconds_since_last):
           amount += RAIN_MM_PER_TICK
 
     os.remove("rain.txt")
-  
+
   per_second = 0
   if seconds_since_last > 0:
     per_second = amount / seconds_since_last

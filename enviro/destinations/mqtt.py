@@ -12,7 +12,7 @@ def upload_reading(reading):
   username = config.mqtt_broker_username
   password = config.mqtt_broker_password
   nickname = reading["nickname"]
-  
+
   try:
     if config.mqtt_broker_ca_file:
     # Using SSL
@@ -20,7 +20,7 @@ def upload_reading(reading):
       ssl_data = f.read()
       f.close()
       mqtt_client = MQTTClient(reading["uid"], server, user=username, password=password, keepalive=60,
-                               ssl=True, ssl_params={'cert': ssl_data})
+                               ssl=True, ssl_params={"cert": ssl_data})
     else:
     # Not using SSL
       mqtt_client = MQTTClient(reading["uid"], server, user=username, password=password, keepalive=60)
@@ -33,21 +33,24 @@ def upload_reading(reading):
   # Try disconneting to see if it prevents hangs on this typew of errors recevied so far
   except (OSError, IndexError) as exc:
     try:
-      import sys, io
+      import sys
+      import io
       buf = io.StringIO()
       sys.print_exception(exc, buf)
-      logging.debug(f"  - an exception occurred when uploading.", buf.getvalue())
+      logging.debug("  - an exception occurred when uploading.", buf.getvalue())
       mqtt_client.disconnect()
-    except Exception as exc:
-      import sys, io
+    except Exception as exc:  # noqa: BLE001
+      import sys
+      import io
       buf = io.StringIO()
       sys.print_exception(exc, buf)
-      logging.debug(f"  - an exception occurred when disconnecting mqtt client.", buf.getvalue())
+      logging.debug("  - an exception occurred when disconnecting mqtt client.", buf.getvalue())
 
-  except Exception as exc:
-    import sys, io
+  except Exception as exc:  # noqa: BLE001
+    import sys
+    import io
     buf = io.StringIO()
     sys.print_exception(exc, buf)
-    logging.debug(f"  - an exception occurred when uploading.", buf.getvalue())
+    logging.debug("  - an exception occurred when uploading.", buf.getvalue())
 
   return UPLOAD_FAILED

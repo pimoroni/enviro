@@ -1,6 +1,7 @@
 from enviro import logging
 from enviro.constants import UPLOAD_SUCCESS, UPLOAD_FAILED
-import requests, time
+import requests
+import time
 import config
 
 def url_encode(t):
@@ -18,7 +19,7 @@ def url_encode(t):
 def log_destination():
   logging.info(f"> uploading cached readings to Influxdb bucket: {config.influxdb_bucket}")
 
-def upload_reading(reading):  
+def upload_reading(reading):
   bucket = config.influxdb_bucket
 
   payload = ""
@@ -46,17 +47,17 @@ def upload_reading(reading):
   url = config.influxdb_url
   org = config.influxdb_org
   url += f"/api/v2/write?precision=s&org={url_encode(org)}&bucket={url_encode(bucket)}"
- 
+
   try:
     # post reading data to http endpoint
     result = requests.post(url, headers=headers, data=payload)
     result.close()
-    
+
     if result.status_code == 204:  # why 204? we'll never know...
       return UPLOAD_SUCCESS
 
     logging.debug(f"  - upload issue ({result.status_code} {result.reason})")
-  except:
-    logging.debug(f"  - an exception occurred when uploading")
+  except Exception:  # noqa: BLE001
+    logging.debug("  - an exception occurred when uploading")
 
   return UPLOAD_FAILED

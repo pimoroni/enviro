@@ -1,5 +1,8 @@
 from enviro.constants import *
-import machine, math, os, time
+import machine
+import math
+import os
+import time
 
 # miscellany
 # ===========================================================================
@@ -47,7 +50,7 @@ def mkdir_safe(path):
   except OSError as e:
     if e.errno != errno.EEXIST:
       raise
-    pass # directory already exists, this is fine
+    # directory already exists, this is fine
 
 def copy_file(source, target):
   with open(source, "rb") as infile:

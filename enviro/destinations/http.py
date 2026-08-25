@@ -22,7 +22,7 @@ def upload_reading(reading):
       return UPLOAD_SUCCESS
 
     logging.debug(f"  - upload issue ({result.status_code} {result.reason})")
-  except:
-    logging.debug(f"  - an exception occurred when uploading")
+  except Exception:  # noqa: BLE001
+    logging.debug("  - an exception occurred when uploading")
 
   return UPLOAD_FAILED

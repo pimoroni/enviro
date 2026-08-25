@@ -88,3 +88,15 @@ ci_build_filesystem
 This leaves `enviro.uf2`, `enviro-filesystem-only.uf2` and
 `enviro-with-filesystem.uf2` in the build directory. Set `CI_RELEASE_FILENAME`
 to change the prefix.
+
+### Linting
+
+`ci/python.sh` wraps ruff with the config in `ci/ruff.toml`:
+
+```
+source ci/python.sh
+qa_prepare_all
+qa_firmware_check
+qa_firmware_fix
+```
+

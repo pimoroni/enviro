@@ -24,15 +24,15 @@ def upload_reading(reading):
 
   # send the payload
   username = config.adafruit_io_username
-  headers = {'X-AIO-Key': config.adafruit_io_key, 'Content-Type': 'application/json'}
+  headers = {"X-AIO-Key": config.adafruit_io_key, "Content-Type": "application/json"}
   url = f"http://io.adafruit.com/api/v2/{username}/groups/enviro/data"
 
   try:
     result = requests.post(url, json=payload, headers=headers)
 
-    error_message = ""    
+    error_message = ""
     try:
-      error_message = result.json()['error']
+      error_message = result.json()["error"]
     except (TypeError, KeyError):
       pass
 
@@ -50,12 +50,13 @@ def upload_reading(reading):
       logging.debug(f"  - upload issue '{error_message}' - You may have run out of feeds to upload data to")
       return UPLOAD_SKIP_FILE
 
-    logging.debug(f"  - upload issue '{error_message}' ({result.status_code} - {result.reason.decode('utf-8')})")      
+    logging.debug(f"  - upload issue '{error_message}' ({result.status_code} - {result.reason.decode('utf-8')})")
 
-  except Exception as exc:
-    import sys, io
+  except Exception as exc:  # noqa: BLE001
+    import sys
+    import io
     buf = io.StringIO()
     sys.print_exception(exc, buf)
-    logging.debug(f"  - an exception occurred when uploading.", buf.getvalue())
+    logging.debug("  - an exception occurred when uploading.", buf.getvalue())
 
   return UPLOAD_FAILED
