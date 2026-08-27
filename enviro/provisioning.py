@@ -1,12 +1,12 @@
-import network, os, json, time, machine, sys
+import json
+import time
+import machine
 
 import enviro.helpers as helpers
 import enviro
 from phew import logging, server, redirect, serve_file, render_template, access_point
 
 DOMAIN = "pico.wireless"
-
-# BUG Issues with page loading when running provisioning a while after a board reset (where other things have been run before)
 
 # create fresh config file if missing
 if not helpers.file_exists("config.py"):
@@ -18,7 +18,7 @@ def write_config():
   with open("config.py", "r") as infile:
     lines = infile.read().split("\n")
 
-  for i in range(0, len(lines)):
+  for i in range(len(lines)):
     line = lines[i]
     parts = line.split("=", 1)
     if len(parts) == 2:
@@ -55,16 +55,14 @@ logging.info("> creating web server...")
 # TODO This did not seem to work for me...
 @server.route("/wrong-host-redirect", methods=["GET"])
 def wrong_host_redirect(request):
-  # if the client requested a resource at the wrong host then present 
+  # if the client requested a resource at the wrong host then present
   # a meta redirect so that the captive portal browser can be sent to the correct location
-  body = f"<!DOCTYPE html><head><meta http-equiv=\"refresh\" content=\"0;URL='http://{DOMAIN}/provision-welcome'\" /></head>"
-  return body
+  return f"<!DOCTYPE html><head><meta http-equiv=\"refresh\" content=\"0;URL='http://{DOMAIN}/provision-welcome'\" /></head>"
 
 
 @server.route("/provision-welcome", methods=["GET"])
 def provision_welcome(request):
-  response = render_template("enviro/html/welcome.html", board=model)
-  return response
+  return render_template("enviro/html/welcome.html", board=model)
 
 
 @server.route("/provision-step-1-nickname", methods=["GET", "POST"])
@@ -73,8 +71,7 @@ def provision_step_1_nickname(request):
     config.nickname = request.form["nickname"]
     write_config()
     return redirect(f"http://{DOMAIN}/provision-step-2-wifi")
-  else:
-    return render_template("enviro/html/provision-step-1-nickname.html", board=model)
+  return render_template("enviro/html/provision-step-1-nickname.html", board=model)
 
 
 @server.route("/provision-step-2-wifi", methods=["GET", "POST"])
@@ -84,9 +81,8 @@ def provision_step_2_wifi(request):
     config.wifi_password = request.form["wifi_password"]
     write_config()
     return redirect(f"http://{DOMAIN}/provision-step-3-logging")
-  else:
-    return render_template("enviro/html/provision-step-2-wifi.html", board=model)
-  
+  return render_template("enviro/html/provision-step-2-wifi.html", board=model)
+
 
 @server.route("/provision-step-3-logging", methods=["GET", "POST"])
 def provision_step_3_logging(request):
@@ -95,9 +91,8 @@ def provision_step_3_logging(request):
     config.upload_frequency = int(request.form["upload_frequency"]) if request.form["upload_frequency"] else None
     write_config()
     return redirect(f"http://{DOMAIN}/provision-step-4-destination")
-  else:
-    return render_template("enviro/html/provision-step-3-logging.html", board=model)
-    
+  return render_template("enviro/html/provision-step-3-logging.html", board=model)
+
 
 @server.route("/provision-step-4-destination", methods=["GET", "POST"])
 def provision_step_4_destination(request):
@@ -123,21 +118,19 @@ def provision_step_4_destination(request):
     config.influxdb_url = request.form["influxdb_url"]
     config.influxdb_token = request.form["influxdb_token"]
     config.influxdb_bucket = request.form["influxdb_bucket"]
-    
+
     write_config()
 
     if model == "grow":
       return redirect(f"http://{DOMAIN}/provision-step-grow-sensors")
-    else:
-      return redirect(f"http://{DOMAIN}/provision-step-5-done")
-  else:
-    return render_template("enviro/html/provision-step-4-destination.html", board=model)
-    
+    return redirect(f"http://{DOMAIN}/provision-step-5-done")
+  return render_template("enviro/html/provision-step-4-destination.html", board=model)
+
 
 @server.route("/provision-step-grow-sensors", methods=["GET", "POST"])
 def provision_step_grow_sensors(request):
   if request.method == "POST":
-    config.auto_water = (request.form["auto_water"] == 'True')
+    config.auto_water = (request.form["auto_water"] == "True")
     try:
       config.moisture_target_a = int(request.form["moisture_target_a"])
     except ValueError:
@@ -152,12 +145,11 @@ def provision_step_grow_sensors(request):
       config.moisture_target_c = int(request.form["moisture_target_c"])
     except ValueError:
       pass
-    
+
     write_config()
 
     return redirect(f"http://{DOMAIN}/provision-step-5-done")
-  else:
-    return render_template("enviro/html/provision-step-grow-sensors.html", board=model)
+  return render_template("enviro/html/provision-step-grow-sensors.html", board=model)
 
 
 @server.route("/provision-step-5-done", methods=["GET", "POST"])
@@ -169,10 +161,10 @@ def provision_step_5_done(request):
   # should reset the board
   if request.method == "POST":
     machine.reset()
-    return
+    return None
 
   return render_template("enviro/html/provision-step-5-done.html", board=model)
-    
+
 
 @server.route("/networks.json")
 def networks(request):
@@ -197,7 +189,7 @@ def catchall(request):
     return serve_file(file)
 
   return "404 Not Found Buddy!", 404
-  
+
 
 # wait for a client to connect
 logging.info("> waiting for a client to connect")

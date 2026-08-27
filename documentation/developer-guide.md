@@ -62,3 +62,41 @@ The Enviro boot up process is relatively complex as we need to ensure that thing
     have_destination-->|No|sleep3
 
 ```
+
+### Building the firmware
+
+CI builds MicroPython from source, appends the Enviro Python files as a LittleFS
+image, and publishes the results. `ci/micropython.sh` pins the MicroPython and
+`pimoroni-pico` versions and holds all of the build steps; `board/` holds the
+MicroPython board definition and the list of C modules to include.
+
+To build locally you'll need `cmake`, `ccache`, `arm-none-eabi-gcc` and the
+Python dependencies in `ci/requirements.txt`:
+
+```
+mkdir build && cd build
+export CI_USE_ENV=1
+export CI_PROJECT_ROOT=/path/to/enviro
+export CI_BUILD_ROOT=$(pwd)
+source $CI_PROJECT_ROOT/ci/micropython.sh
+ci_prepare_all
+ci_cmake_configure
+ci_cmake_build
+ci_build_filesystem
+```
+
+This leaves `enviro.uf2`, `enviro-filesystem-only.uf2` and
+`enviro-with-filesystem.uf2` in the build directory. Set `CI_RELEASE_FILENAME`
+to change the prefix.
+
+### Linting
+
+`ci/python.sh` wraps ruff with the config in `ci/ruff.toml`:
+
+```
+source ci/python.sh
+qa_prepare_all
+qa_firmware_check
+qa_firmware_fix
+```
+

@@ -11,7 +11,7 @@ bme688 = BreakoutBME68X(i2c, address=0x77)
 bh1745 = BreakoutBH1745(i2c)
 # need to write default values back into bh1745 chip otherwise it
 # reports bad results (this is undocumented...)
-i2c.writeto_mem(0x38, 0x44, b'\x02')
+i2c.writeto_mem(0x38, 0x44, b"\x02")
 
 def lux_from_rgbc(r, g, b, c):
   if g < 1:
@@ -66,7 +66,7 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
   bh1745.measurement_time_ms(160)
   r, g, b, c = bh1745.rgbc_raw()
 
-  from ucollections import OrderedDict
+  from collections import OrderedDict
   return OrderedDict({
     "temperature": temperature,
     "humidity": humidity,

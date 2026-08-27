@@ -5,7 +5,7 @@ from machine import Pin, PWM
 from enviro import i2c
 from phew import logging
 
-CHANNEL_NAMES = ['A', 'B', 'C']
+CHANNEL_NAMES = ["A", "B", "C"]
 
 bme280 = BreakoutBME280(i2c, 0x77)
 ltr559 = BreakoutLTR559(i2c)
@@ -27,7 +27,7 @@ pump_pins = [
 def moisture_readings():
   results = []
 
-  for i in range(0, 3):
+  for i in range(3):
     # count time for sensor to "tick" 25 times
     sensor = moisture_sensor_pins[i]
 
@@ -39,7 +39,7 @@ def moisture_readings():
     while ticks < 10 and time.ticks_diff(time.ticks_ms(), start) <= 1000:
       value = sensor.value()
       if last_value != value:
-        if first == None:
+        if first is None:
           first = time.ticks_ms()
         last = time.ticks_ms()
         ticks += 1
@@ -66,21 +66,21 @@ def moisture_readings():
 # make a semi convincing drip noise
 def drip_noise():
   piezo_pwm.duty_u16(32768)
-  for i in range(0, 10):
+  for i in range(10):
       f = i * 20
-      piezo_pwm.freq((f * f) + 1000)      
+      piezo_pwm.freq((f * f) + 1000)
       time.sleep(0.02)
   piezo_pwm.duty_u16(0)
 
 def water(moisture_levels):
   from enviro import config
   targets = [
-    config.moisture_target_a, 
+    config.moisture_target_a,
     config.moisture_target_b,
     config.moisture_target_c
   ]
 
-  for i in range(0, 3):
+  for i in range(3):
     if moisture_levels[i] < targets[i]:
       # determine a duration to run the pump for
       duration = round((targets[i] - moisture_levels[i]) / 25, 1)
@@ -93,8 +93,8 @@ def water(moisture_levels):
         time.sleep(duration)
         pump_pins[i].value(0)
       else:
-        logging.info(f"  - playing beep")
-        for j in range(0, i + 1):
+        logging.info("  - playing beep")
+        for _ in range(i + 1):
           drip_noise()
         time.sleep(0.5)
 
@@ -111,7 +111,7 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
 
   water(moisture_levels) # run pumps if needed
 
-  from ucollections import OrderedDict
+  from collections import OrderedDict
   return OrderedDict({
     "temperature": round(bme280_data[0], 2),
     "humidity": round(bme280_data[2], 2),
@@ -121,7 +121,7 @@ def get_sensor_readings(seconds_since_last, is_usb_power):
     "moisture_b": round(moisture_levels[1], 2),
     "moisture_c": round(moisture_levels[2], 2)
   })
-  
+
 def play_tone(frequency = None):
   if frequency:
     piezo_pwm.freq(frequency)
