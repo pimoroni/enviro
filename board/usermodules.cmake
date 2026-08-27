@@ -53,5 +53,8 @@ include(motor/micropython)
 # C++ Magic Memory
 include(cppmem/micropython)
 
-# Disable build-busting C++ exceptions
+# Misleadingly named: the four C++ flags it sets are already pico-sdk defaults via
+# pico_cxx_options, and the -specs=nano.specs it adds does the work - 58KB, which
+# is 42KB of C++ demangler pulled in by libsupc++'s verbose terminate handler and
+# 16KB of newlib-nano. Dropping it puts the firmware at 99.6% of the region.
 include(micropython-disable-exceptions)
