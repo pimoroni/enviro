@@ -317,14 +317,19 @@ def is_clock_set():
 
 # connect to wifi and attempt to fetch the current time from an ntp server
 def sync_clock_from_ntp():
-  from phew import ntp
+  import ntptime
   if not connect_to_wifi():
     return False
-  #TODO Fetch only does one attempt. Can also optionally set Pico RTC (do we want this?)
-  timestamp = ntp.fetch()
-  if not timestamp:
-    logging.error("  - failed to fetch time from ntp server")
+
+  ntptime.timeout = 10
+  try:
+    timestamp = time.gmtime(ntptime.time())
+  except Exception as x:  # noqa: BLE001
+    logging.error(f"  - failed to fetch time from ntp server: {x}")
     return False
+
+  # keep the pico's own rtc in step, helpers.datetime_string() reads it
+  RTC().datetime((timestamp[0], timestamp[1], timestamp[2], timestamp[6], timestamp[3], timestamp[4], timestamp[5], 0))
 
   # fixes an issue where sometimes the RTC would not pick up the new time
   i2c.writeto_mem(0x51, 0x00, b"\x10") # reset the rtc so we can change the time
